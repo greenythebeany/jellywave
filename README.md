@@ -13,6 +13,21 @@
 
 JellyWave is a personal music client for a self-hosted Jellyfin server. It logs into your own server with your own library and gives you a modern, Spotify-like listening experience across desktop and Android, without any of the server-side bloat of a general-purpose media app.
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/desktop-home.png" width="800" alt="JellyWave desktop, Home view" />
+</p>
+<p align="center">
+  <img src="docs/screenshots/desktop-settings.png" width="380" alt="JellyWave desktop, Settings" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/mobile-home.png" width="220" alt="JellyWave Android, Home view" />
+  <img src="docs/screenshots/mobile-library.png" width="220" alt="JellyWave Android, Library view" />
+  <img src="docs/screenshots/mobile-nowplaying.png" width="220" alt="JellyWave Android, Now Playing view" />
+</p>
+
 ## Features
 
 - Full library browsing: Home, Search, All Songs, Liked Songs, Genres, Albums, Artists, and Playlists
