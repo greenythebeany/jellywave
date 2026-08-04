@@ -6,7 +6,9 @@
 <p align="center">A sleek, Spotify-styled music client for your own Jellyfin server.</p>
 
 <p align="center">
-  <a href="https://github.com/greenythebeany/jellywave/releases/latest">Download</a>
+  <a href="https://github.com/Greenythebeany/jellywave/releases">
+    <img src="download_icon.png" alt="Download JellyWave" height="160">
+  </a>
 </p>
 
 ---
