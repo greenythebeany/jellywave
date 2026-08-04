@@ -145,6 +145,11 @@
     "crossfadeDesc": "Blend the end of one song into the start of the next",
     "replayGain": "Volume normalization",
     "replayGainDesc": "Even out loudness differences between tracks (needs ReplayGain data on the server)",
+    "discordPresence": "Discord Rich Presence",
+    "discordPresenceDesc": "Shows what you're listening to on your Discord profile (desktop only)",
+    "discordConnect": "Connect",
+    "catJam": "Jam on paw level",
+    "catJamDesc": "Show a cat that bounces to the beat next to the player",
     "advanced": "Advanced",
     "customCss": "Custom CSS",
     "customCssDesc": "Write your own CSS to further tweak the app's look. Applied live.",
@@ -168,5 +173,9 @@
     "couldNotUpdateLike": "Could not update like status.",
     "couldNotUploadArt": "Could not upload cover art.",
     "couldNotCreatePlaylist": "Could not create playlist."
+  },
+  "update": {
+    "available": "JellyWave {version} is available.",
+    "view": "View"
   }
 }

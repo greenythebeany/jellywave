@@ -1,0 +1,23 @@
+/* Kanagawa — https://github.com/rebelot/kanagawa.nvim */
+:root[data-theme] {
+  --bg-void: #131317;
+  --bg-base: #1f1f28;
+  --bg-elevated: #16161d;
+  --bg-highlight: #363646;
+  --bg-card: #223249;
+  --bg-card-hover: #2d4f67;
+  --text-primary: #dcd7ba;
+  --text-secondary: #c8c093;
+  --text-tertiary: #727169;
+  --border-subtle: rgba(220, 215, 186, 0.09);
+  --scrim: rgba(19, 19, 23, 0.6);
+  --danger: #c34043;
+}
+:root[data-palette] {
+  --accent: #957fb8;
+  --accent-hover: #a998c7;
+  --accent-contrast: #131317;
+  --seek-start: #957fb8;
+  --seek-end: #7e9cd8;
+  --accent-bg: linear-gradient(135deg, #957fb8 0%, #7e9cd8 100%);
+}

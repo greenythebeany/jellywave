@@ -145,6 +145,11 @@
     "crossfadeDesc": "Tonar över slutet av en låt till början av nästa",
     "replayGain": "Volymnormalisering",
     "replayGainDesc": "Jämnar ut volymskillnader mellan låtar (kräver ReplayGain-data på servern)",
+    "discordPresence": "Discord Rich Presence",
+    "discordPresenceDesc": "Visar vad du lyssnar på i din Discord-profil (endast dator)",
+    "discordConnect": "Anslut",
+    "catJam": "Katt i takt",
+    "catJamDesc": "Visar en katt som studsar i takt bredvid spelaren",
     "advanced": "Avancerat",
     "customCss": "Anpassad CSS",
     "customCssDesc": "Skriv din egen CSS för att finjustera appens utseende ytterligare. Tillämpas direkt.",
@@ -168,5 +173,9 @@
     "couldNotUpdateLike": "Det gick inte att uppdatera gilla-status.",
     "couldNotUploadArt": "Det gick inte att ladda upp omslagsbilden.",
     "couldNotCreatePlaylist": "Det gick inte att skapa spellistan."
+  },
+  "update": {
+    "available": "JellyWave {version} är tillgänglig.",
+    "view": "Visa"
   }
 }

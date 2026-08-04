@@ -145,6 +145,11 @@
     "crossfadeDesc": "Combina el final de una canción con el inicio de la siguiente",
     "replayGain": "Normalización de volumen",
     "replayGainDesc": "Equilibra las diferencias de volumen entre canciones (requiere datos de ReplayGain en el servidor)",
+    "discordPresence": "Discord Rich Presence",
+    "discordPresenceDesc": "Muestra lo que estás escuchando en tu perfil de Discord (solo escritorio)",
+    "discordConnect": "Conectar",
+    "catJam": "Gato al ritmo",
+    "catJamDesc": "Muestra un gato que rebota al ritmo junto al reproductor",
     "advanced": "Avanzado",
     "customCss": "CSS personalizado",
     "customCssDesc": "Escribe tu propio CSS para personalizar aún más el aspecto de la app. Se aplica en vivo.",
@@ -168,5 +173,9 @@
     "couldNotUpdateLike": "No se pudo actualizar el estado de me gusta.",
     "couldNotUploadArt": "No se pudo subir la portada.",
     "couldNotCreatePlaylist": "No se pudo crear la lista."
+  },
+  "update": {
+    "available": "JellyWave {version} está disponible.",
+    "view": "Ver"
   }
 }

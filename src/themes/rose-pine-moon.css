@@ -1,0 +1,23 @@
+/* Rosé Pine Moon — https://rosepinetheme.com */
+:root[data-theme] {
+  --bg-void: #1c1a2b;
+  --bg-base: #232136;
+  --bg-elevated: #2a273f;
+  --bg-highlight: #393552;
+  --bg-card: #2a273f;
+  --bg-card-hover: #393552;
+  --text-primary: #e0def4;
+  --text-secondary: #908caa;
+  --text-tertiary: #6e6a86;
+  --border-subtle: rgba(224, 222, 244, 0.09);
+  --scrim: rgba(28, 26, 43, 0.6);
+  --danger: #eb6f92;
+}
+:root[data-palette] {
+  --accent: #c4a7e7;
+  --accent-hover: #d3bcee;
+  --accent-contrast: #232136;
+  --seek-start: #c4a7e7;
+  --seek-end: #ea9a97;
+  --accent-bg: linear-gradient(135deg, #c4a7e7 0%, #ea9a97 100%);
+}

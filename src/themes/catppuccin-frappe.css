@@ -1,0 +1,23 @@
+/* Catppuccin Frappé — https://github.com/catppuccin/catppuccin */
+:root[data-theme] {
+  --bg-void: #232634;
+  --bg-base: #303446;
+  --bg-elevated: #292c3c;
+  --bg-highlight: #414559;
+  --bg-card: #333849;
+  --bg-card-hover: #414559;
+  --text-primary: #c6d0f5;
+  --text-secondary: #b5bfe2;
+  --text-tertiary: #737994;
+  --border-subtle: rgba(198, 208, 245, 0.09);
+  --scrim: rgba(35, 38, 52, 0.6);
+  --danger: #e78284;
+}
+:root[data-palette] {
+  --accent: #ca9ee6;
+  --accent-hover: #d8b5ec;
+  --accent-contrast: #232634;
+  --seek-start: #ca9ee6;
+  --seek-end: #f4b8e4;
+  --accent-bg: linear-gradient(135deg, #ca9ee6 0%, #f4b8e4 100%);
+}

@@ -145,6 +145,11 @@
     "crossfadeDesc": "Häivyttää kappaleen lopun seuraavan alkuun",
     "replayGain": "Äänenvoimakkuuden normalisointi",
     "replayGainDesc": "Tasoittaa kappaleiden välisiä äänenvoimakkuuseroja (vaatii ReplayGain-tiedot palvelimella)",
+    "discordPresence": "Discord Rich Presence",
+    "discordPresenceDesc": "Näyttää mitä kuuntelet Discord-profiilissasi (vain työpöytä)",
+    "discordConnect": "Yhdistä",
+    "catJam": "Kissa tahdissa",
+    "catJamDesc": "Näyttää kissan, joka pomppii tahdissa soittimen vieressä",
     "advanced": "Lisäasetukset",
     "customCss": "Mukautettu CSS",
     "customCssDesc": "Kirjoita oma CSS hienosäätääksesi sovelluksen ulkoasua. Otetaan käyttöön heti.",
@@ -168,5 +173,9 @@
     "couldNotUpdateLike": "Tykkäystilaa ei voitu päivittää.",
     "couldNotUploadArt": "Kansikuvaa ei voitu ladata.",
     "couldNotCreatePlaylist": "Soittolistaa ei voitu luoda."
+  },
+  "update": {
+    "available": "JellyWave {version} on saatavilla.",
+    "view": "Näytä"
   }
 }

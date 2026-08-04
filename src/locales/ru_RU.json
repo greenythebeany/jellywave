@@ -145,6 +145,11 @@
     "crossfadeDesc": "Плавно переходит от конца одной песни к началу следующей",
     "replayGain": "Нормализация громкости",
     "replayGainDesc": "Выравнивает разницу громкости между треками (требуются данные ReplayGain на сервере)",
+    "discordPresence": "Discord Rich Presence",
+    "discordPresenceDesc": "Показывает, что вы слушаете, в вашем профиле Discord (только на ПК)",
+    "discordConnect": "Подключить",
+    "catJam": "Кот в такт",
+    "catJamDesc": "Показывает кота, подпрыгивающего в такт рядом с плеером",
     "advanced": "Дополнительно",
     "customCss": "Свой CSS",
     "customCssDesc": "Напишите собственный CSS, чтобы дополнительно настроить внешний вид приложения. Применяется сразу.",
@@ -168,5 +173,9 @@
     "couldNotUpdateLike": "Не удалось обновить статус «нравится».",
     "couldNotUploadArt": "Не удалось загрузить обложку.",
     "couldNotCreatePlaylist": "Не удалось создать плейлист."
+  },
+  "update": {
+    "available": "Доступна версия JellyWave {version}.",
+    "view": "Открыть"
   }
 }

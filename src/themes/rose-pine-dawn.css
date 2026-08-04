@@ -1,0 +1,23 @@
+/* Rosé Pine Dawn (light) — https://rosepinetheme.com */
+:root[data-theme] {
+  --bg-void: #f2e9e1;
+  --bg-base: #faf4ed;
+  --bg-elevated: #fffaf3;
+  --bg-highlight: #f2e9e1;
+  --bg-card: #fffaf3;
+  --bg-card-hover: #f2e9e1;
+  --text-primary: #575279;
+  --text-secondary: #797593;
+  --text-tertiary: #9893a5;
+  --border-subtle: rgba(87, 82, 121, 0.1);
+  --scrim: rgba(250, 244, 237, 0.75);
+  --danger: #b4637a;
+}
+:root[data-palette] {
+  --accent: #907aa9;
+  --accent-hover: #a691bd;
+  --accent-contrast: #ffffff;
+  --seek-start: #907aa9;
+  --seek-end: #d7827e;
+  --accent-bg: linear-gradient(135deg, #907aa9 0%, #d7827e 100%);
+}

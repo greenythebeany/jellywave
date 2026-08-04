@@ -1,0 +1,23 @@
+/* Tokyo Night — https://github.com/folke/tokyonight.nvim */
+:root[data-theme] {
+  --bg-void: #13131a;
+  --bg-base: #1a1b26;
+  --bg-elevated: #16161e;
+  --bg-highlight: #292e42;
+  --bg-card: #1f2335;
+  --bg-card-hover: #292e42;
+  --text-primary: #c0caf5;
+  --text-secondary: #a9b1d6;
+  --text-tertiary: #565f89;
+  --border-subtle: rgba(192, 202, 245, 0.09);
+  --scrim: rgba(19, 19, 26, 0.6);
+  --danger: #f7768e;
+}
+:root[data-palette] {
+  --accent: #7aa2f7;
+  --accent-hover: #9ab6f9;
+  --accent-contrast: #13131a;
+  --seek-start: #7aa2f7;
+  --seek-end: #bb9af7;
+  --accent-bg: linear-gradient(135deg, #7aa2f7 0%, #bb9af7 100%);
+}

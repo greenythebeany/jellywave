@@ -3,7 +3,7 @@ import { Player, RepeatMode } from './player.js';
 import { fetchLyrics } from './lyrics.js';
 import { getSettings, updateSettings, applySettings, currentBitrateKbps, PALETTES, AUDIO_QUALITIES } from './settings.js';
 import { LOCALES, loadLocale, applyTranslations, t } from './i18n.js';
-import { platform, isDesktop, isMobile, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity } from './platform.js';
+import { platform, isDesktop, isMobile, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt } from './platform.js';
 
 // ---------- DOM refs ----------
 const loginScreen = document.getElementById('login-screen');
@@ -48,6 +48,12 @@ const toggleArtBackground = document.getElementById('toggle-art-background');
 const crossfadeSlider = document.getElementById('crossfade-slider');
 const crossfadeValue = document.getElementById('crossfade-value');
 const toggleReplayGain = document.getElementById('toggle-replaygain');
+const toggleCatJam = document.getElementById('toggle-cat-jam');
+const catJamVideo = document.getElementById('cat-jam');
+const updateToast = document.getElementById('update-toast');
+const updateToastText = document.getElementById('update-toast-text');
+const updateToastLink = document.getElementById('update-toast-link');
+const updateToastDismiss = document.getElementById('update-toast-dismiss');
 const customCssInput = document.getElementById('custom-css-input');
 const customCssStyle = document.getElementById('custom-css-style');
 const mainBgArt = document.getElementById('main-bg-art');
@@ -225,6 +231,7 @@ function syncCardStates() {
 // ---------- Session bootstrap ----------
 async function init() {
   if (isMobile) requestNotificationPermission();
+  if (isDesktop) wireUpdateToast();
   volumeBar.style.setProperty('--pct', '50%');
   updateVolumeIcon(50);
   await loadLocale(getSettings().language);
@@ -396,6 +403,11 @@ function wireSettingsUI() {
     player?.setReplayGainEnabled(toggleReplayGain.checked);
   });
 
+  toggleCatJam.addEventListener('change', () => {
+    updateSettings({ catJam: toggleCatJam.checked });
+    syncCatJamVisibility();
+  });
+
   let customCssDebounce;
   customCssInput.addEventListener('input', () => {
     customCssStyle.textContent = customCssInput.value;
@@ -450,25 +462,16 @@ function updateBgArt() {
 // Discord Rich Presence — no-op on mobile/web (see setDiscordActivity).
 // Discord only embeds Rich Presence images served over HTTPS, so a
 // Jellyfin server on plain HTTP (typical for a LAN-only setup) can't be used
-// directly as the cover art source. Instead, look the album up on iTunes'
-// search API (HTTPS, no key required, sends proper CORS headers) by artist +
-// album name and use its artwork — falling back to the static logo asset
-// when nothing matches.
+// directly as the cover art source. Instead, look the album up on Deezer
+// (proxied through main.js, since its API doesn't send CORS headers) by
+// artist + album name and use its artwork — falling back to the static logo
+// asset when nothing matches.
 const externalCoverArtCache = new Map(); // "artist|album" (lowercased) -> url or null
 
-async function fetchExternalCoverArt(artist, album) {
+async function fetchExternalCoverArt(artist, album, trackName) {
   const key = `${artist}|${album}`.toLowerCase();
   if (externalCoverArtCache.has(key)) return externalCoverArtCache.get(key);
-  let url = null;
-  try {
-    const query = encodeURIComponent(`${artist} ${album}`.trim());
-    const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=album&limit=1`);
-    const data = await res.json();
-    const artwork = data.results?.[0]?.artworkUrl100;
-    if (artwork) url = artwork.replace('100x100bb', '512x512bb');
-  } catch (err) {
-    // No network / no match — fall back to the logo below.
-  }
+  const url = await searchDeezerAlbumArt(artist, album, trackName);
   externalCoverArtCache.set(key, url);
   return url;
 }
@@ -507,9 +510,76 @@ function updateDiscordPresence() {
   // Show something immediately, then upgrade to real art once the lookup
   // resolves — guarded so a late response can't clobber a since-changed track.
   setDiscordActivity(buildActivity('logo'));
-  fetchExternalCoverArt(artist, album).then((art) => {
+  fetchExternalCoverArt(artist, album, track.Name).then((art) => {
     if (!art || player?.currentTrack?.Id !== trackIdAtCall || player.audio.paused) return;
     setDiscordActivity(buildActivity(art));
+  });
+}
+
+// ---------- Cat Jam ----------
+// Real bass-onset detection via Web Audio's AnalyserNode, not just a looping
+// clip — the bounce only fires when the current track's actual bass energy
+// spikes above its own rolling average, so it tracks whatever's playing
+// rather than a fixed guessed tempo.
+let catJamAudioCtx = null;
+const catJamAnalysers = new WeakMap(); // audio element -> AnalyserNode (one per element, created once)
+let catJamRAF = null;
+let catJamBassAvg = 0;
+let catJamLastBeatAt = 0;
+
+function getCatJamAnalyser(audioEl) {
+  if (!catJamAudioCtx) catJamAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (catJamAudioCtx.state === 'suspended') catJamAudioCtx.resume().catch(() => {});
+  if (catJamAnalysers.has(audioEl)) return catJamAnalysers.get(audioEl);
+  const source = catJamAudioCtx.createMediaElementSource(audioEl);
+  const analyser = catJamAudioCtx.createAnalyser();
+  analyser.fftSize = 256;
+  analyser.smoothingTimeConstant = 0.6;
+  source.connect(analyser);
+  analyser.connect(catJamAudioCtx.destination); // keep normal playback audible
+  catJamAnalysers.set(audioEl, analyser);
+  return analyser;
+}
+
+function catJamTick() {
+  if (!getSettings().catJam) { catJamRAF = null; return; }
+  catJamRAF = requestAnimationFrame(catJamTick);
+  if (!player?.currentTrack || player.audio.paused) return;
+
+  const analyser = getCatJamAnalyser(player.audio);
+  const data = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(data);
+
+  const bassBins = 6; // roughly sub-bass/bass range at this fftSize
+  let bassSum = 0;
+  for (let i = 0; i < bassBins; i++) bassSum += data[i];
+  const bass = bassSum / bassBins; // 0-255
+
+  catJamBassAvg = catJamBassAvg * 0.92 + bass * 0.08;
+
+  const now = performance.now();
+  if (bass > catJamBassAvg * 1.35 && bass > 40 && now - catJamLastBeatAt > 220) {
+    catJamLastBeatAt = now;
+    catJamVideo.classList.add('beat');
+    setTimeout(() => catJamVideo.classList.remove('beat'), 90);
+  }
+}
+
+function syncCatJamVisibility() {
+  const enabled = getSettings().catJam;
+  const shouldShow = enabled && !!player?.currentTrack;
+  setHidden(catJamVideo, !shouldShow);
+  if (shouldShow) catJamVideo.play().catch(() => {});
+  if (enabled && !catJamRAF) catJamTick();
+}
+
+function wireUpdateToast() {
+  if (!window.api?.updates) return;
+  updateToastDismiss.addEventListener('click', () => { updateToast.hidden = true; });
+  window.api.updates.onAvailable((result) => {
+    updateToastText.textContent = t('update.available', { version: result.version });
+    updateToastLink.href = result.url;
+    updateToast.hidden = false;
   });
 }
 
@@ -521,6 +591,7 @@ function refreshSettingsUI() {
   crossfadeValue.textContent = s.crossfadeSeconds ? `${s.crossfadeSeconds}s` : 'Off';
   crossfadeSlider.style.setProperty('--pct', rangeFillPercent(((s.crossfadeSeconds || 0) / 12) * 100, crossfadeSlider, 13));
   toggleReplayGain.checked = !!s.replayGainEnabled;
+  toggleCatJam.checked = !!s.catJam;
   if (document.activeElement !== customCssInput) customCssInput.value = s.customCss || '';
   themeModeToggle.querySelectorAll('button').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.value === s.themeMode);
@@ -1266,6 +1337,7 @@ function wirePlayer() {
     syncCardStates();
     updateBgArt();
     updateDiscordPresence();
+    syncCatJamVisibility();
 
     if (!lyricsPanel.hidden) {
       if (activePanelTab === 'lyrics') loadLyricsForCurrentTrack();

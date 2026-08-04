@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain, safeStorage, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { Client: DiscordRpcClient } = require('@xhayper/discord-rpc');
+const { checkForUpdates } = require('./update-checker');
 
 const CONFIG_PATH = path.join(app.getPath('userData'), 'session.dat');
 const DISCORD_CLIENT_ID = '1534197353056174180';
@@ -49,10 +50,29 @@ app.whenReady().then(() => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+
+  // Silent background check — only speaks up if something's actually newer.
+  setTimeout(() => {
+    checkForUpdates()
+      .then((result) => {
+        if (result.status === 'available' && mainWindow) {
+          mainWindow.webContents.send('update:available', result);
+        }
+      })
+      .catch(() => {});
+  }, 4000);
 });
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
+});
+
+ipcMain.handle('update:check', async () => {
+  try {
+    return await checkForUpdates();
+  } catch (err) {
+    return { status: 'error', error: err.message };
+  }
 });
 
 // --- Window controls for the custom title bar ---
@@ -153,4 +173,32 @@ ipcMain.handle('discord:clearActivity', async () => {
   } catch (err) {
     return { ok: false, error: String(err) };
   }
+});
+
+// Deezer's search API doesn't send CORS headers, so the renderer can't call
+// it directly — proxied through here instead. Album metadata rarely matches
+// Deezer's listing exactly (deluxe/remaster suffixes, "Vol." vs "Volume",
+// OST naming, etc.), so try progressively looser queries before giving up.
+async function deezerSearch(query, type) {
+  try {
+    const q = encodeURIComponent(query.trim());
+    if (!q) return null;
+    const endpoint = type === 'album' ? 'search/album' : 'search';
+    const res = await fetch(`https://api.deezer.com/${endpoint}?q=${q}&limit=1`);
+    const data = await res.json();
+    const entry = data.data?.[0];
+    const cover = type === 'album' ? entry?.cover_xl || entry?.cover_big : entry?.album?.cover_xl || entry?.album?.cover_big;
+    return cover || null;
+  } catch (err) {
+    return null;
+  }
+}
+
+ipcMain.handle('deezer:searchAlbumArt', async (_event, artist, album, trackName) => {
+  return (
+    (await deezerSearch(`${artist} ${album}`, 'album')) ||
+    (await deezerSearch(`${artist} ${trackName}`, 'track')) ||
+    (await deezerSearch(`${artist} ${album}`, 'track')) ||
+    (await deezerSearch(album, 'album'))
+  );
 });

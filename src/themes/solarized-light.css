@@ -1,0 +1,23 @@
+/* Solarized Light — https://ethanschoonover.com/solarized */
+:root[data-theme] {
+  --bg-void: #eee8d5;
+  --bg-base: #fdf6e3;
+  --bg-elevated: #ffffff;
+  --bg-highlight: #eee8d5;
+  --bg-card: #eee8d5;
+  --bg-card-hover: #e4ddc4;
+  --text-primary: #586e75;
+  --text-secondary: #657b83;
+  --text-tertiary: #93a1a1;
+  --border-subtle: rgba(88, 110, 117, 0.12);
+  --scrim: rgba(253, 246, 227, 0.75);
+  --danger: #dc322f;
+}
+:root[data-palette] {
+  --accent: #268bd2;
+  --accent-hover: #4ba3e3;
+  --accent-contrast: #ffffff;
+  --seek-start: #268bd2;
+  --seek-end: #2aa198;
+  --accent-bg: linear-gradient(135deg, #268bd2 0%, #2aa198 100%);
+}

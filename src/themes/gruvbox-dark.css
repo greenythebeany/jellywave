@@ -1,0 +1,23 @@
+/* Gruvbox Dark — https://github.com/morhetz/gruvbox */
+:root[data-theme] {
+  --bg-void: #1d2021;
+  --bg-base: #282828;
+  --bg-elevated: #22201e;
+  --bg-highlight: #3c3836;
+  --bg-card: #32302f;
+  --bg-card-hover: #504945;
+  --text-primary: #ebdbb2;
+  --text-secondary: #d5c4a1;
+  --text-tertiary: #a89984;
+  --border-subtle: rgba(235, 219, 178, 0.1);
+  --scrim: rgba(29, 32, 33, 0.6);
+  --danger: #fb4934;
+}
+:root[data-palette] {
+  --accent: #fe8019;
+  --accent-hover: #fea849;
+  --accent-contrast: #1d2021;
+  --seek-start: #fe8019;
+  --seek-end: #fabd2f;
+  --accent-bg: linear-gradient(135deg, #fe8019 0%, #fabd2f 100%);
+}

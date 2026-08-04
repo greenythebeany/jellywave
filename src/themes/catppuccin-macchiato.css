@@ -1,0 +1,23 @@
+/* Catppuccin Macchiato — https://github.com/catppuccin/catppuccin */
+:root[data-theme] {
+  --bg-void: #181926;
+  --bg-base: #24273a;
+  --bg-elevated: #1e2030;
+  --bg-highlight: #363a4f;
+  --bg-card: #292c3c;
+  --bg-card-hover: #363a4f;
+  --text-primary: #cad3f5;
+  --text-secondary: #b8c0e0;
+  --text-tertiary: #6e738d;
+  --border-subtle: rgba(202, 211, 245, 0.09);
+  --scrim: rgba(24, 25, 38, 0.6);
+  --danger: #ed8796;
+}
+:root[data-palette] {
+  --accent: #c6a0f6;
+  --accent-hover: #d5b8f8;
+  --accent-contrast: #181926;
+  --seek-start: #c6a0f6;
+  --seek-end: #f5bde6;
+  --accent-bg: linear-gradient(135deg, #c6a0f6 0%, #f5bde6 100%);
+}

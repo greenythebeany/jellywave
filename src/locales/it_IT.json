@@ -145,6 +145,11 @@
     "crossfadeDesc": "Sfuma la fine di un brano nell'inizio del successivo",
     "replayGain": "Normalizzazione del volume",
     "replayGainDesc": "Uniforma le differenze di volume tra i brani (richiede dati ReplayGain sul server)",
+    "discordPresence": "Discord Rich Presence",
+    "discordPresenceDesc": "Mostra cosa stai ascoltando sul tuo profilo Discord (solo desktop)",
+    "discordConnect": "Connetti",
+    "catJam": "Gatto a ritmo",
+    "catJamDesc": "Mostra un gatto che rimbalza a ritmo accanto al lettore",
     "advanced": "Avanzate",
     "customCss": "CSS personalizzato",
     "customCssDesc": "Scrivi il tuo CSS per personalizzare ulteriormente laspetto dellapp. Applicato in tempo reale.",
@@ -168,5 +173,9 @@
     "couldNotUpdateLike": "Impossibile aggiornare lo stato \"mi piace\".",
     "couldNotUploadArt": "Impossibile caricare la copertina.",
     "couldNotCreatePlaylist": "Impossibile creare la playlist."
+  },
+  "update": {
+    "available": "JellyWave {version} è disponibile.",
+    "view": "Visualizza"
   }
 }

@@ -22,7 +22,8 @@ const DEFAULTS = {
   language: 'en_US',
   customCss: '',
   crossfadeSeconds: 0, // 0-12, 0 = off (gapless preloading is always on regardless)
-  replayGainEnabled: false
+  replayGainEnabled: false,
+  catJam: false
 };
 
 function load() {

@@ -145,6 +145,11 @@
     "crossfadeDesc": "Plynulo prelína koniec jednej skladby so začiatkom ďalšej",
     "replayGain": "Normalizácia hlasitosti",
     "replayGainDesc": "Vyrovnáva rozdiely v hlasitosti medzi skladbami (vyžaduje údaje ReplayGain na serveri)",
+    "discordPresence": "Discord Rich Presence",
+    "discordPresenceDesc": "Zobrazí na tvojom Discord profile, čo práve počúvaš (iba desktop)",
+    "discordConnect": "Pripojiť",
+    "catJam": "Mačka do rytmu",
+    "catJamDesc": "Zobrazí mačku, ktorá poskakuje do rytmu vedľa prehrávača",
     "advanced": "Rozšírené",
     "customCss": "Vlastné CSS",
     "customCssDesc": "Napíšte si vlastné CSS na ďalšiu úpravu vzhľadu aplikácie. Aplikuje sa okamžite.",
@@ -168,5 +173,9 @@
     "couldNotUpdateLike": "Stav obľúbenosti sa nepodarilo aktualizovať.",
     "couldNotUploadArt": "Obal sa nepodarilo nahrať.",
     "couldNotCreatePlaylist": "Playlist sa nepodarilo vytvoriť."
+  },
+  "update": {
+    "available": "JellyWave {version} je dostupný.",
+    "view": "Zobraziť"
   }
 }

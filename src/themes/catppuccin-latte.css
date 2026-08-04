@@ -1,0 +1,23 @@
+/* Catppuccin Latte (light) — https://github.com/catppuccin/catppuccin */
+:root[data-theme] {
+  --bg-void: #dce0e8;
+  --bg-base: #eff1f5;
+  --bg-elevated: #ffffff;
+  --bg-highlight: #e6e9ef;
+  --bg-card: #e6e9ef;
+  --bg-card-hover: #ccd0da;
+  --text-primary: #4c4f69;
+  --text-secondary: #6c6f85;
+  --text-tertiary: #8c8fa1;
+  --border-subtle: rgba(76, 79, 105, 0.12);
+  --scrim: rgba(239, 241, 245, 0.75);
+  --danger: #d20f39;
+}
+:root[data-palette] {
+  --accent: #8839ef;
+  --accent-hover: #9d5cf3;
+  --accent-contrast: #ffffff;
+  --seek-start: #8839ef;
+  --seek-end: #ea76cb;
+  --accent-bg: linear-gradient(135deg, #8839ef 0%, #ea76cb 100%);
+}

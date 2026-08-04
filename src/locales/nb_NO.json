@@ -145,6 +145,11 @@
     "crossfadeDesc": "Toner slutten av én sang over i starten av neste",
     "replayGain": "Volumnormalisering",
     "replayGainDesc": "Jevner ut volumforskjeller mellom sanger (krever ReplayGain-data på serveren)",
+    "discordPresence": "Discord Rich Presence",
+    "discordPresenceDesc": "Viser hva du hører på i Discord-profilen din (kun stasjonær)",
+    "discordConnect": "Koble til",
+    "catJam": "Katt i takten",
+    "catJamDesc": "Viser en katt som hopper i takt ved siden av spilleren",
     "advanced": "Avansert",
     "customCss": "Egendefinert CSS",
     "customCssDesc": "Skriv din egen CSS for å finjustere utseendet til appen ytterligere. Brukes umiddelbart.",
@@ -168,5 +173,9 @@
     "couldNotUpdateLike": "Kunne ikke oppdatere lik-status.",
     "couldNotUploadArt": "Kunne ikke laste opp coverbilde.",
     "couldNotCreatePlaylist": "Kunne ikke opprette spilleliste."
+  },
+  "update": {
+    "available": "JellyWave {version} er tilgjengelig.",
+    "view": "Vis"
   }
 }

@@ -190,7 +190,10 @@
 
     <footer id="player-bar" class="player-bar" hidden>
       <div class="player-track-info">
-        <img id="player-art" class="player-art" alt="" />
+        <div class="player-art-wrap">
+          <img id="player-art" class="player-art" alt="" />
+          <video id="cat-jam" class="cat-jam" src="assets/catjam.webm" muted loop playsinline hidden></video>
+        </div>
         <div class="player-track-text">
           <div id="player-title" class="player-title">—</div>
           <div id="player-artist" class="player-artist">—</div>
@@ -310,6 +313,16 @@
               <span class="switch-track"></span>
             </label>
           </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.catJam">Jam on paw level</div>
+              <div class="settings-row-desc" data-i18n="settings.catJamDesc">Show a cat that bounces to the beat next to the player</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-cat-jam" />
+              <span class="switch-track"></span>
+            </label>
+          </div>
         </section>
         <section class="settings-section">
           <h3 data-i18n="settings.audio">Audio</h3>
@@ -340,6 +353,13 @@
               <span class="switch-track"></span>
             </label>
           </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.discordPresence">Discord Rich Presence</div>
+              <div class="settings-row-desc" data-i18n="settings.discordPresenceDesc">Shows what you're listening to on your Discord profile (desktop only)</div>
+            </div>
+            <a id="discord-connect-link" href="https://discord.com/oauth2/authorize?client_id=1534197353056174180" target="_blank" rel="noopener noreferrer" class="attribution-link" data-i18n="settings.discordConnect">Connect</a>
+          </div>
         </section>
         <section class="settings-section">
           <h3 data-i18n="settings.advanced">Advanced</h3>
@@ -363,6 +383,12 @@
   </div>
 
   <audio id="native-audio" hidden></audio>
+
+  <div id="update-toast" class="update-toast" hidden>
+    <span id="update-toast-text" data-i18n="update.available">A new version is available.</span>
+    <a id="update-toast-link" href="#" target="_blank" rel="noopener noreferrer" data-i18n="update.view">View</a>
+    <button id="update-toast-dismiss" class="btn-icon-plain" type="button"><i class="fi fi-br-cross-small"></i></button>
+  </div>
 
   <script type="module" src="js/app.js"></script>
 </body>

@@ -145,6 +145,11 @@
     "crossfadeDesc": "Fondu entre la fin d'un morceau et le début du suivant",
     "replayGain": "Normalisation du volume",
     "replayGainDesc": "Uniformise les différences de volume entre les morceaux (nécessite des données ReplayGain sur le serveur)",
+    "discordPresence": "Statut enrichi Discord",
+    "discordPresenceDesc": "Affiche ce que vous écoutez sur votre profil Discord (bureau uniquement)",
+    "discordConnect": "Connecter",
+    "catJam": "Le chat qui groove",
+    "catJamDesc": "Affiche un chat qui bouge au rythme à côté du lecteur",
     "advanced": "Avancé",
     "customCss": "CSS personnalisé",
     "customCssDesc": "Écrivez votre propre CSS pour personnaliser davantage l'apparence de l'application. Appliqué en direct.",
@@ -168,5 +173,9 @@
     "couldNotUpdateLike": "Impossible de mettre à jour le statut « aimé ».",
     "couldNotUploadArt": "Impossible de téléverser la pochette.",
     "couldNotCreatePlaylist": "Impossible de créer la playlist."
+  },
+  "update": {
+    "available": "JellyWave {version} est disponible.",
+    "view": "Voir"
   }
 }

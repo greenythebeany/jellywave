@@ -17,5 +17,14 @@ contextBridge.exposeInMainWorld('api', {
   discord: {
     setActivity: (activity) => ipcRenderer.invoke('discord:setActivity', activity),
     clearActivity: () => ipcRenderer.invoke('discord:clearActivity')
+  },
+  deezer: {
+    searchAlbumArt: (artist, album, trackName) => ipcRenderer.invoke('deezer:searchAlbumArt', artist, album, trackName)
+  },
+  updates: {
+    check: () => ipcRenderer.invoke('update:check'),
+    onAvailable: (callback) => {
+      ipcRenderer.on('update:available', (_event, result) => callback(result));
+    }
   }
 });
