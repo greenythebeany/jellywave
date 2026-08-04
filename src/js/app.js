@@ -3,7 +3,7 @@ import { Player, RepeatMode } from './player.js';
 import { fetchLyrics } from './lyrics.js';
 import { getSettings, updateSettings, applySettings, currentBitrateKbps, PALETTES, AUDIO_QUALITIES } from './settings.js';
 import { LOCALES, loadLocale, applyTranslations, t } from './i18n.js';
-import { platform, isDesktop, isMobile, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission } from './platform.js';
+import { platform, isDesktop, isMobile, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt } from './platform.js';
 
 // ---------- DOM refs ----------
 const loginScreen = document.getElementById('login-screen');
@@ -445,6 +445,63 @@ function updateBgArt() {
     mainBgArt.classList.remove('visible');
     nowPlayingBgArt.classList.remove('visible');
   }
+}
+
+// Discord Rich Presence — no-op on mobile/web (see setDiscordActivity).
+// Discord only embeds Rich Presence images served over HTTPS, so a
+// Jellyfin server on plain HTTP (typical for a LAN-only setup) can't be used
+// directly as the cover art source. Instead, look the album up on Deezer
+// (proxied through main.js, since its API doesn't send CORS headers) by
+// artist + album name and use its artwork — falling back to the static logo
+// asset when nothing matches.
+const externalCoverArtCache = new Map(); // "artist|album" (lowercased) -> url or null
+
+async function fetchExternalCoverArt(artist, album) {
+  const key = `${artist}|${album}`.toLowerCase();
+  if (externalCoverArtCache.has(key)) return externalCoverArtCache.get(key);
+  const url = await searchDeezerAlbumArt(artist, album);
+  externalCoverArtCache.set(key, url);
+  return url;
+}
+
+function updateDiscordPresence() {
+  const track = player?.currentTrack;
+  if (!track || player.audio.paused) {
+    clearDiscordActivity();
+    return;
+  }
+  const durationSeconds = ticksToSeconds(track.RunTimeTicks) || player.audio.duration || 0;
+  const startTimestamp = Date.now() - player.audio.currentTime * 1000;
+  const artist = artistNames(track);
+  const album = track.Album || '';
+  const trackIdAtCall = track.Id;
+
+  const buildActivity = (largeImageKey) => ({
+    type: 2, // Listening
+    details: track.Name,
+    state: artist,
+    largeImageKey,
+    largeImageText: album || undefined,
+    smallImageKey: 'logo',
+    smallImageText: 'JellyWave',
+    startTimestamp,
+    endTimestamp: durationSeconds ? startTimestamp + durationSeconds * 1000 : undefined,
+    instance: false
+  });
+
+  const cacheKey = `${artist}|${album}`.toLowerCase();
+  if (externalCoverArtCache.has(cacheKey)) {
+    setDiscordActivity(buildActivity(externalCoverArtCache.get(cacheKey) || 'logo'));
+    return;
+  }
+
+  // Show something immediately, then upgrade to real art once the lookup
+  // resolves — guarded so a late response can't clobber a since-changed track.
+  setDiscordActivity(buildActivity('logo'));
+  fetchExternalCoverArt(artist, album).then((art) => {
+    if (!art || player?.currentTrack?.Id !== trackIdAtCall || player.audio.paused) return;
+    setDiscordActivity(buildActivity(art));
+  });
 }
 
 function refreshSettingsUI() {
@@ -1062,6 +1119,18 @@ function buildTrackTable(tracks, queueRef, opts = {}) {
   });
 
   table.appendChild(tbody);
+
+  // highlightPlayingRow() only runs on the player's own trackchange event —
+  // it never fires just because a table got (re)built, so a freshly rendered
+  // view (navigating back to it, or it auto-advancing while you're elsewhere)
+  // needs its own sync here or the currently playing row shows unhighlighted.
+  const currentId = player?.currentTrack?.Id;
+  if (currentId) {
+    tbody.querySelectorAll('.track-row').forEach((row) => {
+      row.classList.toggle('playing', row.dataset.id === currentId);
+    });
+  }
+
   return table;
 }
 
@@ -1187,6 +1256,7 @@ function wirePlayer() {
     syncPlayAllButton();
     syncCardStates();
     updateBgArt();
+    updateDiscordPresence();
 
     if (!lyricsPanel.hidden) {
       if (activePanelTab === 'lyrics') loadLyricsForCurrentTrack();
@@ -1205,6 +1275,7 @@ function wirePlayer() {
     setHidden(mobileIconPause, !playing);
     syncPlayAllButton();
     syncCardStates();
+    updateDiscordPresence();
   });
 
   player.on('timeupdate', () => {

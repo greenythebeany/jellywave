@@ -315,6 +315,16 @@ export class Player {
   }
 
   _onEnded() {
+    // A crossfade is timed off periodic timeupdate polling, not the audio
+    // element's exact real end — so the outgoing element's genuine 'ended'
+    // event can fire a beat before the fade's own RAF loop finishes. If we
+    // let that fall through to next()/_loadCurrent() here, it reloads the
+    // incoming track from scratch, discarding the fade already in progress
+    // and audibly restarting it. The fade's own completion (in
+    // _beginCrossfade's step()) already advances the queue once it's done —
+    // just let it finish.
+    if (this._transitioning) return;
+
     // If gapless pre-buffering already has the next track loaded and ready
     // in the inactive element, swap to it instantly instead of doing a
     // fresh network fetch — that's the whole point of gapless playback.

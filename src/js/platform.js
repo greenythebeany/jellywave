@@ -83,3 +83,32 @@ export async function requestNotificationPermission() {
     // Not fatal — worst case the media notification doesn't show.
   }
 }
+
+// Discord Rich Presence — desktop-only. Discord's local RPC socket isn't
+// reachable from a mobile app, so this is a no-op anywhere but Electron.
+export async function setDiscordActivity(activity) {
+  if (!isDesktop) return;
+  try {
+    await window.api.discord.setActivity(activity);
+  } catch (err) {
+    // Discord not running, or RPC hiccup — not worth surfacing to the user.
+  }
+}
+
+export async function clearDiscordActivity() {
+  if (!isDesktop) return;
+  try {
+    await window.api.discord.clearActivity();
+  } catch (err) {
+    // Same as above.
+  }
+}
+
+export async function searchDeezerAlbumArt(artist, album) {
+  if (!isDesktop) return null;
+  try {
+    return await window.api.deezer.searchAlbumArt(artist, album);
+  } catch (err) {
+    return null;
+  }
+}

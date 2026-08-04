@@ -13,5 +13,12 @@ contextBridge.exposeInMainWorld('api', {
     save: (data) => ipcRenderer.invoke('session:save', data),
     load: () => ipcRenderer.invoke('session:load'),
     clear: () => ipcRenderer.invoke('session:clear')
+  },
+  discord: {
+    setActivity: (activity) => ipcRenderer.invoke('discord:setActivity', activity),
+    clearActivity: () => ipcRenderer.invoke('discord:clearActivity')
+  },
+  deezer: {
+    searchAlbumArt: (artist, album) => ipcRenderer.invoke('deezer:searchAlbumArt', artist, album)
   }
 });

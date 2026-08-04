@@ -1,8 +1,10 @@
 const { app, BrowserWindow, ipcMain, safeStorage, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { Client: DiscordRpcClient } = require('@xhayper/discord-rpc');
 
 const CONFIG_PATH = path.join(app.getPath('userData'), 'session.dat');
+const DISCORD_CLIENT_ID = '1534197353056174180';
 
 let mainWindow;
 
@@ -100,5 +102,69 @@ ipcMain.handle('session:clear', () => {
     return { ok: true };
   } catch (err) {
     return { ok: false, error: String(err) };
+  }
+});
+
+// --- Discord Rich Presence ---
+// Only reachable if the Discord desktop client is running locally (it exposes
+// an IPC socket, not something available over the network) — if it's not,
+// login() rejects and we just silently skip until the next track/play event
+// tries again, rate-limited so a closed Discord doesn't spam retries.
+let discordClient = null;
+let discordReady = false;
+let lastDiscordAttempt = 0;
+const DISCORD_RETRY_MS = 10000;
+
+async function ensureDiscordConnected() {
+  if (discordReady) return true;
+  const now = Date.now();
+  if (now - lastDiscordAttempt < DISCORD_RETRY_MS) return false;
+  lastDiscordAttempt = now;
+
+  if (!discordClient) {
+    discordClient = new DiscordRpcClient({ clientId: DISCORD_CLIENT_ID });
+    discordClient.on('ready', () => { discordReady = true; });
+    discordClient.on('disconnected', () => { discordReady = false; });
+  }
+  try {
+    await discordClient.login();
+    return discordReady;
+  } catch (err) {
+    return false;
+  }
+}
+
+ipcMain.handle('discord:setActivity', async (_event, activity) => {
+  const connected = await ensureDiscordConnected();
+  if (!connected) return { ok: false };
+  try {
+    await discordClient.user?.setActivity(activity);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
+});
+
+ipcMain.handle('discord:clearActivity', async () => {
+  if (!discordReady || !discordClient) return { ok: true };
+  try {
+    await discordClient.user?.clearActivity();
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
+});
+
+// Deezer's search API doesn't send CORS headers, so the renderer can't call
+// it directly — proxied through the main process instead, which isn't
+// subject to that restriction.
+ipcMain.handle('deezer:searchAlbumArt', async (_event, artist, album) => {
+  try {
+    const query = encodeURIComponent(`${artist} ${album}`.trim());
+    const res = await fetch(`https://api.deezer.com/search?q=${query}&limit=1`);
+    const data = await res.json();
+    return data.data?.[0]?.album?.cover_xl || data.data?.[0]?.album?.cover_big || null;
+  } catch (err) {
+    return null;
   }
 });
