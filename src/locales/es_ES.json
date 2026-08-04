@@ -150,6 +150,7 @@
     "discordConnect": "Conectar",
     "catJam": "Gato al ritmo",
     "catJamDesc": "Muestra un gato que rebota al ritmo junto al reproductor",
+    "catJamScale": "Tamaño del gato",
     "advanced": "Avanzado",
     "customCss": "CSS personalizado",
     "customCssDesc": "Escribe tu propio CSS para personalizar aún más el aspecto de la app. Se aplica en vivo.",

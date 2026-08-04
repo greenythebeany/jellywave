@@ -150,6 +150,7 @@
     "discordConnect": "Connecter",
     "catJam": "Le chat qui groove",
     "catJamDesc": "Affiche un chat qui bouge au rythme à côté du lecteur",
+    "catJamScale": "Taille du chat",
     "advanced": "Avancé",
     "customCss": "CSS personnalisé",
     "customCssDesc": "Écrivez votre propre CSS pour personnaliser davantage l'apparence de l'application. Appliqué en direct.",

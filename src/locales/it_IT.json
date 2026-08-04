@@ -150,6 +150,7 @@
     "discordConnect": "Connetti",
     "catJam": "Gatto a ritmo",
     "catJamDesc": "Mostra un gatto che rimbalza a ritmo accanto al lettore",
+    "catJamScale": "Dimensione del gatto",
     "advanced": "Avanzate",
     "customCss": "CSS personalizzato",
     "customCssDesc": "Scrivi il tuo CSS per personalizzare ulteriormente laspetto dellapp. Applicato in tempo reale.",

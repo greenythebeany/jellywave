@@ -23,7 +23,8 @@ const DEFAULTS = {
   customCss: '',
   crossfadeSeconds: 0, // 0-12, 0 = off (gapless preloading is always on regardless)
   replayGainEnabled: false,
-  catJam: false
+  catJam: false,
+  catJamScale: 1 // 0.5-3, multiplier on the cat's base 110px size
 };
 
 function load() {

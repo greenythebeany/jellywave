@@ -601,14 +601,14 @@ input[type="range"].volume-bar { width: 110px; flex: none; }
 
 .player-art-wrap { position: relative; flex-shrink: 0; }
 .cat-jam {
-  position: absolute; top: -22px; left: 9px; z-index: 2;
-  width: 44px; height: 44px; border-radius: var(--radius-sm);
-  object-fit: cover; pointer-events: none;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
-  transform-origin: bottom center;
-  transition: transform 0.08s ease-out;
+  position: fixed; left: 0; bottom: var(--player-h); z-index: 150;
+  width: 110px; height: 110px;
+  object-fit: cover; border-radius: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4));
+  transform: scale(var(--cat-scale, 1));
+  transform-origin: bottom left;
 }
-.cat-jam.beat { transform: scaleY(0.8) scaleX(1.1) translateY(2px); }
 
 /* ---------- Settings modal ---------- */
 .modal-overlay {
@@ -702,6 +702,7 @@ body.platform-mobile .titlebar { display: none; }
     grid-template-areas: "main" "player" "nav";
   }
   .sidebar { display: none; }
+  .cat-jam { display: none; }
 
   .lyrics-panel {
     grid-area: unset;

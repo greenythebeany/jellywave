@@ -150,6 +150,7 @@
     "discordConnect": "Verbinden",
     "catJam": "Katze im Beat",
     "catJamDesc": "Zeigt eine Katze, die im Takt neben dem Player wippt",
+    "catJamScale": "Katzengröße",
     "advanced": "Erweitert",
     "customCss": "Benutzerdefiniertes CSS",
     "customCssDesc": "Schreibe eigenes CSS, um das Aussehen der App weiter anzupassen. Wird sofort angewendet.",

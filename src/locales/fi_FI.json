@@ -150,6 +150,7 @@
     "discordConnect": "Yhdistä",
     "catJam": "Kissa tahdissa",
     "catJamDesc": "Näyttää kissan, joka pomppii tahdissa soittimen vieressä",
+    "catJamScale": "Kissan koko",
     "advanced": "Lisäasetukset",
     "customCss": "Mukautettu CSS",
     "customCssDesc": "Kirjoita oma CSS hienosäätääksesi sovelluksen ulkoasua. Otetaan käyttöön heti.",

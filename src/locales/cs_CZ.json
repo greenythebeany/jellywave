@@ -150,6 +150,7 @@
     "discordConnect": "Připojit",
     "catJam": "Kočka do rytmu",
     "catJamDesc": "Zobrazí kočku, která poskakuje do rytmu vedle přehrávače",
+    "catJamScale": "Velikost kočky",
     "advanced": "Pokročilé",
     "customCss": "Vlastní CSS",
     "customCssDesc": "Napište si vlastní CSS pro další úpravu vzhledu aplikace. Použije se okamžitě.",

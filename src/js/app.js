@@ -50,6 +50,9 @@ const crossfadeValue = document.getElementById('crossfade-value');
 const toggleReplayGain = document.getElementById('toggle-replaygain');
 const toggleCatJam = document.getElementById('toggle-cat-jam');
 const catJamVideo = document.getElementById('cat-jam');
+const catJamScaleRow = document.getElementById('cat-jam-scale-row');
+const catJamScaleSlider = document.getElementById('cat-jam-scale-slider');
+const catJamScaleValue = document.getElementById('cat-jam-scale-value');
 const updateToast = document.getElementById('update-toast');
 const updateToastText = document.getElementById('update-toast-text');
 const updateToastLink = document.getElementById('update-toast-link');
@@ -405,7 +408,18 @@ function wireSettingsUI() {
 
   toggleCatJam.addEventListener('change', () => {
     updateSettings({ catJam: toggleCatJam.checked });
+    setHidden(catJamScaleRow, !toggleCatJam.checked);
     syncCatJamVisibility();
+  });
+
+  catJamScaleSlider.addEventListener('input', () => {
+    const scale = Number(catJamScaleSlider.value);
+    catJamScaleValue.textContent = `${scale.toFixed(1)}x`;
+    catJamVideo.style.setProperty('--cat-scale', scale);
+    catJamScaleSlider.style.setProperty('--pct', rangeFillPercent(((scale - 0.5) / 2.5) * 100, catJamScaleSlider, 14));
+  });
+  catJamScaleSlider.addEventListener('change', () => {
+    updateSettings({ catJamScale: Number(catJamScaleSlider.value) });
   });
 
   let customCssDebounce;
@@ -517,15 +531,20 @@ function updateDiscordPresence() {
 }
 
 // ---------- Cat Jam ----------
-// Real bass-onset detection via Web Audio's AnalyserNode, not just a looping
-// clip — the bounce only fires when the current track's actual bass energy
-// spikes above its own rolling average, so it tracks whatever's playing
-// rather than a fixed guessed tempo.
+// Real bass-onset detection via Web Audio's AnalyserNode. Rather than
+// overlaying a CSS bounce, the detected tempo instead drives the cat video's
+// own playbackRate — same idea as the reference Spicetify extension, which
+// speeds up/slows down its webm to match the track instead of animating it
+// externally. REFERENCE_INTERVAL_MS is the beat interval the source video's
+// own bob cycle was authored at (~120bpm); actual detected tempo scales
+// speed relative to that.
+const REFERENCE_INTERVAL_MS = 500;
 let catJamAudioCtx = null;
 const catJamAnalysers = new WeakMap(); // audio element -> AnalyserNode (one per element, created once)
 let catJamRAF = null;
 let catJamBassAvg = 0;
 let catJamLastBeatAt = 0;
+let catJamBeatIntervalMs = REFERENCE_INTERVAL_MS;
 
 function getCatJamAnalyser(audioEl) {
   if (!catJamAudioCtx) catJamAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -559,10 +578,19 @@ function catJamTick() {
 
   const now = performance.now();
   if (bass > catJamBassAvg * 1.35 && bass > 40 && now - catJamLastBeatAt > 220) {
+    if (catJamLastBeatAt) {
+      const interval = now - catJamLastBeatAt;
+      // Only trust intervals in a plausible tempo range (~50-220bpm) —
+      // a missed or extra detection would otherwise throw the estimate off.
+      if (interval > 270 && interval < 1200) {
+        catJamBeatIntervalMs = catJamBeatIntervalMs * 0.7 + interval * 0.3;
+      }
+    }
     catJamLastBeatAt = now;
-    catJamVideo.classList.add('beat');
-    setTimeout(() => catJamVideo.classList.remove('beat'), 90);
   }
+
+  const targetRate = REFERENCE_INTERVAL_MS / catJamBeatIntervalMs;
+  catJamVideo.playbackRate = Math.min(2, Math.max(0.5, targetRate));
 }
 
 function syncCatJamVisibility() {
@@ -592,6 +620,12 @@ function refreshSettingsUI() {
   crossfadeSlider.style.setProperty('--pct', rangeFillPercent(((s.crossfadeSeconds || 0) / 12) * 100, crossfadeSlider, 13));
   toggleReplayGain.checked = !!s.replayGainEnabled;
   toggleCatJam.checked = !!s.catJam;
+  setHidden(catJamScaleRow, !s.catJam);
+  const catScale = s.catJamScale || 1;
+  catJamScaleSlider.value = catScale;
+  catJamScaleValue.textContent = `${catScale.toFixed(1)}x`;
+  catJamScaleSlider.style.setProperty('--pct', rangeFillPercent(((catScale - 0.5) / 2.5) * 100, catJamScaleSlider, 14));
+  catJamVideo.style.setProperty('--cat-scale', catScale);
   if (document.activeElement !== customCssInput) customCssInput.value = s.customCss || '';
   themeModeToggle.querySelectorAll('button').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.value === s.themeMode);

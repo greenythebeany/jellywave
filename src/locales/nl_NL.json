@@ -150,6 +150,7 @@
     "discordConnect": "Verbinden",
     "catJam": "Kat op de maat",
     "catJamDesc": "Toont een kat die op de maat meebeweegt naast de speler",
+    "catJamScale": "Kattengrootte",
     "advanced": "Geavanceerd",
     "customCss": "Aangepaste CSS",
     "customCssDesc": "Schrijf je eigen CSS om het uiterlijk van de app verder aan te passen. Wordt direct toegepast.",

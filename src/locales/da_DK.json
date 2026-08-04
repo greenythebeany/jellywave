@@ -150,6 +150,7 @@
     "discordConnect": "Forbind",
     "catJam": "Kat i takt",
     "catJamDesc": "Viser en kat, der hopper i takt ved siden af afspilleren",
+    "catJamScale": "Kattestørrelse",
     "advanced": "Avanceret",
     "customCss": "Brugerdefineret CSS",
     "customCssDesc": "Skriv din egen CSS for at finjustere appens udseende yderligere. Anvendes med det samme.",

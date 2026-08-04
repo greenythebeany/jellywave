@@ -150,6 +150,7 @@
     "discordConnect": "Połącz",
     "catJam": "Kot w rytmie",
     "catJamDesc": "Pokazuje kota podskakującego w rytm obok odtwarzacza",
+    "catJamScale": "Rozmiar kota",
     "advanced": "Zaawansowane",
     "customCss": "Niestandardowy CSS",
     "customCssDesc": "Napisz własny CSS, aby dodatkowo dostosować wygląd aplikacji. Stosowane na żywo.",

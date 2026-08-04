@@ -150,6 +150,7 @@
     "discordConnect": "Connect",
     "catJam": "Jam on paw level",
     "catJamDesc": "Show a cat that bounces to the beat next to the player",
+    "catJamScale": "Cat size",
     "advanced": "Advanced",
     "customCss": "Custom CSS",
     "customCssDesc": "Write your own CSS to further tweak the app's look. Applied live.",

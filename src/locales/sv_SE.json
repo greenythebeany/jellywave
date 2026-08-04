@@ -150,6 +150,7 @@
     "discordConnect": "Anslut",
     "catJam": "Katt i takt",
     "catJamDesc": "Visar en katt som studsar i takt bredvid spelaren",
+    "catJamScale": "Kattstorlek",
     "advanced": "Avancerat",
     "customCss": "Anpassad CSS",
     "customCssDesc": "Skriv din egen CSS för att finjustera appens utseende ytterligare. Tillämpas direkt.",
