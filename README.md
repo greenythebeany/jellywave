@@ -73,6 +73,7 @@ JellyWave ships a handful of built-in accent palettes, but you can also drop in 
 | ![Kanagawa](src/themes/previews/kanagawa.png) | Kanagawa | `@import url('https://cdn.jsdelivr.net/gh/greenythebeany/jellywave@main/src/themes/kanagawa.css');` |
 | ![Solarized Dark](src/themes/previews/solarized-dark.png) | Solarized Dark | `@import url('https://cdn.jsdelivr.net/gh/greenythebeany/jellywave@main/src/themes/solarized-dark.css');` |
 | ![Solarized Light](src/themes/previews/solarized-light.png) | Solarized Light | `@import url('https://cdn.jsdelivr.net/gh/greenythebeany/jellywave@main/src/themes/solarized-light.css');` |
+| ![system24](src/themes/previews/system24.png) | system24-inspired | `@import url('https://cdn.jsdelivr.net/gh/greenythebeany/jellywave@main/src/themes/system24.css');` |
 
 The theme source files live in [`src/themes/`](src/themes/) if you want to tweak one or build your own.
 

@@ -1,0 +1,71 @@
+/* system24-inspired — https://github.com/refact0r/system24
+   A tui-style theme: monochrome grayscale background, a monospace font, and
+   sharp (unrounded) corners — matching system24's own "unrounding" option,
+   which is on by default in the source theme. Base grayscale/red use
+   oklch() straight from system24's own palette (supported by both the
+   Electron and Android WebView builds this app ships); the accent uses
+   Jellyfin's own brand colors instead of system24's default purple.
+*/
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+}
+
+html, body {
+  font-family: 'DM Mono', 'Consolas', 'Menlo', monospace;
+}
+
+:root[data-theme] {
+  --bg-void: oklch(14% 0 0);
+  --bg-base: oklch(19% 0 0);
+  --bg-elevated: oklch(23% 0 0);
+  --bg-highlight: oklch(27% 0 0);
+  --bg-card: oklch(23% 0 0);
+  --bg-card-hover: oklch(31% 0 0);
+  --text-primary: oklch(95% 0 0);
+  --text-secondary: oklch(75% 0 0);
+  --text-tertiary: oklch(40% 0 0);
+  --border-subtle: oklch(54% 0 0 / 0.1);
+  --scrim: oklch(10% 0 0 / 0.6);
+  --danger: oklch(70% 0.13 0);
+}
+
+:root[data-palette] {
+  --accent: #00a4dc;
+  --accent-hover: #2bb9ec;
+  --accent-contrast: #ffffff;
+  --seek-start: #00a4dc;
+  --seek-end: #aa5cc3;
+  --accent-bg: linear-gradient(135deg, #00a4dc 0%, #aa5cc3 100%);
+}
+
+/* system24's signature look isn't just its colors — panels sit as separate
+   bordered boxes with a gap between them (revealing the void background
+   underneath), rather than one seamless surface. */
+.app {
+  gap: 10px;
+  background: oklch(14% 0 0);
+  padding: 10px;
+}
+.sidebar, .lyrics-panel, .player-bar, .main {
+  border: 2px solid oklch(54% 0 0 / 0.3);
+}
+.main-header {
+  backdrop-filter: none;
+  background: var(--bg-elevated);
+  border-bottom: 2px solid oklch(54% 0 0 / 0.3);
+}
+
+/* the small muted corner labels ("server", "channel", "messages"...) are
+   one of system24's most recognizable details */
+.sidebar, .player-bar { position: relative; }
+.sidebar::before, .player-bar::before {
+  position: absolute; top: 4px; left: 8px; z-index: 5;
+  font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase;
+  color: oklch(54% 0 0); pointer-events: none;
+}
+.sidebar::before { content: 'library'; }
+.player-bar::before { content: 'player'; }
