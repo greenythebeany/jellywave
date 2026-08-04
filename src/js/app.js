@@ -594,7 +594,13 @@ function catJamTick() {
 }
 
 function syncCatJamVisibility() {
-  const enabled = getSettings().catJam;
+  // Desktop-only: the cat is CSS-hidden under 820px anyway, and rerouting an
+  // <audio> element through Web Audio's createMediaElementSource is
+  // permanent for that element's lifetime — on Android's WebView this can
+  // silence real output entirely while playback state/timeupdate/the native
+  // media notification all keep reporting normally, since those don't
+  // depend on where the audio graph actually routes to.
+  const enabled = isDesktop && getSettings().catJam;
   const shouldShow = enabled && !!player?.currentTrack;
   setHidden(catJamVideo, !shouldShow);
   if (shouldShow) catJamVideo.play().catch(() => {});

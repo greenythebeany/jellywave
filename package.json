@@ -38,6 +38,7 @@
     "files": [
       "main.js",
       "preload.js",
+      "update-checker.js",
       "src/**/*",
       "node_modules/**/*"
     ],
