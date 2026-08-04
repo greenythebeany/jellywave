@@ -1,0 +1,39 @@
+/* JellyWave theme template
+   ------------------------
+   Copy this file, fill in your own colors, and either:
+     1. Paste the whole thing into Settings > Advanced > Custom CSS to test
+        it live, or
+     2. Save it as src/themes/your-theme-name.css and open a PR — see the
+        README for how finished themes get listed there.
+
+   Both blocks below use [data-theme]/[data-palette] (no value) rather than
+   a specific value like [data-theme="dark"], so they override the app's
+   built-in theme/palette regardless of which one is currently selected in
+   Settings — you don't need two separate light/dark files unless you want
+   to ship both as one theme (see catppuccin-latte.css for a light example,
+   or catppuccin-mocha.css for dark).
+*/
+
+:root[data-theme] {
+  --bg-void: #000000;      /* rarely visible; edges of the window/letterboxing */
+  --bg-base: #000000;      /* main content area background */
+  --bg-elevated: #000000;  /* sidebar, player bar, modals, the now-playing panel */
+  --bg-highlight: #000000; /* hover background on rows/buttons */
+  --bg-card: #000000;      /* album/playlist card background */
+  --bg-card-hover: #000000;/* card background on hover */
+  --text-primary: #000000;   /* titles, primary text */
+  --text-secondary: #000000; /* artist names, secondary text */
+  --text-tertiary: #000000;  /* timestamps, placeholder/muted text */
+  --border-subtle: rgba(0, 0, 0, 0.09); /* hairline dividers */
+  --scrim: rgba(0, 0, 0, 0.55);         /* overlay wash behind modals */
+  --danger: #000000; /* error text/icons */
+}
+
+:root[data-palette] {
+  --accent: #000000;         /* buttons, active states, the seek bar fill's start color */
+  --accent-hover: #000000;   /* accent color on hover */
+  --accent-contrast: #000000;/* text/icon color drawn on top of --accent (usually near-black or white) */
+  --seek-start: #000000;     /* left edge of the seek/volume bar fill gradient */
+  --seek-end: #000000;       /* right edge of the seek/volume bar fill gradient */
+  --accent-bg: #000000;      /* play-all button background — can be a solid color or a gradient() */
+}

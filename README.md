@@ -59,7 +59,11 @@ JellyWave ships a handful of built-in accent palettes, but you can also drop in 
 | ![Solarized Dark](src/themes/previews/solarized-dark.png) | Solarized Dark | `@import url('https://cdn.jsdelivr.net/gh/greenythebeany/jellywave@main/src/themes/solarized-dark.css');` |
 | ![Solarized Light](src/themes/previews/solarized-light.png) | Solarized Light | `@import url('https://cdn.jsdelivr.net/gh/greenythebeany/jellywave@main/src/themes/solarized-light.css');` |
 
-The theme source files live in [`src/themes/`](src/themes/) if you want to tweak one or build your own — they just override the app's existing CSS custom properties (background, text, and accent colors).
+The theme source files live in [`src/themes/`](src/themes/) if you want to tweak one or build your own.
+
+### Making your own theme
+
+Start from [`src/themes/template.css`](src/themes/template.css) — it lists every CSS custom property the app's colors are built from, with a short comment on what each one controls. Fill in your colors, paste the whole thing into Settings → Advanced → Custom CSS to preview it live, and once you're happy, save it as `src/themes/your-theme-name.css` and open a PR to get it listed in the table above.
 
 ## Discord Rich Presence
 
