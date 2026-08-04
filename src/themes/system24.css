@@ -59,12 +59,17 @@ html, body {
   border-bottom: 2px solid oklch(54% 0 0 / 0.3);
 }
 
-/* the small muted corner labels ("server", "channel", "messages"...) are
-   one of system24's most recognizable details */
-.sidebar, .player-bar { position: relative; }
+/* system24's labels ("server", "channel", "input"...) sit as a legend break
+   in the panel's own top border line, not just floating text in a corner —
+   like a <fieldset><legend>. Only added to sidebar/player-bar: main and the
+   lyrics panel clip overflow (needed for their own background art), which
+   would cut off a label positioned outside their box. */
+.sidebar, .player-bar { position: relative; overflow: visible; }
 .sidebar::before, .player-bar::before {
-  position: absolute; top: 4px; left: 8px; z-index: 5;
+  position: absolute; top: -8px; left: 10px; z-index: 5;
   font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 0 6px;
+  background: oklch(14% 0 0);
   color: oklch(54% 0 0); pointer-events: none;
 }
 .sidebar::before { content: 'library'; }
