@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' http: https: data:; media-src 'self' http: https:; connect-src 'self' http: https:; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+  <title>JellyWave</title>
+  <link rel="stylesheet" href="vendor/poppins/latin-400.css" />
+  <link rel="stylesheet" href="vendor/poppins/latin-500.css" />
+  <link rel="stylesheet" href="vendor/poppins/latin-600.css" />
+  <link rel="stylesheet" href="vendor/poppins/latin-700.css" />
+  <!-- latin-ext covers Central/Eastern European Latin diacritics: š ľ č ť ž ý á í é etc. -->
+  <link rel="stylesheet" href="vendor/poppins/latin-ext-400.css" />
+  <link rel="stylesheet" href="vendor/poppins/latin-ext-500.css" />
+  <link rel="stylesheet" href="vendor/poppins/latin-ext-600.css" />
+  <link rel="stylesheet" href="vendor/poppins/latin-ext-700.css" />
+  <link rel="stylesheet" href="vendor/uicons/rounded.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <style id="custom-css-style"></style>
+</head>
+<body>
+  <!-- Custom title bar -->
+  <div class="titlebar">
+    <div class="titlebar-drag">
+      <img id="titlebar-icon" class="titlebar-app-icon" src="assets/icon.png" alt="" />
+      <span class="titlebar-logo">JellyWave</span>
+    </div>
+    <div class="titlebar-controls">
+      <button id="btn-min" class="titlebar-btn" data-i18n-title="titlebar.minimize" title="Minimize">
+        <svg viewBox="0 0 12 12"><rect x="2" y="5.5" width="8" height="1"/></svg>
+      </button>
+      <button id="btn-max" class="titlebar-btn" data-i18n-title="titlebar.maximize" title="Maximize">
+        <svg viewBox="0 0 12 12"><rect x="2.5" y="2.5" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+      </button>
+      <button id="btn-close" class="titlebar-btn titlebar-close" data-i18n-title="titlebar.close" title="Close">
+        <svg viewBox="0 0 12 12"><path d="M2 2 L10 10 M10 2 L2 10" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Login screen -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <img id="login-icon" src="assets/icon.png" alt="" />
+        <h1>JellyWave</h1>
+      </div>
+      <p class="login-sub" data-i18n="login.subtitle">Sign in to your Jellyfin server</p>
+      <form id="login-form" class="login-form">
+        <label>
+          <span data-i18n="login.serverLabel">Server address</span>
+          <input type="text" id="input-server" placeholder="https://jellyfin.example.com" required autocomplete="url" />
+        </label>
+        <label>
+          <span data-i18n="login.usernameLabel">Username</span>
+          <input type="text" id="input-username" data-i18n-placeholder="login.usernamePlaceholder" placeholder="Username" required autocomplete="username" />
+        </label>
+        <label>
+          <span data-i18n="login.passwordLabel">Password</span>
+          <input type="password" id="input-password" data-i18n-placeholder="login.passwordPlaceholder" placeholder="Password" autocomplete="current-password" />
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" id="input-remember" checked />
+          <span data-i18n="login.stayLoggedIn">Stay signed in</span>
+        </label>
+        <button type="submit" id="btn-login" class="btn-primary" data-i18n="login.logIn">Log In</button>
+        <p id="login-error" class="login-error" hidden></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- App shell -->
+  <div id="app" class="app" hidden>
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="home">
+          <i class="fi fi-br-home"></i>
+          <span data-i18n="nav.home">Home</span>
+        </button>
+        <button class="nav-item" data-view="search">
+          <i class="fi fi-br-search"></i>
+          <span data-i18n="nav.search">Search</span>
+        </button>
+        <button class="nav-item" data-view="songs">
+          <i class="fi fi-br-list-music"></i>
+          <span data-i18n="nav.songs">All Songs</span>
+        </button>
+        <button class="nav-item" data-view="liked">
+          <i class="fi fi-br-heart"></i>
+          <span data-i18n="nav.liked">Liked Songs</span>
+        </button>
+        <button class="nav-item" data-view="genres">
+          <i class="fi fi-br-guitars"></i>
+          <span data-i18n="nav.genres">Genres</span>
+        </button>
+        <button class="nav-item" data-view="albums">
+          <i class="fi fi-br-album"></i>
+          <span data-i18n="nav.albums">Albums</span>
+        </button>
+        <button class="nav-item" data-view="artists">
+          <i class="fi fi-br-user"></i>
+          <span data-i18n="nav.artists">Artists</span>
+        </button>
+      </nav>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section-title-row">
+        <div class="sidebar-section-title" data-i18n="nav.playlists">Playlists</div>
+        <button id="btn-new-playlist" class="btn-icon-plain" data-i18n-title="nav.createPlaylist" title="Create playlist"><i class="fi fi-br-add"></i></button>
+      </div>
+      <div id="playlist-list" class="playlist-list"></div>
+    </aside>
+
+    <main class="main">
+      <div id="main-bg-art" class="main-bg-art"></div>
+      <header class="main-header">
+        <div class="header-nav-arrows">
+          <button id="btn-back" class="nav-arrow" data-i18n-title="nav.back" title="Back"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button id="btn-forward" class="nav-arrow" data-i18n-title="nav.forward" title="Forward"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+        <div class="header-search" id="global-search-wrap" hidden>
+          <input type="text" id="global-search" data-i18n-placeholder="header.searchPlaceholder" placeholder="What do you want to play?" />
+        </div>
+        <div class="header-user">
+          <button id="btn-account" class="user-badge">
+            <span class="avatar" id="account-avatar"></span>
+            <span id="account-username"></span>
+          </button>
+          <div id="account-menu" class="account-menu" hidden>
+            <div class="account-menu-name" id="account-menu-name"></div>
+            <button id="menu-settings" type="button">
+              <i class="fi fi-br-settings-sliders"></i>
+              <span data-i18n="account.settings">Settings</span>
+            </button>
+            <button id="menu-logout" type="button" class="danger">
+              <i class="fi fi-br-sign-out-alt"></i>
+              <span data-i18n="account.logout">Log Out</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div id="view-root" class="view-root"></div>
+    </main>
+
+    <aside id="lyrics-panel" class="lyrics-panel" hidden>
+      <div id="now-playing-bg-art" class="now-playing-bg-art"></div>
+      <div class="lyrics-header">
+        <button id="btn-close-lyrics" class="btn-icon-plain np-collapse-btn" data-i18n-title="nowPlaying.title" title="Now Playing"><i class="fi fi-br-angle-small-down"></i></button>
+        <div class="panel-tabs">
+          <button id="tab-lyrics" class="panel-tab active" data-tab="lyrics" type="button" data-i18n="nowPlaying.lyricsTab">Lyrics</button>
+          <button id="tab-queue" class="panel-tab" data-tab="queue" type="button" data-i18n="nowPlaying.queueTab">Queue</button>
+        </div>
+        <span class="lyrics-header-spacer" aria-hidden="true"></span>
+      </div>
+      <div class="now-playing-summary">
+        <img id="now-playing-art" class="now-playing-art" alt="" />
+        <div class="now-playing-info-row">
+          <div class="now-playing-text">
+            <div id="now-playing-title" class="now-playing-title">—</div>
+            <div id="now-playing-artist" class="now-playing-artist">—</div>
+          </div>
+          <button id="now-playing-like-btn" class="now-playing-like-btn" type="button" data-i18n-title="track.like" title="Like"><i class="fi fi-br-heart"></i></button>
+        </div>
+      </div>
+
+      <!-- Mirrors the desktop mini-player's controls; shown only on the
+           phone layout, where this panel becomes the full-screen player. -->
+      <div class="mobile-now-playing-controls">
+        <div class="player-seek">
+          <input type="range" id="mobile-seek-bar" class="seek-bar" min="0" max="100" value="0" step="0.1" />
+          <div class="seek-times-row">
+            <span id="mobile-time-current" class="time-label">0:00</span>
+            <span id="mobile-time-total" class="time-label">0:00</span>
+          </div>
+        </div>
+        <div class="player-controls">
+          <button id="mobile-btn-shuffle" class="ctrl-btn" data-i18n-title="player.shuffle" title="Shuffle"><i class="fi fi-br-shuffle"></i></button>
+          <button id="mobile-btn-prev" class="ctrl-btn" data-i18n-title="player.previous" title="Previous"><i class="fi fi-br-rewind"></i></button>
+          <button id="mobile-btn-play" class="ctrl-btn ctrl-btn-play" data-i18n-title="player.play" title="Play">
+            <svg id="mobile-icon-play" viewBox="0 0 24 24"><path d="M8 5v14l12-7z"/></svg>
+            <svg id="mobile-icon-pause" viewBox="0 0 24 24" hidden><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
+          </button>
+          <button id="mobile-btn-next" class="ctrl-btn" data-i18n-title="player.next" title="Next"><i class="fi fi-br-forward"></i></button>
+          <button id="mobile-btn-repeat" class="ctrl-btn" data-i18n-title="player.repeat" title="Repeat"><i id="mobile-icon-repeat" class="fi fi-br-arrows-repeat"></i></button>
+        </div>
+      </div>
+
+      <div id="lyrics-body" class="lyrics-body"></div>
+      <div id="queue-body" class="queue-body" hidden></div>
+    </aside>
+
+    <footer id="player-bar" class="player-bar" hidden>
+      <div class="player-track-info">
+        <img id="player-art" class="player-art" alt="" />
+        <div class="player-track-text">
+          <div id="player-title" class="player-title">—</div>
+          <div id="player-artist" class="player-artist">—</div>
+        </div>
+      </div>
+
+      <div class="player-center">
+        <div class="player-controls">
+          <button id="btn-shuffle" class="ctrl-btn" data-i18n-title="player.shuffle" title="Shuffle">
+            <i class="fi fi-br-shuffle"></i>
+          </button>
+          <button id="btn-prev" class="ctrl-btn" data-i18n-title="player.previous" title="Previous">
+            <i class="fi fi-br-rewind"></i>
+          </button>
+          <button id="btn-play" class="ctrl-btn ctrl-btn-play" data-i18n-title="player.play" title="Play">
+            <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l12-7z"/></svg>
+            <svg id="icon-pause" viewBox="0 0 24 24" hidden><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
+          </button>
+          <button id="btn-next" class="ctrl-btn" data-i18n-title="player.next" title="Next">
+            <i class="fi fi-br-forward"></i>
+          </button>
+          <button id="btn-repeat" class="ctrl-btn" data-i18n-title="player.repeat" title="Repeat">
+            <i id="icon-repeat" class="fi fi-br-arrows-repeat"></i>
+          </button>
+        </div>
+        <div class="player-seek">
+          <span id="time-current" class="time-label">0:00</span>
+          <input type="range" id="seek-bar" class="seek-bar" min="0" max="100" value="0" step="0.1" />
+          <span id="time-total" class="time-label">0:00</span>
+        </div>
+      </div>
+
+      <div class="player-extra">
+        <button id="btn-lyrics" class="ctrl-btn" data-i18n-title="nowPlaying.title" title="Now Playing">
+          <i class="fi fi-br-list-music"></i>
+        </button>
+        <i id="volume-icon" class="fi fi-br-volume volume-icon"></i>
+        <input type="range" id="volume-bar" class="volume-bar" min="0" max="100" value="50" />
+      </div>
+    </footer>
+
+    <nav class="bottom-nav">
+      <button class="bottom-nav-item active" data-view="home">
+        <i class="fi fi-br-home"></i>
+        <span data-i18n="nav.home">Home</span>
+      </button>
+      <button class="bottom-nav-item" data-view="search">
+        <i class="fi fi-br-search"></i>
+        <span data-i18n="nav.search">Search</span>
+      </button>
+      <button class="bottom-nav-item" data-view="library">
+        <i class="fi fi-br-album"></i>
+        <span data-i18n="nav.library">Library</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Create playlist modal -->
+  <div id="create-playlist-overlay" class="modal-overlay" hidden>
+    <div class="modal-card modal-card-small">
+      <div class="modal-header">
+        <h2 data-i18n="createPlaylist.title">Create Playlist</h2>
+        <button id="btn-close-create-playlist" class="btn-icon-plain"><i class="fi fi-br-cross-small"></i></button>
+      </div>
+      <form id="create-playlist-form" class="modal-body">
+        <label class="modal-field">
+          <span data-i18n="createPlaylist.nameLabel">Name</span>
+          <input type="text" id="input-playlist-name" data-i18n-placeholder="createPlaylist.namePlaceholder" placeholder="My Playlist" required autocomplete="off" />
+        </label>
+        <button type="submit" class="btn-primary" data-i18n="createPlaylist.create">Create</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Settings modal -->
+  <div id="settings-overlay" class="modal-overlay" hidden>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 data-i18n="settings.title">Settings</h2>
+        <button id="btn-close-settings" class="btn-icon-plain"><i class="fi fi-br-cross-small"></i></button>
+      </div>
+      <div class="modal-body">
+        <section class="settings-section">
+          <h3 data-i18n="settings.appearance">Appearance</h3>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.language">Language</div>
+              <div class="settings-row-desc" data-i18n="settings.languageDesc">Choose the app's display language</div>
+            </div>
+            <select id="language-select" class="settings-select"></select>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.theme">Theme</div>
+              <div class="settings-row-desc" data-i18n="settings.themeDesc">Light, dark, or match your system</div>
+            </div>
+            <div class="segmented" id="theme-mode-toggle">
+              <button data-value="dark" type="button" data-i18n="settings.dark">Dark</button>
+              <button data-value="light" type="button" data-i18n="settings.light">Light</button>
+              <button data-value="system" type="button" data-i18n="settings.system">System</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.accentColor">Accent color</div>
+              <div class="settings-row-desc" data-i18n="settings.accentColorDesc">Pick the app's color scheme</div>
+            </div>
+          </div>
+          <div class="palette-grid" id="palette-grid"></div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.blurBg">Blurred cover art background</div>
+              <div class="settings-row-desc" data-i18n="settings.blurBgDesc">Fill the background with a blurred version of the current song's art</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-art-background" />
+              <span class="switch-track"></span>
+            </label>
+          </div>
+        </section>
+        <section class="settings-section">
+          <h3 data-i18n="settings.audio">Audio</h3>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.quality">Streaming quality</div>
+              <div class="settings-row-desc" data-i18n="settings.qualityDesc">Lower quality uses less bandwidth</div>
+            </div>
+            <select id="audio-quality-select" class="settings-select"></select>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.crossfade">Crossfade</div>
+              <div class="settings-row-desc" data-i18n="settings.crossfadeDesc">Blend the end of one song into the start of the next</div>
+            </div>
+            <div class="crossfade-control">
+              <input type="range" id="crossfade-slider" class="seek-bar" min="0" max="12" step="1" value="0" />
+              <span id="crossfade-value" class="crossfade-value">Off</span>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.replayGain">Volume normalization</div>
+              <div class="settings-row-desc" data-i18n="settings.replayGainDesc">Even out loudness differences between tracks (needs ReplayGain data on the server)</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-replaygain" />
+              <span class="switch-track"></span>
+            </label>
+          </div>
+        </section>
+        <section class="settings-section">
+          <h3 data-i18n="settings.advanced">Advanced</h3>
+          <div class="settings-row settings-row-stack">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.customCss">Custom CSS</div>
+              <div class="settings-row-desc" data-i18n="settings.customCssDesc">Write your own CSS to further tweak the app's look. Applied live.</div>
+            </div>
+            <textarea id="custom-css-input" class="custom-css-input" spellcheck="false" placeholder="/* e.g. .sidebar { background: #111; } */"></textarea>
+          </div>
+        </section>
+        <section class="settings-section">
+          <h3 data-i18n="settings.about">About</h3>
+          <div class="settings-row">
+            <div class="settings-row-label">JellyWave</div>
+            <a href="https://www.flaticon.com/uicons" target="_blank" rel="noopener noreferrer" class="attribution-link">Uicons by Flaticon</a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <audio id="native-audio" hidden></audio>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+{
+  "app": {
+    "name": "JellyWave"
+  },
+  "titlebar": {
+    "minimize": "Minimera",
+    "maximize": "Maximera",
+    "close": "Stäng"
+  },
+  "login": {
+    "subtitle": "Logga in på din Jellyfin-server",
+    "serverLabel": "Serveradress",
+    "serverPlaceholder": "https://jellyfin.example.com",
+    "usernameLabel": "Användarnamn",
+    "usernamePlaceholder": "Användarnamn",
+    "passwordLabel": "Lösenord",
+    "passwordPlaceholder": "Lösenord",
+    "stayLoggedIn": "Förbli inloggad",
+    "logIn": "Logga in",
+    "loggingIn": "Loggar in…",
+    "errorWrongCredentials": "Fel användarnamn eller lösenord.",
+    "errorServer": "Servern svarade med {status}.",
+    "errorGeneric": "Det gick inte att logga in. Kontrollera serveradressen och försök igen."
+  },
+  "nav": {
+    "home": "Hem",
+    "search": "Sök",
+    "songs": "Alla låtar",
+    "liked": "Gillade låtar",
+    "genres": "Genrer",
+    "albums": "Album",
+    "artists": "Artister",
+    "library": "Bibliotek",
+    "playlists": "Spellistor",
+    "createPlaylist": "Skapa spellista",
+    "back": "Bakåt",
+    "forward": "Framåt"
+  },
+  "header": {
+    "searchPlaceholder": "Vad vill du lyssna på?"
+  },
+  "account": {
+    "settings": "Inställningar",
+    "logout": "Logga ut"
+  },
+  "home": {
+    "greeting": "Roligt att se dig",
+    "yourPlaylists": "Dina spellistor",
+    "recentAlbums": "Nyligen tillagda album"
+  },
+  "search": {
+    "title": "Sök i ditt bibliotek",
+    "noResults": "Inga resultat hittades.",
+    "failed": "Sökningen misslyckades: {error}"
+  },
+  "songs": {
+    "title": "Alla låtar",
+    "empty": "Inga låtar hittades i ditt bibliotek."
+  },
+  "liked": {
+    "title": "Gillade låtar",
+    "empty": "Låtar du gillar visas här."
+  },
+  "genres": {
+    "title": "Genrer",
+    "empty": "Inga genrer hittades i ditt bibliotek.",
+    "emptyDetail": "Inga låtar hittades för denna genre."
+  },
+  "albums": {
+    "title": "Album",
+    "empty": "Inga album hittades."
+  },
+  "artists": {
+    "title": "Artister",
+    "empty": "Inga artister hittades.",
+    "empty2": "Inget hittades för denna artist.",
+    "songsSection": "Låtar",
+    "albumsSection": "Album"
+  },
+  "playlist": {
+    "empty": "Den här spellistan är tom.",
+    "sidebarEmpty": "Inga spellistor än.",
+    "songCount": "{count} låt",
+    "songCountPlural": "{count} låtar"
+  },
+  "album": {
+    "empty": "Det här albumet har inga låtar."
+  },
+  "kind": {
+    "playlist": "Spellista",
+    "album": "Album",
+    "artist": "Artist"
+  },
+  "track": {
+    "index": "#",
+    "title": "Titel",
+    "album": "Album",
+    "time": "Tid",
+    "addToPlaylist": "Lägg till i spellista",
+    "like": "Gilla",
+    "changeCoverArt": "Byt omslagsbild"
+  },
+  "createPlaylist": {
+    "title": "Skapa spellista",
+    "nameLabel": "Namn",
+    "namePlaceholder": "Min spellista",
+    "create": "Skapa"
+  },
+  "nowPlaying": {
+    "lyricsTab": "Låttext",
+    "queueTab": "Kö",
+    "nowPlayingSection": "Spelas nu",
+    "upNext": "Näst på tur",
+    "lookingUpLyrics": "Söker efter låttext…",
+    "noLyrics": "Ingen låttext hittades för den här låten.",
+    "queueEmpty": "Kön är tom.",
+    "title": "Spelas nu"
+  },
+  "player": {
+    "shuffle": "Blanda",
+    "previous": "Föregående",
+    "play": "Spela",
+    "pause": "Pausa",
+    "next": "Nästa",
+    "repeat": "Upprepa"
+  },
+  "settings": {
+    "title": "Inställningar",
+    "appearance": "Utseende",
+    "theme": "Tema",
+    "themeDesc": "Ljust, mörkt, eller enligt systemet",
+    "dark": "Mörkt",
+    "light": "Ljust",
+    "system": "System",
+    "accentColor": "Accentfärg",
+    "accentColorDesc": "Välj appens färgschema",
+    "blurBg": "Suddig bakgrund från omslagsbild",
+    "blurBgDesc": "Fyller bakgrunden med en suddig version av den aktuella låtens omslagsbild",
+    "language": "Språk",
+    "languageDesc": "Välj appens visningsspråk",
+    "audio": "Ljud",
+    "quality": "Streamingkvalitet",
+    "qualityDesc": "Lägre kvalitet använder mindre data",
+    "crossfade": "Övertoning",
+    "crossfadeDesc": "Tonar över slutet av en låt till början av nästa",
+    "replayGain": "Volymnormalisering",
+    "replayGainDesc": "Jämnar ut volymskillnader mellan låtar (kräver ReplayGain-data på servern)",
+    "advanced": "Avancerat",
+    "customCss": "Anpassad CSS",
+    "customCssDesc": "Skriv din egen CSS för att finjustera appens utseende ytterligare. Tillämpas direkt.",
+    "about": "Om"
+  },
+  "audioQuality": {
+    "auto": "Automatisk (bästa tillgängliga kvalitet)",
+    "high": "Hög — 320 kbps",
+    "medium": "Medel — 192 kbps",
+    "low": "Låg — 96 kbps"
+  },
+  "palette": {
+    "jellyfin": "Jellyfin",
+    "spotify": "Spotify",
+    "purple": "Lila",
+    "mono": "Monokrom"
+  },
+  "errors": {
+    "generic": "Något gick fel: {error}",
+    "couldNotAddToPlaylist": "Det gick inte att lägga till låten i spellistan.",
+    "couldNotUpdateLike": "Det gick inte att uppdatera gilla-status.",
+    "couldNotUploadArt": "Det gick inte att ladda upp omslagsbilden.",
+    "couldNotCreatePlaylist": "Det gick inte att skapa spellistan."
+  }
+}

@@ -1,0 +1,172 @@
+{
+  "app": {
+    "name": "JellyWave"
+  },
+  "titlebar": {
+    "minimize": "Pienennä",
+    "maximize": "Suurenna",
+    "close": "Sulje"
+  },
+  "login": {
+    "subtitle": "Kirjaudu Jellyfin-palvelimellesi",
+    "serverLabel": "Palvelimen osoite",
+    "serverPlaceholder": "https://jellyfin.example.com",
+    "usernameLabel": "Käyttäjätunnus",
+    "usernamePlaceholder": "Käyttäjätunnus",
+    "passwordLabel": "Salasana",
+    "passwordPlaceholder": "Salasana",
+    "stayLoggedIn": "Pysy kirjautuneena",
+    "logIn": "Kirjaudu sisään",
+    "loggingIn": "Kirjaudutaan…",
+    "errorWrongCredentials": "Väärä käyttäjätunnus tai salasana.",
+    "errorServer": "Palvelin vastasi koodilla {status}.",
+    "errorGeneric": "Kirjautuminen epäonnistui. Tarkista palvelimen osoite ja yritä uudelleen."
+  },
+  "nav": {
+    "home": "Koti",
+    "search": "Haku",
+    "songs": "Kaikki kappaleet",
+    "liked": "Tykätyt kappaleet",
+    "genres": "Genret",
+    "albums": "Albumit",
+    "artists": "Artistit",
+    "library": "Kirjasto",
+    "playlists": "Soittolistat",
+    "createPlaylist": "Luo soittolista",
+    "back": "Takaisin",
+    "forward": "Eteenpäin"
+  },
+  "header": {
+    "searchPlaceholder": "Mitä haluat kuunnella?"
+  },
+  "account": {
+    "settings": "Asetukset",
+    "logout": "Kirjaudu ulos"
+  },
+  "home": {
+    "greeting": "Mukava nähdä sinua",
+    "yourPlaylists": "Soittolistasi",
+    "recentAlbums": "Äskettäin lisätyt albumit"
+  },
+  "search": {
+    "title": "Hae kirjastostasi",
+    "noResults": "Tuloksia ei löytynyt.",
+    "failed": "Haku epäonnistui: {error}"
+  },
+  "songs": {
+    "title": "Kaikki kappaleet",
+    "empty": "Kirjastostasi ei löytynyt kappaleita."
+  },
+  "liked": {
+    "title": "Tykätyt kappaleet",
+    "empty": "Kappaleet, joista tykkäät, näkyvät täällä."
+  },
+  "genres": {
+    "title": "Genret",
+    "empty": "Kirjastostasi ei löytynyt genrejä.",
+    "emptyDetail": "Tälle genrelle ei löytynyt kappaleita."
+  },
+  "albums": {
+    "title": "Albumit",
+    "empty": "Albumeita ei löytynyt."
+  },
+  "artists": {
+    "title": "Artistit",
+    "empty": "Artisteja ei löytynyt.",
+    "empty2": "Tälle artistille ei löytynyt mitään.",
+    "songsSection": "Kappaleet",
+    "albumsSection": "Albumit"
+  },
+  "playlist": {
+    "empty": "Tämä soittolista on tyhjä.",
+    "sidebarEmpty": "Ei vielä soittolistoja.",
+    "songCount": "{count} kappale",
+    "songCountPlural": "{count} kappaletta"
+  },
+  "album": {
+    "empty": "Tällä albumilla ei ole kappaleita."
+  },
+  "kind": {
+    "playlist": "Soittolista",
+    "album": "Albumi",
+    "artist": "Artisti"
+  },
+  "track": {
+    "index": "#",
+    "title": "Nimi",
+    "album": "Albumi",
+    "time": "Kesto",
+    "addToPlaylist": "Lisää soittolistaan",
+    "like": "Tykkää",
+    "changeCoverArt": "Vaihda kansikuva"
+  },
+  "createPlaylist": {
+    "title": "Luo soittolista",
+    "nameLabel": "Nimi",
+    "namePlaceholder": "Oma soittolista",
+    "create": "Luo"
+  },
+  "nowPlaying": {
+    "lyricsTab": "Sanoitus",
+    "queueTab": "Jono",
+    "nowPlayingSection": "Nyt soi",
+    "upNext": "Seuraavaksi",
+    "lookingUpLyrics": "Etsitään sanoitusta…",
+    "noLyrics": "Tälle kappaleelle ei löytynyt sanoitusta.",
+    "queueEmpty": "Jono on tyhjä.",
+    "title": "Nyt soi"
+  },
+  "player": {
+    "shuffle": "Sekoita",
+    "previous": "Edellinen",
+    "play": "Toista",
+    "pause": "Tauko",
+    "next": "Seuraava",
+    "repeat": "Toisto"
+  },
+  "settings": {
+    "title": "Asetukset",
+    "appearance": "Ulkoasu",
+    "theme": "Teema",
+    "themeDesc": "Vaalea, tumma tai järjestelmän mukaan",
+    "dark": "Tumma",
+    "light": "Vaalea",
+    "system": "Järjestelmä",
+    "accentColor": "Korostusväri",
+    "accentColorDesc": "Valitse sovelluksen väriteema",
+    "blurBg": "Sumea tausta kansikuvasta",
+    "blurBgDesc": "Täyttää taustan nykyisen kappaleen kansikuvan sumealla versiolla",
+    "language": "Kieli",
+    "languageDesc": "Valitse sovelluksen näyttökieli",
+    "audio": "Ääni",
+    "quality": "Suoratoiston laatu",
+    "qualityDesc": "Alempi laatu käyttää vähemmän dataa",
+    "crossfade": "Ristihäivytys",
+    "crossfadeDesc": "Häivyttää kappaleen lopun seuraavan alkuun",
+    "replayGain": "Äänenvoimakkuuden normalisointi",
+    "replayGainDesc": "Tasoittaa kappaleiden välisiä äänenvoimakkuuseroja (vaatii ReplayGain-tiedot palvelimella)",
+    "advanced": "Lisäasetukset",
+    "customCss": "Mukautettu CSS",
+    "customCssDesc": "Kirjoita oma CSS hienosäätääksesi sovelluksen ulkoasua. Otetaan käyttöön heti.",
+    "about": "Tietoja"
+  },
+  "audioQuality": {
+    "auto": "Automaattinen (paras saatavilla oleva laatu)",
+    "high": "Korkea — 320 kbps",
+    "medium": "Keskitaso — 192 kbps",
+    "low": "Matala — 96 kbps"
+  },
+  "palette": {
+    "jellyfin": "Jellyfin",
+    "spotify": "Spotify",
+    "purple": "Violetti",
+    "mono": "Monokromi"
+  },
+  "errors": {
+    "generic": "Jokin meni pieleen: {error}",
+    "couldNotAddToPlaylist": "Kappaletta ei voitu lisätä soittolistaan.",
+    "couldNotUpdateLike": "Tykkäystilaa ei voitu päivittää.",
+    "couldNotUploadArt": "Kansikuvaa ei voitu ladata.",
+    "couldNotCreatePlaylist": "Soittolistaa ei voitu luoda."
+  }
+}

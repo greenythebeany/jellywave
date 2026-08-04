@@ -1,0 +1,172 @@
+{
+  "app": {
+    "name": "JellyWave"
+  },
+  "titlebar": {
+    "minimize": "Minimer",
+    "maximize": "Maksimer",
+    "close": "Lukk"
+  },
+  "login": {
+    "subtitle": "Logg inn på din Jellyfin-server",
+    "serverLabel": "Serveradresse",
+    "serverPlaceholder": "https://jellyfin.example.com",
+    "usernameLabel": "Brukernavn",
+    "usernamePlaceholder": "Brukernavn",
+    "passwordLabel": "Passord",
+    "passwordPlaceholder": "Passord",
+    "stayLoggedIn": "Forbli innlogget",
+    "logIn": "Logg inn",
+    "loggingIn": "Logger inn…",
+    "errorWrongCredentials": "Feil brukernavn eller passord.",
+    "errorServer": "Serveren svarte med {status}.",
+    "errorGeneric": "Kunne ikke logge inn. Sjekk serveradressen og prøv igjen."
+  },
+  "nav": {
+    "home": "Hjem",
+    "search": "Søk",
+    "songs": "Alle sanger",
+    "liked": "Likte sanger",
+    "genres": "Sjangre",
+    "albums": "Album",
+    "artists": "Artister",
+    "library": "Bibliotek",
+    "playlists": "Spillelister",
+    "createPlaylist": "Opprett spilleliste",
+    "back": "Tilbake",
+    "forward": "Fremover"
+  },
+  "header": {
+    "searchPlaceholder": "Hva vil du høre på?"
+  },
+  "account": {
+    "settings": "Innstillinger",
+    "logout": "Logg ut"
+  },
+  "home": {
+    "greeting": "Godt å se deg",
+    "yourPlaylists": "Dine spillelister",
+    "recentAlbums": "Nylig lagt til album"
+  },
+  "search": {
+    "title": "Søk i biblioteket ditt",
+    "noResults": "Ingen resultater funnet.",
+    "failed": "Søket mislyktes: {error}"
+  },
+  "songs": {
+    "title": "Alle sanger",
+    "empty": "Ingen sanger funnet i biblioteket ditt."
+  },
+  "liked": {
+    "title": "Likte sanger",
+    "empty": "Sanger du liker vises her."
+  },
+  "genres": {
+    "title": "Sjangre",
+    "empty": "Ingen sjangre funnet i biblioteket ditt.",
+    "emptyDetail": "Ingen sanger funnet for denne sjangeren."
+  },
+  "albums": {
+    "title": "Album",
+    "empty": "Ingen album funnet."
+  },
+  "artists": {
+    "title": "Artister",
+    "empty": "Ingen artister funnet.",
+    "empty2": "Fant ingenting for denne artisten.",
+    "songsSection": "Sanger",
+    "albumsSection": "Album"
+  },
+  "playlist": {
+    "empty": "Denne spillelisten er tom.",
+    "sidebarEmpty": "Ingen spillelister ennå.",
+    "songCount": "{count} sang",
+    "songCountPlural": "{count} sanger"
+  },
+  "album": {
+    "empty": "Dette albumet har ingen sanger."
+  },
+  "kind": {
+    "playlist": "Spilleliste",
+    "album": "Album",
+    "artist": "Artist"
+  },
+  "track": {
+    "index": "#",
+    "title": "Tittel",
+    "album": "Album",
+    "time": "Varighet",
+    "addToPlaylist": "Legg til i spilleliste",
+    "like": "Lik",
+    "changeCoverArt": "Endre coverbilde"
+  },
+  "createPlaylist": {
+    "title": "Opprett spilleliste",
+    "nameLabel": "Navn",
+    "namePlaceholder": "Min spilleliste",
+    "create": "Opprett"
+  },
+  "nowPlaying": {
+    "lyricsTab": "Sangtekst",
+    "queueTab": "Kø",
+    "nowPlayingSection": "Spilles nå",
+    "upNext": "Neste",
+    "lookingUpLyrics": "Søker etter sangtekst…",
+    "noLyrics": "Fant ingen sangtekst for denne sangen.",
+    "queueEmpty": "Køen er tom.",
+    "title": "Spilles nå"
+  },
+  "player": {
+    "shuffle": "Shuffle",
+    "previous": "Forrige",
+    "play": "Spill av",
+    "pause": "Pause",
+    "next": "Neste",
+    "repeat": "Gjenta"
+  },
+  "settings": {
+    "title": "Innstillinger",
+    "appearance": "Utseende",
+    "theme": "Tema",
+    "themeDesc": "Lyst, mørkt, eller basert på systemet ditt",
+    "dark": "Mørkt",
+    "light": "Lyst",
+    "system": "System",
+    "accentColor": "Aksentfarge",
+    "accentColorDesc": "Velg fargeskjemaet til appen",
+    "blurBg": "Uskarp bakgrunn fra coverbilde",
+    "blurBgDesc": "Fyller bakgrunnen med en uskarp versjon av coverbildet til gjeldende sang",
+    "language": "Språk",
+    "languageDesc": "Velg visningsspråket til appen",
+    "audio": "Lyd",
+    "quality": "Strømmekvalitet",
+    "qualityDesc": "Lavere kvalitet bruker mindre data",
+    "crossfade": "Krysstoning",
+    "crossfadeDesc": "Toner slutten av én sang over i starten av neste",
+    "replayGain": "Volumnormalisering",
+    "replayGainDesc": "Jevner ut volumforskjeller mellom sanger (krever ReplayGain-data på serveren)",
+    "advanced": "Avansert",
+    "customCss": "Egendefinert CSS",
+    "customCssDesc": "Skriv din egen CSS for å finjustere utseendet til appen ytterligere. Brukes umiddelbart.",
+    "about": "Om"
+  },
+  "audioQuality": {
+    "auto": "Automatisk (best tilgjengelige kvalitet)",
+    "high": "Høy — 320 kbps",
+    "medium": "Middels — 192 kbps",
+    "low": "Lav — 96 kbps"
+  },
+  "palette": {
+    "jellyfin": "Jellyfin",
+    "spotify": "Spotify",
+    "purple": "Lilla",
+    "mono": "Monokrom"
+  },
+  "errors": {
+    "generic": "Noe gikk galt: {error}",
+    "couldNotAddToPlaylist": "Kunne ikke legge sangen til i spillelisten.",
+    "couldNotUpdateLike": "Kunne ikke oppdatere lik-status.",
+    "couldNotUploadArt": "Kunne ikke laste opp coverbilde.",
+    "couldNotCreatePlaylist": "Kunne ikke opprette spilleliste."
+  }
+}

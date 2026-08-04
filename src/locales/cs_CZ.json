@@ -1,0 +1,172 @@
+{
+  "app": {
+    "name": "JellyWave"
+  },
+  "titlebar": {
+    "minimize": "Minimalizovat",
+    "maximize": "Maximalizovat",
+    "close": "Zavřít"
+  },
+  "login": {
+    "subtitle": "Přihlaste se ke svému Jellyfin serveru",
+    "serverLabel": "Adresa serveru",
+    "serverPlaceholder": "https://jellyfin.example.com",
+    "usernameLabel": "Uživatelské jméno",
+    "usernamePlaceholder": "Uživatelské jméno",
+    "passwordLabel": "Heslo",
+    "passwordPlaceholder": "Heslo",
+    "stayLoggedIn": "Zůstat přihlášen",
+    "logIn": "Přihlásit se",
+    "loggingIn": "Přihlašování…",
+    "errorWrongCredentials": "Nesprávné uživatelské jméno nebo heslo.",
+    "errorServer": "Server odpověděl s kódem {status}.",
+    "errorGeneric": "Přihlášení se nezdařilo. Zkontrolujte adresu serveru a zkuste to znovu."
+  },
+  "nav": {
+    "home": "Domů",
+    "search": "Hledat",
+    "songs": "Všechny skladby",
+    "liked": "Oblíbené skladby",
+    "genres": "Žánry",
+    "albums": "Alba",
+    "artists": "Interpreti",
+    "library": "Knihovna",
+    "playlists": "Playlisty",
+    "createPlaylist": "Vytvořit playlist",
+    "back": "Zpět",
+    "forward": "Vpřed"
+  },
+  "header": {
+    "searchPlaceholder": "Co si chcete poslechnout?"
+  },
+  "account": {
+    "settings": "Nastavení",
+    "logout": "Odhlásit se"
+  },
+  "home": {
+    "greeting": "Rádi vás vidíme",
+    "yourPlaylists": "Vaše playlisty",
+    "recentAlbums": "Nedávno přidaná alba"
+  },
+  "search": {
+    "title": "Prohledat vaši knihovnu",
+    "noResults": "Nebyly nalezeny žádné výsledky.",
+    "failed": "Vyhledávání se nezdařilo: {error}"
+  },
+  "songs": {
+    "title": "Všechny skladby",
+    "empty": "Ve vaší knihovně nebyly nalezeny žádné skladby."
+  },
+  "liked": {
+    "title": "Oblíbené skladby",
+    "empty": "Skladby, které se vám líbí, se zobrazí zde."
+  },
+  "genres": {
+    "title": "Žánry",
+    "empty": "Ve vaší knihovně nebyly nalezeny žádné žánry.",
+    "emptyDetail": "Pro tento žánr nebyly nalezeny žádné skladby."
+  },
+  "albums": {
+    "title": "Alba",
+    "empty": "Nebyla nalezena žádná alba."
+  },
+  "artists": {
+    "title": "Interpreti",
+    "empty": "Nebyli nalezeni žádní interpreti.",
+    "empty2": "Pro tohoto interpreta nebylo nic nalezeno.",
+    "songsSection": "Skladby",
+    "albumsSection": "Alba"
+  },
+  "playlist": {
+    "empty": "Tento playlist je prázdný.",
+    "sidebarEmpty": "Zatím žádné playlisty.",
+    "songCount": "{count} skladba",
+    "songCountPlural": "{count} skladeb"
+  },
+  "album": {
+    "empty": "Toto album neobsahuje žádné skladby."
+  },
+  "kind": {
+    "playlist": "Playlist",
+    "album": "Album",
+    "artist": "Interpret"
+  },
+  "track": {
+    "index": "#",
+    "title": "Název",
+    "album": "Album",
+    "time": "Délka",
+    "addToPlaylist": "Přidat do playlistu",
+    "like": "Líbí se mi",
+    "changeCoverArt": "Změnit obal"
+  },
+  "createPlaylist": {
+    "title": "Vytvořit playlist",
+    "nameLabel": "Název",
+    "namePlaceholder": "Můj playlist",
+    "create": "Vytvořit"
+  },
+  "nowPlaying": {
+    "lyricsTab": "Text písně",
+    "queueTab": "Fronta",
+    "nowPlayingSection": "Právě se přehrává",
+    "upNext": "Další v pořadí",
+    "lookingUpLyrics": "Hledám text písně…",
+    "noLyrics": "Pro tuto skladbu nebyl nalezen žádný text.",
+    "queueEmpty": "Fronta je prázdná.",
+    "title": "Právě se přehrává"
+  },
+  "player": {
+    "shuffle": "Náhodné přehrávání",
+    "previous": "Předchozí",
+    "play": "Přehrát",
+    "pause": "Pozastavit",
+    "next": "Další",
+    "repeat": "Opakovat"
+  },
+  "settings": {
+    "title": "Nastavení",
+    "appearance": "Vzhled",
+    "theme": "Motiv",
+    "themeDesc": "Světlý, tmavý, nebo podle systému",
+    "dark": "Tmavý",
+    "light": "Světlý",
+    "system": "Systémový",
+    "accentColor": "Zvýrazňující barva",
+    "accentColorDesc": "Vyberte barevné schéma aplikace",
+    "blurBg": "Rozmazané pozadí z obalu",
+    "blurBgDesc": "Vyplní pozadí rozmazanou verzí obalu aktuální skladby",
+    "language": "Jazyk",
+    "languageDesc": "Vyberte zobrazovací jazyk aplikace",
+    "audio": "Zvuk",
+    "quality": "Kvalita streamování",
+    "qualityDesc": "Nižší kvalita spotřebuje méně dat",
+    "crossfade": "Prolínání",
+    "crossfadeDesc": "Plynule prolne konec jedné skladby se začátkem další",
+    "replayGain": "Normalizace hlasitosti",
+    "replayGainDesc": "Vyrovnává rozdíly v hlasitosti mezi skladbami (vyžaduje data ReplayGain na serveru)",
+    "advanced": "Pokročilé",
+    "customCss": "Vlastní CSS",
+    "customCssDesc": "Napište si vlastní CSS pro další úpravu vzhledu aplikace. Použije se okamžitě.",
+    "about": "O aplikaci"
+  },
+  "audioQuality": {
+    "auto": "Automaticky (nejlepší dostupná kvalita)",
+    "high": "Vysoká — 320 kb/s",
+    "medium": "Střední — 192 kb/s",
+    "low": "Nízká — 96 kb/s"
+  },
+  "palette": {
+    "jellyfin": "Jellyfin",
+    "spotify": "Spotify",
+    "purple": "Fialová",
+    "mono": "Monochromatická"
+  },
+  "errors": {
+    "generic": "Něco se pokazilo: {error}",
+    "couldNotAddToPlaylist": "Skladbu se nepodařilo přidat do playlistu.",
+    "couldNotUpdateLike": "Stav oblíbenosti se nepodařilo aktualizovat.",
+    "couldNotUploadArt": "Obal se nepodařilo nahrát.",
+    "couldNotCreatePlaylist": "Playlist se nepodařilo vytvořit."
+  }
+}

@@ -1,0 +1,172 @@
+{
+  "app": {
+    "name": "JellyWave"
+  },
+  "titlebar": {
+    "minimize": "Minimer",
+    "maximize": "Maksimer",
+    "close": "Luk"
+  },
+  "login": {
+    "subtitle": "Log ind på din Jellyfin-server",
+    "serverLabel": "Serveradresse",
+    "serverPlaceholder": "https://jellyfin.example.com",
+    "usernameLabel": "Brugernavn",
+    "usernamePlaceholder": "Brugernavn",
+    "passwordLabel": "Adgangskode",
+    "passwordPlaceholder": "Adgangskode",
+    "stayLoggedIn": "Forbliv logget ind",
+    "logIn": "Log ind",
+    "loggingIn": "Logger ind…",
+    "errorWrongCredentials": "Forkert brugernavn eller adgangskode.",
+    "errorServer": "Serveren svarede med {status}.",
+    "errorGeneric": "Kunne ikke logge ind. Tjek serveradressen, og prøv igen."
+  },
+  "nav": {
+    "home": "Hjem",
+    "search": "Søg",
+    "songs": "Alle sange",
+    "liked": "Yndlingssange",
+    "genres": "Genrer",
+    "albums": "Albums",
+    "artists": "Kunstnere",
+    "library": "Bibliotek",
+    "playlists": "Playlister",
+    "createPlaylist": "Opret playliste",
+    "back": "Tilbage",
+    "forward": "Frem"
+  },
+  "header": {
+    "searchPlaceholder": "Hvad vil du høre?"
+  },
+  "account": {
+    "settings": "Indstillinger",
+    "logout": "Log ud"
+  },
+  "home": {
+    "greeting": "Godt at se dig",
+    "yourPlaylists": "Dine playlister",
+    "recentAlbums": "Nyligt tilføjede albums"
+  },
+  "search": {
+    "title": "Søg i dit bibliotek",
+    "noResults": "Ingen resultater fundet.",
+    "failed": "Søgningen mislykkedes: {error}"
+  },
+  "songs": {
+    "title": "Alle sange",
+    "empty": "Ingen sange fundet i dit bibliotek."
+  },
+  "liked": {
+    "title": "Yndlingssange",
+    "empty": "Sange, du synes om, vises her."
+  },
+  "genres": {
+    "title": "Genrer",
+    "empty": "Ingen genrer fundet i dit bibliotek.",
+    "emptyDetail": "Ingen sange fundet for denne genre."
+  },
+  "albums": {
+    "title": "Albums",
+    "empty": "Ingen albums fundet."
+  },
+  "artists": {
+    "title": "Kunstnere",
+    "empty": "Ingen kunstnere fundet.",
+    "empty2": "Intet fundet for denne kunstner.",
+    "songsSection": "Sange",
+    "albumsSection": "Albums"
+  },
+  "playlist": {
+    "empty": "Denne playliste er tom.",
+    "sidebarEmpty": "Ingen playlister endnu.",
+    "songCount": "{count} sang",
+    "songCountPlural": "{count} sange"
+  },
+  "album": {
+    "empty": "Dette album har ingen sange."
+  },
+  "kind": {
+    "playlist": "Playliste",
+    "album": "Album",
+    "artist": "Kunstner"
+  },
+  "track": {
+    "index": "#",
+    "title": "Titel",
+    "album": "Album",
+    "time": "Varighed",
+    "addToPlaylist": "Føj til playliste",
+    "like": "Synes godt om",
+    "changeCoverArt": "Skift coverbillede"
+  },
+  "createPlaylist": {
+    "title": "Opret playliste",
+    "nameLabel": "Navn",
+    "namePlaceholder": "Min playliste",
+    "create": "Opret"
+  },
+  "nowPlaying": {
+    "lyricsTab": "Sangtekst",
+    "queueTab": "Kø",
+    "nowPlayingSection": "Afspiller nu",
+    "upNext": "Op næste",
+    "lookingUpLyrics": "Søger efter sangtekst…",
+    "noLyrics": "Ingen sangtekst fundet for denne sang.",
+    "queueEmpty": "Køen er tom.",
+    "title": "Afspiller nu"
+  },
+  "player": {
+    "shuffle": "Bland",
+    "previous": "Forrige",
+    "play": "Afspil",
+    "pause": "Pause",
+    "next": "Næste",
+    "repeat": "Gentag"
+  },
+  "settings": {
+    "title": "Indstillinger",
+    "appearance": "Udseende",
+    "theme": "Tema",
+    "themeDesc": "Lyst, mørkt, eller efter dit system",
+    "dark": "Mørkt",
+    "light": "Lyst",
+    "system": "System",
+    "accentColor": "Accentfarve",
+    "accentColorDesc": "Vælg appens farveskema",
+    "blurBg": "Sløret baggrund fra coverbillede",
+    "blurBgDesc": "Fylder baggrunden med en sløret version af den aktuelle sangs coverbillede",
+    "language": "Sprog",
+    "languageDesc": "Vælg appens visningssprog",
+    "audio": "Lyd",
+    "quality": "Streamingkvalitet",
+    "qualityDesc": "Lavere kvalitet bruger mindre data",
+    "crossfade": "Overtoning",
+    "crossfadeDesc": "Toner slutningen af én sang over i begyndelsen af den næste",
+    "replayGain": "Lydstyrkenormalisering",
+    "replayGainDesc": "Udjævner lydstyrkeforskelle mellem numre (kræver ReplayGain-data på serveren)",
+    "advanced": "Avanceret",
+    "customCss": "Brugerdefineret CSS",
+    "customCssDesc": "Skriv din egen CSS for at finjustere appens udseende yderligere. Anvendes med det samme.",
+    "about": "Om"
+  },
+  "audioQuality": {
+    "auto": "Automatisk (bedste tilgængelige kvalitet)",
+    "high": "Høj — 320 kbps",
+    "medium": "Mellem — 192 kbps",
+    "low": "Lav — 96 kbps"
+  },
+  "palette": {
+    "jellyfin": "Jellyfin",
+    "spotify": "Spotify",
+    "purple": "Lilla",
+    "mono": "Monokrom"
+  },
+  "errors": {
+    "generic": "Noget gik galt: {error}",
+    "couldNotAddToPlaylist": "Kunne ikke tilføje sangen til playlisten.",
+    "couldNotUpdateLike": "Kunne ikke opdatere synes godt om-status.",
+    "couldNotUploadArt": "Kunne ikke uploade coverbillede.",
+    "couldNotCreatePlaylist": "Kunne ikke oprette playliste."
+  }
+}

@@ -1,0 +1,172 @@
+{
+  "app": {
+    "name": "JellyWave"
+  },
+  "titlebar": {
+    "minimize": "Згорнути",
+    "maximize": "Розгорнути",
+    "close": "Закрити"
+  },
+  "login": {
+    "subtitle": "Увійдіть на свій сервер Jellyfin",
+    "serverLabel": "Адреса сервера",
+    "serverPlaceholder": "https://jellyfin.example.com",
+    "usernameLabel": "Ім'я користувача",
+    "usernamePlaceholder": "Ім'я користувача",
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "Пароль",
+    "stayLoggedIn": "Залишатися в системі",
+    "logIn": "Увійти",
+    "loggingIn": "Вхід…",
+    "errorWrongCredentials": "Неправильне ім'я користувача або пароль.",
+    "errorServer": "Сервер відповів кодом {status}.",
+    "errorGeneric": "Не вдалося увійти. Перевірте адресу сервера і спробуйте ще раз."
+  },
+  "nav": {
+    "home": "Головна",
+    "search": "Пошук",
+    "songs": "Усі пісні",
+    "liked": "Улюблені пісні",
+    "genres": "Жанри",
+    "albums": "Альбоми",
+    "artists": "Виконавці",
+    "library": "Бібліотека",
+    "playlists": "Плейлисти",
+    "createPlaylist": "Створити плейлист",
+    "back": "Назад",
+    "forward": "Вперед"
+  },
+  "header": {
+    "searchPlaceholder": "Що ви хочете послухати?"
+  },
+  "account": {
+    "settings": "Налаштування",
+    "logout": "Вийти"
+  },
+  "home": {
+    "greeting": "Раді вас бачити",
+    "yourPlaylists": "Ваші плейлисти",
+    "recentAlbums": "Нещодавно додані альбоми"
+  },
+  "search": {
+    "title": "Пошук у вашій бібліотеці",
+    "noResults": "Результатів не знайдено.",
+    "failed": "Помилка пошуку: {error}"
+  },
+  "songs": {
+    "title": "Усі пісні",
+    "empty": "У вашій бібліотеці не знайдено пісень."
+  },
+  "liked": {
+    "title": "Улюблені пісні",
+    "empty": "Пісні, які вам сподобаються, з'являться тут."
+  },
+  "genres": {
+    "title": "Жанри",
+    "empty": "У вашій бібліотеці не знайдено жанрів.",
+    "emptyDetail": "Для цього жанру не знайдено пісень."
+  },
+  "albums": {
+    "title": "Альбоми",
+    "empty": "Альбоми не знайдено."
+  },
+  "artists": {
+    "title": "Виконавці",
+    "empty": "Виконавців не знайдено.",
+    "empty2": "Для цього виконавця нічого не знайдено.",
+    "songsSection": "Пісні",
+    "albumsSection": "Альбоми"
+  },
+  "playlist": {
+    "empty": "Цей плейлист порожній.",
+    "sidebarEmpty": "Поки що немає плейлистів.",
+    "songCount": "{count} пісня",
+    "songCountPlural": "{count} пісень"
+  },
+  "album": {
+    "empty": "У цьому альбомі немає пісень."
+  },
+  "kind": {
+    "playlist": "Плейлист",
+    "album": "Альбом",
+    "artist": "Виконавець"
+  },
+  "track": {
+    "index": "#",
+    "title": "Назва",
+    "album": "Альбом",
+    "time": "Тривалість",
+    "addToPlaylist": "Додати до плейлиста",
+    "like": "Подобається",
+    "changeCoverArt": "Змінити обкладинку"
+  },
+  "createPlaylist": {
+    "title": "Створити плейлист",
+    "nameLabel": "Назва",
+    "namePlaceholder": "Мій плейлист",
+    "create": "Створити"
+  },
+  "nowPlaying": {
+    "lyricsTab": "Текст пісні",
+    "queueTab": "Черга",
+    "nowPlayingSection": "Зараз грає",
+    "upNext": "Далі",
+    "lookingUpLyrics": "Пошук тексту пісні…",
+    "noLyrics": "Текст для цієї пісні не знайдено.",
+    "queueEmpty": "Черга порожня.",
+    "title": "Зараз грає"
+  },
+  "player": {
+    "shuffle": "Перемішати",
+    "previous": "Попередня",
+    "play": "Відтворити",
+    "pause": "Пауза",
+    "next": "Наступна",
+    "repeat": "Повтор"
+  },
+  "settings": {
+    "title": "Налаштування",
+    "appearance": "Вигляд",
+    "theme": "Тема",
+    "themeDesc": "Світла, темна або як у системі",
+    "dark": "Темна",
+    "light": "Світла",
+    "system": "Системна",
+    "accentColor": "Акцентний колір",
+    "accentColorDesc": "Виберіть кольорову схему застосунку",
+    "blurBg": "Розмите тло з обкладинки",
+    "blurBgDesc": "Заповнює тло розмитою версією обкладинки поточної пісні",
+    "language": "Мова",
+    "languageDesc": "Виберіть мову інтерфейсу застосунку",
+    "audio": "Звук",
+    "quality": "Якість потокового відтворення",
+    "qualityDesc": "Нижча якість використовує менше трафіку",
+    "crossfade": "Кросфейд",
+    "crossfadeDesc": "Плавно поєднує кінець однієї пісні з початком наступної",
+    "replayGain": "Нормалізація гучності",
+    "replayGainDesc": "Вирівнює різницю гучності між треками (потрібні дані ReplayGain на сервері)",
+    "advanced": "Додатково",
+    "customCss": "Власний CSS",
+    "customCssDesc": "Напишіть власний CSS, щоб додатково налаштувати вигляд застосунку. Застосовується одразу.",
+    "about": "Про застосунок"
+  },
+  "audioQuality": {
+    "auto": "Автоматично (найкраща доступна якість)",
+    "high": "Висока — 320 кбіт/с",
+    "medium": "Середня — 192 кбіт/с",
+    "low": "Низька — 96 кбіт/с"
+  },
+  "palette": {
+    "jellyfin": "Jellyfin",
+    "spotify": "Spotify",
+    "purple": "Фіолетовий",
+    "mono": "Монохромний"
+  },
+  "errors": {
+    "generic": "Щось пішло не так: {error}",
+    "couldNotAddToPlaylist": "Не вдалося додати пісню до плейлиста.",
+    "couldNotUpdateLike": "Не вдалося оновити статус «подобається».",
+    "couldNotUploadArt": "Не вдалося завантажити обкладинку.",
+    "couldNotCreatePlaylist": "Не вдалося створити плейлист."
+  }
+}

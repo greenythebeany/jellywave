@@ -1,0 +1,8 @@
+{
+  "appId": "com.jellywave.app",
+  "appName": "JellyWave",
+  "webDir": "src",
+  "server": {
+    "androidScheme": "http"
+  }
+}

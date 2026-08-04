@@ -1,0 +1,172 @@
+{
+  "app": {
+    "name": "JellyWave"
+  },
+  "titlebar": {
+    "minimize": "Свернуть",
+    "maximize": "Развернуть",
+    "close": "Закрыть"
+  },
+  "login": {
+    "subtitle": "Войдите на свой сервер Jellyfin",
+    "serverLabel": "Адрес сервера",
+    "serverPlaceholder": "https://jellyfin.example.com",
+    "usernameLabel": "Имя пользователя",
+    "usernamePlaceholder": "Имя пользователя",
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "Пароль",
+    "stayLoggedIn": "Оставаться в системе",
+    "logIn": "Войти",
+    "loggingIn": "Выполняется вход…",
+    "errorWrongCredentials": "Неверное имя пользователя или пароль.",
+    "errorServer": "Сервер ответил с кодом {status}.",
+    "errorGeneric": "Не удалось войти. Проверьте адрес сервера и попробуйте снова."
+  },
+  "nav": {
+    "home": "Главная",
+    "search": "Поиск",
+    "songs": "Все песни",
+    "liked": "Понравившиеся",
+    "genres": "Жанры",
+    "albums": "Альбомы",
+    "artists": "Исполнители",
+    "library": "Библиотека",
+    "playlists": "Плейлисты",
+    "createPlaylist": "Создать плейлист",
+    "back": "Назад",
+    "forward": "Вперёд"
+  },
+  "header": {
+    "searchPlaceholder": "Что вы хотите послушать?"
+  },
+  "account": {
+    "settings": "Настройки",
+    "logout": "Выйти"
+  },
+  "home": {
+    "greeting": "Рады вас видеть",
+    "yourPlaylists": "Ваши плейлисты",
+    "recentAlbums": "Недавно добавленные альбомы"
+  },
+  "search": {
+    "title": "Поиск в вашей библиотеке",
+    "noResults": "Результаты не найдены.",
+    "failed": "Ошибка поиска: {error}"
+  },
+  "songs": {
+    "title": "Все песни",
+    "empty": "В вашей библиотеке не найдено песен."
+  },
+  "liked": {
+    "title": "Понравившиеся",
+    "empty": "Песни, которые вам понравятся, появятся здесь."
+  },
+  "genres": {
+    "title": "Жанры",
+    "empty": "В вашей библиотеке не найдено жанров.",
+    "emptyDetail": "Для этого жанра не найдено песен."
+  },
+  "albums": {
+    "title": "Альбомы",
+    "empty": "Альбомы не найдены."
+  },
+  "artists": {
+    "title": "Исполнители",
+    "empty": "Исполнители не найдены.",
+    "empty2": "Для этого исполнителя ничего не найдено.",
+    "songsSection": "Песни",
+    "albumsSection": "Альбомы"
+  },
+  "playlist": {
+    "empty": "Этот плейлист пуст.",
+    "sidebarEmpty": "Пока нет плейлистов.",
+    "songCount": "{count} песня",
+    "songCountPlural": "{count} песен"
+  },
+  "album": {
+    "empty": "В этом альбоме нет песен."
+  },
+  "kind": {
+    "playlist": "Плейлист",
+    "album": "Альбом",
+    "artist": "Исполнитель"
+  },
+  "track": {
+    "index": "#",
+    "title": "Название",
+    "album": "Альбом",
+    "time": "Длительность",
+    "addToPlaylist": "Добавить в плейлист",
+    "like": "Нравится",
+    "changeCoverArt": "Изменить обложку"
+  },
+  "createPlaylist": {
+    "title": "Создать плейлист",
+    "nameLabel": "Название",
+    "namePlaceholder": "Мой плейлист",
+    "create": "Создать"
+  },
+  "nowPlaying": {
+    "lyricsTab": "Текст песни",
+    "queueTab": "Очередь",
+    "nowPlayingSection": "Сейчас играет",
+    "upNext": "Далее",
+    "lookingUpLyrics": "Поиск текста песни…",
+    "noLyrics": "Текст для этой песни не найден.",
+    "queueEmpty": "Очередь пуста.",
+    "title": "Сейчас играет"
+  },
+  "player": {
+    "shuffle": "Перемешать",
+    "previous": "Предыдущий",
+    "play": "Воспроизвести",
+    "pause": "Пауза",
+    "next": "Следующий",
+    "repeat": "Повтор"
+  },
+  "settings": {
+    "title": "Настройки",
+    "appearance": "Внешний вид",
+    "theme": "Тема",
+    "themeDesc": "Светлая, тёмная или как в системе",
+    "dark": "Тёмная",
+    "light": "Светлая",
+    "system": "Системная",
+    "accentColor": "Акцентный цвет",
+    "accentColorDesc": "Выберите цветовую схему приложения",
+    "blurBg": "Размытый фон из обложки",
+    "blurBgDesc": "Заполняет фон размытой версией обложки текущей песни",
+    "language": "Язык",
+    "languageDesc": "Выберите язык интерфейса приложения",
+    "audio": "Звук",
+    "quality": "Качество потока",
+    "qualityDesc": "Более низкое качество расходует меньше трафика",
+    "crossfade": "Кроссфейд",
+    "crossfadeDesc": "Плавно переходит от конца одной песни к началу следующей",
+    "replayGain": "Нормализация громкости",
+    "replayGainDesc": "Выравнивает разницу громкости между треками (требуются данные ReplayGain на сервере)",
+    "advanced": "Дополнительно",
+    "customCss": "Свой CSS",
+    "customCssDesc": "Напишите собственный CSS, чтобы дополнительно настроить внешний вид приложения. Применяется сразу.",
+    "about": "О приложении"
+  },
+  "audioQuality": {
+    "auto": "Автоматически (наилучшее доступное качество)",
+    "high": "Высокое — 320 кбит/с",
+    "medium": "Среднее — 192 кбит/с",
+    "low": "Низкое — 96 кбит/с"
+  },
+  "palette": {
+    "jellyfin": "Jellyfin",
+    "spotify": "Spotify",
+    "purple": "Фиолетовый",
+    "mono": "Монохромный"
+  },
+  "errors": {
+    "generic": "Что-то пошло не так: {error}",
+    "couldNotAddToPlaylist": "Не удалось добавить песню в плейлист.",
+    "couldNotUpdateLike": "Не удалось обновить статус «нравится».",
+    "couldNotUploadArt": "Не удалось загрузить обложку.",
+    "couldNotCreatePlaylist": "Не удалось создать плейлист."
+  }
+}

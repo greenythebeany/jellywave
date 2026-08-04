@@ -1,0 +1,18 @@
+node_modules/
+dist/
+__pycache__/
+*.pyc
+yt_to_mp3.py
+
+# Secrets — the Android release signing keystore must never be public.
+android/keystore/
+
+# IDE
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

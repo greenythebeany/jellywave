@@ -1,0 +1,172 @@
+{
+  "app": {
+    "name": "JellyWave"
+  },
+  "titlebar": {
+    "minimize": "Minimieren",
+    "maximize": "Maximieren",
+    "close": "Schließen"
+  },
+  "login": {
+    "subtitle": "Bei deinem Jellyfin-Server anmelden",
+    "serverLabel": "Serveradresse",
+    "serverPlaceholder": "https://jellyfin.example.com",
+    "usernameLabel": "Benutzername",
+    "usernamePlaceholder": "Benutzername",
+    "passwordLabel": "Passwort",
+    "passwordPlaceholder": "Passwort",
+    "stayLoggedIn": "Angemeldet bleiben",
+    "logIn": "Anmelden",
+    "loggingIn": "Anmeldung läuft…",
+    "errorWrongCredentials": "Falscher Benutzername oder falsches Passwort.",
+    "errorServer": "Der Server hat mit {status} geantwortet.",
+    "errorGeneric": "Anmeldung fehlgeschlagen. Überprüfe die Serveradresse und versuche es erneut."
+  },
+  "nav": {
+    "home": "Start",
+    "search": "Suche",
+    "songs": "Alle Songs",
+    "liked": "Lieblingssongs",
+    "genres": "Genres",
+    "albums": "Alben",
+    "artists": "Künstler",
+    "library": "Bibliothek",
+    "playlists": "Playlists",
+    "createPlaylist": "Playlist erstellen",
+    "back": "Zurück",
+    "forward": "Vorwärts"
+  },
+  "header": {
+    "searchPlaceholder": "Was möchtest du hören?"
+  },
+  "account": {
+    "settings": "Einstellungen",
+    "logout": "Abmelden"
+  },
+  "home": {
+    "greeting": "Schön, dich zu sehen",
+    "yourPlaylists": "Deine Playlists",
+    "recentAlbums": "Kürzlich hinzugefügte Alben"
+  },
+  "search": {
+    "title": "Durchsuche deine Bibliothek",
+    "noResults": "Keine Ergebnisse gefunden.",
+    "failed": "Suche fehlgeschlagen: {error}"
+  },
+  "songs": {
+    "title": "Alle Songs",
+    "empty": "Keine Songs in deiner Bibliothek gefunden."
+  },
+  "liked": {
+    "title": "Lieblingssongs",
+    "empty": "Songs, die dir gefallen, erscheinen hier."
+  },
+  "genres": {
+    "title": "Genres",
+    "empty": "Keine Genres in deiner Bibliothek gefunden.",
+    "emptyDetail": "Keine Songs für dieses Genre gefunden."
+  },
+  "albums": {
+    "title": "Alben",
+    "empty": "Keine Alben gefunden."
+  },
+  "artists": {
+    "title": "Künstler",
+    "empty": "Keine Künstler gefunden.",
+    "empty2": "Nichts für diesen Künstler gefunden.",
+    "songsSection": "Songs",
+    "albumsSection": "Alben"
+  },
+  "playlist": {
+    "empty": "Diese Playlist ist leer.",
+    "sidebarEmpty": "Noch keine Playlists.",
+    "songCount": "{count} Song",
+    "songCountPlural": "{count} Songs"
+  },
+  "album": {
+    "empty": "Dieses Album enthält keine Songs."
+  },
+  "kind": {
+    "playlist": "Playlist",
+    "album": "Album",
+    "artist": "Künstler"
+  },
+  "track": {
+    "index": "#",
+    "title": "Titel",
+    "album": "Album",
+    "time": "Dauer",
+    "addToPlaylist": "Zur Playlist hinzufügen",
+    "like": "Gefällt mir",
+    "changeCoverArt": "Cover ändern"
+  },
+  "createPlaylist": {
+    "title": "Playlist erstellen",
+    "nameLabel": "Name",
+    "namePlaceholder": "Meine Playlist",
+    "create": "Erstellen"
+  },
+  "nowPlaying": {
+    "lyricsTab": "Songtext",
+    "queueTab": "Warteschlange",
+    "nowPlayingSection": "Wird gespielt",
+    "upNext": "Als Nächstes",
+    "lookingUpLyrics": "Songtext wird gesucht…",
+    "noLyrics": "Kein Songtext für diesen Titel gefunden.",
+    "queueEmpty": "Die Warteschlange ist leer.",
+    "title": "Wird gespielt"
+  },
+  "player": {
+    "shuffle": "Zufallswiedergabe",
+    "previous": "Zurück",
+    "play": "Abspielen",
+    "pause": "Pause",
+    "next": "Weiter",
+    "repeat": "Wiederholen"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "appearance": "Erscheinungsbild",
+    "theme": "Design",
+    "themeDesc": "Hell, dunkel oder wie dein System",
+    "dark": "Dunkel",
+    "light": "Hell",
+    "system": "System",
+    "accentColor": "Akzentfarbe",
+    "accentColorDesc": "Wähle das Farbschema der App",
+    "blurBg": "Unscharfer Cover-Hintergrund",
+    "blurBgDesc": "Füllt den Hintergrund mit einer unscharfen Version des aktuellen Covers",
+    "language": "Sprache",
+    "languageDesc": "Wähle die Anzeigesprache der App",
+    "audio": "Audio",
+    "quality": "Streaming-Qualität",
+    "qualityDesc": "Niedrigere Qualität verbraucht weniger Bandbreite",
+    "crossfade": "Überblendung",
+    "crossfadeDesc": "Blendet das Ende eines Songs in den Anfang des nächsten über",
+    "replayGain": "Lautstärkenormalisierung",
+    "replayGainDesc": "Gleicht Lautstärkeunterschiede zwischen Titeln aus (benötigt ReplayGain-Daten auf dem Server)",
+    "advanced": "Erweitert",
+    "customCss": "Benutzerdefiniertes CSS",
+    "customCssDesc": "Schreibe eigenes CSS, um das Aussehen der App weiter anzupassen. Wird sofort angewendet.",
+    "about": "Über"
+  },
+  "audioQuality": {
+    "auto": "Automatisch (beste verfügbare Qualität)",
+    "high": "Hoch — 320 kbps",
+    "medium": "Mittel — 192 kbps",
+    "low": "Niedrig — 96 kbps"
+  },
+  "palette": {
+    "jellyfin": "Jellyfin",
+    "spotify": "Spotify",
+    "purple": "Lila",
+    "mono": "Monochrom"
+  },
+  "errors": {
+    "generic": "Etwas ist schiefgelaufen: {error}",
+    "couldNotAddToPlaylist": "Song konnte nicht zur Playlist hinzugefügt werden.",
+    "couldNotUpdateLike": "Like-Status konnte nicht aktualisiert werden.",
+    "couldNotUploadArt": "Cover konnte nicht hochgeladen werden.",
+    "couldNotCreatePlaylist": "Playlist konnte nicht erstellt werden."
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">JellyWave</string>
+    <string name="title_activity_main">JellyWave</string>
+    <string name="package_name">com.jellywave.app</string>
+    <string name="custom_url_scheme">com.jellywave.app</string>
+</resources>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Self-hosted Jellyfin servers are frequently plain HTTP on a local network
+  (no TLS cert for a LAN-only address), and the server address is entered by
+  the user at runtime rather than known at build time — so this allows
+  cleartext traffic generally rather than trying to allowlist specific hosts.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

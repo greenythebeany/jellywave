@@ -1,0 +1,172 @@
+{
+  "app": {
+    "name": "JellyWave"
+  },
+  "titlebar": {
+    "minimize": "Minimaliseren",
+    "maximize": "Maximaliseren",
+    "close": "Sluiten"
+  },
+  "login": {
+    "subtitle": "Log in op je Jellyfin-server",
+    "serverLabel": "Serveradres",
+    "serverPlaceholder": "https://jellyfin.example.com",
+    "usernameLabel": "Gebruikersnaam",
+    "usernamePlaceholder": "Gebruikersnaam",
+    "passwordLabel": "Wachtwoord",
+    "passwordPlaceholder": "Wachtwoord",
+    "stayLoggedIn": "Ingelogd blijven",
+    "logIn": "Inloggen",
+    "loggingIn": "Bezig met inloggen…",
+    "errorWrongCredentials": "Onjuiste gebruikersnaam of wachtwoord.",
+    "errorServer": "De server antwoordde met {status}.",
+    "errorGeneric": "Inloggen mislukt. Controleer het serveradres en probeer het opnieuw."
+  },
+  "nav": {
+    "home": "Start",
+    "search": "Zoeken",
+    "songs": "Alle nummers",
+    "liked": "Leuk gevonden nummers",
+    "genres": "Genres",
+    "albums": "Albums",
+    "artists": "Artiesten",
+    "library": "Bibliotheek",
+    "playlists": "Afspeellijsten",
+    "createPlaylist": "Afspeellijst maken",
+    "back": "Terug",
+    "forward": "Vooruit"
+  },
+  "header": {
+    "searchPlaceholder": "Wat wil je afspelen?"
+  },
+  "account": {
+    "settings": "Instellingen",
+    "logout": "Uitloggen"
+  },
+  "home": {
+    "greeting": "Fijn je te zien",
+    "yourPlaylists": "Jouw afspeellijsten",
+    "recentAlbums": "Onlangs toegevoegde albums"
+  },
+  "search": {
+    "title": "Doorzoek je bibliotheek",
+    "noResults": "Geen resultaten gevonden.",
+    "failed": "Zoeken mislukt: {error}"
+  },
+  "songs": {
+    "title": "Alle nummers",
+    "empty": "Geen nummers gevonden in je bibliotheek."
+  },
+  "liked": {
+    "title": "Leuk gevonden nummers",
+    "empty": "Nummers die je leuk vindt, verschijnen hier."
+  },
+  "genres": {
+    "title": "Genres",
+    "empty": "Geen genres gevonden in je bibliotheek.",
+    "emptyDetail": "Geen nummers gevonden voor dit genre."
+  },
+  "albums": {
+    "title": "Albums",
+    "empty": "Geen albums gevonden."
+  },
+  "artists": {
+    "title": "Artiesten",
+    "empty": "Geen artiesten gevonden.",
+    "empty2": "Niets gevonden voor deze artiest.",
+    "songsSection": "Nummers",
+    "albumsSection": "Albums"
+  },
+  "playlist": {
+    "empty": "Deze afspeellijst is leeg.",
+    "sidebarEmpty": "Nog geen afspeellijsten.",
+    "songCount": "{count} nummer",
+    "songCountPlural": "{count} nummers"
+  },
+  "album": {
+    "empty": "Dit album bevat geen nummers."
+  },
+  "kind": {
+    "playlist": "Afspeellijst",
+    "album": "Album",
+    "artist": "Artiest"
+  },
+  "track": {
+    "index": "#",
+    "title": "Titel",
+    "album": "Album",
+    "time": "Duur",
+    "addToPlaylist": "Toevoegen aan afspeellijst",
+    "like": "Leuk vinden",
+    "changeCoverArt": "Hoes wijzigen"
+  },
+  "createPlaylist": {
+    "title": "Afspeellijst maken",
+    "nameLabel": "Naam",
+    "namePlaceholder": "Mijn afspeellijst",
+    "create": "Maken"
+  },
+  "nowPlaying": {
+    "lyricsTab": "Songtekst",
+    "queueTab": "Wachtrij",
+    "nowPlayingSection": "Nu aan het afspelen",
+    "upNext": "Hierna",
+    "lookingUpLyrics": "Songtekst zoeken…",
+    "noLyrics": "Geen songtekst gevonden voor dit nummer.",
+    "queueEmpty": "De wachtrij is leeg.",
+    "title": "Nu aan het afspelen"
+  },
+  "player": {
+    "shuffle": "Shuffle",
+    "previous": "Vorige",
+    "play": "Afspelen",
+    "pause": "Pauzeren",
+    "next": "Volgende",
+    "repeat": "Herhalen"
+  },
+  "settings": {
+    "title": "Instellingen",
+    "appearance": "Weergave",
+    "theme": "Thema",
+    "themeDesc": "Licht, donker, of volgens je systeem",
+    "dark": "Donker",
+    "light": "Licht",
+    "system": "Systeem",
+    "accentColor": "Accentkleur",
+    "accentColorDesc": "Kies het kleurenschema van de app",
+    "blurBg": "Vervaagde achtergrond van hoes",
+    "blurBgDesc": "Vult de achtergrond met een vervaagde versie van de hoes van het huidige nummer",
+    "language": "Taal",
+    "languageDesc": "Kies de weergavetaal van de app",
+    "audio": "Audio",
+    "quality": "Streamingkwaliteit",
+    "qualityDesc": "Lagere kwaliteit gebruikt minder data",
+    "crossfade": "Crossfade",
+    "crossfadeDesc": "Vervaagt het einde van één nummer naar het begin van het volgende",
+    "replayGain": "Volumenormalisatie",
+    "replayGainDesc": "Vereffent volumeverschillen tussen nummers (vereist ReplayGain-gegevens op de server)",
+    "advanced": "Geavanceerd",
+    "customCss": "Aangepaste CSS",
+    "customCssDesc": "Schrijf je eigen CSS om het uiterlijk van de app verder aan te passen. Wordt direct toegepast.",
+    "about": "Over"
+  },
+  "audioQuality": {
+    "auto": "Automatisch (best beschikbare kwaliteit)",
+    "high": "Hoog — 320 kbps",
+    "medium": "Gemiddeld — 192 kbps",
+    "low": "Laag — 96 kbps"
+  },
+  "palette": {
+    "jellyfin": "Jellyfin",
+    "spotify": "Spotify",
+    "purple": "Paars",
+    "mono": "Monochroom"
+  },
+  "errors": {
+    "generic": "Er is iets misgegaan: {error}",
+    "couldNotAddToPlaylist": "Kon het nummer niet toevoegen aan de afspeellijst.",
+    "couldNotUpdateLike": "Kon de leuk-status niet bijwerken.",
+    "couldNotUploadArt": "Kon de hoes niet uploaden.",
+    "couldNotCreatePlaylist": "Kon de afspeellijst niet maken."
+  }
+}
