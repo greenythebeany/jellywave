@@ -154,17 +154,3 @@ ipcMain.handle('discord:clearActivity', async () => {
     return { ok: false, error: String(err) };
   }
 });
-
-// Deezer's search API doesn't send CORS headers, so the renderer can't call
-// it directly — proxied through the main process instead, which isn't
-// subject to that restriction.
-ipcMain.handle('deezer:searchAlbumArt', async (_event, artist, album) => {
-  try {
-    const query = encodeURIComponent(`${artist} ${album}`.trim());
-    const res = await fetch(`https://api.deezer.com/search?q=${query}&limit=1`);
-    const data = await res.json();
-    return data.data?.[0]?.album?.cover_xl || data.data?.[0]?.album?.cover_big || null;
-  } catch (err) {
-    return null;
-  }
-});

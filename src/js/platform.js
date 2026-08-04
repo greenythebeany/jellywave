@@ -103,12 +103,3 @@ export async function clearDiscordActivity() {
     // Same as above.
   }
 }
-
-export async function searchDeezerAlbumArt(artist, album) {
-  if (!isDesktop) return null;
-  try {
-    return await window.api.deezer.searchAlbumArt(artist, album);
-  } catch (err) {
-    return null;
-  }
-}

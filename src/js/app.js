@@ -3,7 +3,7 @@ import { Player, RepeatMode } from './player.js';
 import { fetchLyrics } from './lyrics.js';
 import { getSettings, updateSettings, applySettings, currentBitrateKbps, PALETTES, AUDIO_QUALITIES } from './settings.js';
 import { LOCALES, loadLocale, applyTranslations, t } from './i18n.js';
-import { platform, isDesktop, isMobile, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt } from './platform.js';
+import { platform, isDesktop, isMobile, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity } from './platform.js';
 
 // ---------- DOM refs ----------
 const loginScreen = document.getElementById('login-screen');
@@ -450,16 +450,25 @@ function updateBgArt() {
 // Discord Rich Presence — no-op on mobile/web (see setDiscordActivity).
 // Discord only embeds Rich Presence images served over HTTPS, so a
 // Jellyfin server on plain HTTP (typical for a LAN-only setup) can't be used
-// directly as the cover art source. Instead, look the album up on Deezer
-// (proxied through main.js, since its API doesn't send CORS headers) by
-// artist + album name and use its artwork — falling back to the static logo
-// asset when nothing matches.
+// directly as the cover art source. Instead, look the album up on iTunes'
+// search API (HTTPS, no key required, sends proper CORS headers) by artist +
+// album name and use its artwork — falling back to the static logo asset
+// when nothing matches.
 const externalCoverArtCache = new Map(); // "artist|album" (lowercased) -> url or null
 
 async function fetchExternalCoverArt(artist, album) {
   const key = `${artist}|${album}`.toLowerCase();
   if (externalCoverArtCache.has(key)) return externalCoverArtCache.get(key);
-  const url = await searchDeezerAlbumArt(artist, album);
+  let url = null;
+  try {
+    const query = encodeURIComponent(`${artist} ${album}`.trim());
+    const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=album&limit=1`);
+    const data = await res.json();
+    const artwork = data.results?.[0]?.artworkUrl100;
+    if (artwork) url = artwork.replace('100x100bb', '512x512bb');
+  } catch (err) {
+    // No network / no match — fall back to the logo below.
+  }
   externalCoverArtCache.set(key, url);
   return url;
 }
