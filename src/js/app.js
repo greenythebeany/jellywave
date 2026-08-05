@@ -101,6 +101,7 @@ const sleepTimerMenu = document.getElementById('sleep-timer-menu');
 const sleepTimerBadge = document.getElementById('sleep-timer-badge');
 const sleepTimerOff = document.getElementById('sleep-timer-off');
 const btnConnect = document.getElementById('btn-connect');
+const btnConnectMobile = document.getElementById('btn-connect-mobile');
 const connectMenu = document.getElementById('connect-menu');
 const connectDeviceList = document.getElementById('connect-device-list');
 
@@ -859,14 +860,17 @@ async function loadConnectDevices() {
 }
 
 function wireConnectMenu() {
-  btnConnect.addEventListener('click', (evt) => {
-    evt.stopPropagation();
-    if (!connectMenu.hidden) { connectMenu.hidden = true; return; }
-    openConnectMenuNear(btnConnect);
-    loadConnectDevices();
+  const triggers = [btnConnect, btnConnectMobile];
+  triggers.forEach((trigger) => {
+    trigger.addEventListener('click', (evt) => {
+      evt.stopPropagation();
+      if (!connectMenu.hidden) { connectMenu.hidden = true; return; }
+      openConnectMenuNear(trigger);
+      loadConnectDevices();
+    });
   });
   document.addEventListener('click', (evt) => {
-    if (!connectMenu.hidden && !connectMenu.contains(evt.target) && evt.target !== btnConnect && !evt.target.closest('#btn-connect')) {
+    if (!connectMenu.hidden && !connectMenu.contains(evt.target) && !triggers.includes(evt.target) && !evt.target.closest('#btn-connect, #btn-connect-mobile')) {
       connectMenu.hidden = true;
     }
   });

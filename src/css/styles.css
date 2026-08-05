@@ -514,7 +514,8 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .panel-tab.active { color: var(--accent-contrast); background: var(--accent-bg); }
 .btn-icon-plain { color: var(--text-secondary); font-size: 17px; padding: 6px; border-radius: 6px; }
 .btn-icon-plain:hover { color: var(--text-primary); background: var(--bg-highlight); }
-.lyrics-header-spacer { width: 29px; flex-shrink: 0; }
+.lyrics-header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.lyrics-header-actions .btn-icon-plain { width: 29px; height: 29px; display: flex; align-items: center; justify-content: center; }
 
 .now-playing-summary { padding: 22px 22px 8px; flex-shrink: 0; position: relative; z-index: 1; }
 .now-playing-art { display: block; width: 100%; aspect-ratio: 1/1; max-width: 220px; margin: 0 auto 16px; border-radius: var(--radius-md); object-fit: cover; box-shadow: 0 16px 34px rgba(0,0,0,0.4); background: var(--bg-card); }
@@ -777,7 +778,7 @@ body.platform-mobile .titlebar { display: none; }
     width: 100%; border-left: none;
   }
   .lyrics-header { padding: 14px 16px 10px; }
-  .lyrics-header-spacer { width: 33px; }
+  .lyrics-header-actions .btn-icon-plain { width: 33px; height: 33px; }
   .np-collapse-btn { font-size: 22px; }
 
   .now-playing-summary { padding: 12px 24px 8px; }
