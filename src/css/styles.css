@@ -866,7 +866,11 @@ body.platform-mobile .titlebar { display: none; }
   .detail-title { font-size: 28px; }
   .card-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; }
   .card-row { gap: 14px; }
-  .card-row .card { flex-basis: 130px; }
+  /* Match the ~2-up width card-grid settles on at this breakpoint (minmax(130px,1fr))
+     instead of a fixed px value, so cards in a row and cards in a grid look the same
+     size next to each other — a bit under half the row width leaves a peek of the
+     next card as a scroll hint. */
+  .card-row .card { flex: 0 0 calc((100% - 14px) / 2.15); }
   .view-root { padding: 8px 16px 24px; }
   .main-header { padding: 0 16px; }
 

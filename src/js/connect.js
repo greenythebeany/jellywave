@@ -173,8 +173,14 @@ export function createConnect(jellyfin, player) {
     jellyfin.registerCapabilities().catch(() => {});
     connectSocket();
     player.on('trackchange', () => {
-      reportStopped();
+      // Report the new track directly rather than stopping first — Stopped
+      // and Start are separate unawaited requests, and Stopped landing after
+      // Start (easily possible over a real network) would briefly clear the
+      // session's now-playing info right as a controller polls it. Playing a
+      // new ItemId already supersedes whatever was playing before; Stopped
+      // is only for genuinely stopping (queue ended, nothing next).
       if (player.currentTrack) reportStart();
+      else reportStopped();
     });
     player.on('playstate', () => { if (player.currentTrack) reportProgress(); });
     if (progressTimer) clearInterval(progressTimer);
