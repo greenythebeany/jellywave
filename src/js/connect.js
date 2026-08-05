@@ -164,6 +164,7 @@ export function createConnect(jellyfin, player) {
   }
 
   function start() {
+    jellyfin.registerCapabilities().catch(() => {});
     connectSocket();
     player.on('trackchange', () => {
       reportStopped();

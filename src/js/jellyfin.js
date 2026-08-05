@@ -1,5 +1,7 @@
 // Minimal Jellyfin REST API client — just what a music client needs.
 
+import { isMobile } from './platform.js';
+
 // Must be unique per install, not per app — the Connect feature (Sessions
 // API) tells devices apart by DeviceId, and a shared constant here would
 // make every JellyWave install look like the same device reconnecting,
@@ -19,10 +21,15 @@ function loadOrCreateDeviceId() {
 }
 const DEVICE_ID = loadOrCreateDeviceId();
 const CLIENT_NAME = 'JellyWave';
-const CLIENT_VERSION = '1.0.0';
+// Keep in sync with package.json/android/app/build.gradle on every release —
+// this has no build step to inject it automatically, so it drifts silently
+// otherwise (this is exactly how it ended up stuck reporting 1.0.0 to the
+// server after the app itself moved to 1.0.1).
+const CLIENT_VERSION = '1.0.1';
 
 function authHeader(token) {
-  let header = `MediaBrowser Client="${CLIENT_NAME}", Device="Desktop", DeviceId="${DEVICE_ID}", Version="${CLIENT_VERSION}"`;
+  const device = isMobile ? 'Android' : 'Desktop';
+  let header = `MediaBrowser Client="${CLIENT_NAME}", Device="${device}", DeviceId="${DEVICE_ID}", Version="${CLIENT_VERSION}"`;
   if (token) header += `, Token="${token}"`;
   return header;
 }
@@ -365,6 +372,29 @@ export class JellyfinClient {
     const wsBase = this.serverUrl.replace(/^http/, 'ws');
     const params = new URLSearchParams({ api_key: this.accessToken, deviceId: DEVICE_ID });
     return `${wsBase}/socket?${params.toString()}`;
+  }
+
+  // Tells the server this session can be remote-controlled — without this,
+  // Jellyfin doesn't consider the session controllable at all, so it's
+  // excluded from *every* device's "sessions I can control" query,
+  // regardless of what's playing. Real Jellyfin clients call this once
+  // right after authenticating; we do the same at Connect startup.
+  async registerCapabilities() {
+    const res = await fetch(`${this.serverUrl}/Sessions/Capabilities/Full`, {
+      method: 'POST',
+      headers: this._headers(),
+      body: JSON.stringify({
+        PlayableMediaTypes: ['Audio'],
+        SupportedCommands: [
+          'VolumeUp', 'VolumeDown', 'Mute', 'Unmute', 'ToggleMute', 'SetVolume',
+          'Play', 'Playstate', 'PlayNext', 'PlayMediaSource',
+          'SetRepeatMode', 'SetShuffleQueue', 'DisplayMessage'
+        ],
+        SupportsMediaControl: true,
+        SupportsPersistentIdentifier: true
+      })
+    });
+    if (!res.ok) throw new Error(`Could not register session capabilities (${res.status}).`);
   }
 
   // Sessions this user is allowed to remote-control, excluding this device's
