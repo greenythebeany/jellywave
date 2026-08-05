@@ -99,6 +99,19 @@ npm run dist        # build a Windows installer
 
 The Android project lives in `android/` and is a standard Capacitor project — open it in Android Studio, or build from the command line with `./gradlew assembleRelease` after setting up your own signing keystore in `android/keystore/keystore.properties`.
 
+## What's new in 1.0.2
+
+- Personal stats (Most Played, On Repeat, Recently Played, the stats page) now sync via your Jellyfin account instead of living in one device's local storage
+- A play only counts once a track actually finishes, not just when it starts
+- Top Artists now counts each artist on a collab track individually instead of treating "A, B, feat. C" as one distinct artist per lineup
+- Connect now properly hands off playback — the sending device stops local audio, and play/pause/skip/seek/volume (desktop, mobile, hardware media keys) all control the connected device until you disconnect or pick something new to play locally
+- Connect's device list is now scoped to other JellyWave instances only, and has a mobile entry point (it previously lived in a desktop-only part of the player bar)
+- Fixed Connect's now-playing display going stale (an HTTP caching issue on repeated session polls)
+- Fixed the app reporting itself as "Desktop" to Jellyfin on every platform, and a stale client version number
+- Fixed the installer sometimes being unable to close a running instance during an update
+- Recently Played is now a single horizontally-scrolling row instead of a grid that could grow several rows tall
+- Fixed a couple of broken icon references (the Connect button, the queue drag handle)
+
 ## What's new in 1.0.1
 
 - Fixed session getting logged out on transient network/server errors instead of only on an actual expired token
