@@ -268,11 +268,19 @@ export function createConnect(jellyfin, player) {
   // Hands the remaining queue (current track onward, at the current
   // position) to another session, then stops local playback — audio should
   // only come from the device you handed off to, not both at once.
+  // Sending the whole remaining queue as one comma-separated list of GUIDs
+  // in the URL works fine for an album/playlist, but for something like
+  // "All Songs" it can run to hundreds of tracks — long enough to exceed a
+  // reverse proxy's URL/header length limit, which tends to just drop the
+  // connection rather than return a clean error (shows up as a plain
+  // "Failed to fetch", not an HTTP error). Cap it well under that.
+  const MAX_HANDOFF_TRACKS = 100;
+
   async function sendToDevice(sessionId, deviceName) {
     const track = player.currentTrack;
     if (!track || player.currentIndex < 0) return;
     const startTicks = currentPositionTicks();
-    const remaining = player.queue.slice(player.currentIndex).map((tr) => tr.Id);
+    const remaining = player.queue.slice(player.currentIndex, player.currentIndex + MAX_HANDOFF_TRACKS).map((tr) => tr.Id);
     await jellyfin.sendPlayCommand(sessionId, remaining.length ? remaining : [track.Id], startTicks);
     player.audio.pause();
     connectedDevice = { id: sessionId, name: deviceName };
