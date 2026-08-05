@@ -20,7 +20,9 @@
     "loggingIn": "Loggar in…",
     "errorWrongCredentials": "Fel användarnamn eller lösenord.",
     "errorServer": "Servern svarade med {status}.",
-    "errorGeneric": "Det gick inte att logga in. Kontrollera serveradressen och försök igen."
+    "errorGeneric": "Det gick inte att logga in. Kontrollera serveradressen och försök igen.",
+    "errorUnreachable": "Kunde inte nå din server, men du är fortfarande inloggad — kontrollera anslutningen och försök igen.",
+    "retry": "Försök igen"
   },
   "nav": {
     "home": "Hem",
@@ -34,7 +36,8 @@
     "playlists": "Spellistor",
     "createPlaylist": "Skapa spellista",
     "back": "Bakåt",
-    "forward": "Framåt"
+    "forward": "Framåt",
+    "stats": "Statistik"
   },
   "header": {
     "searchPlaceholder": "Vad vill du lyssna på?"
@@ -45,8 +48,14 @@
   },
   "home": {
     "greeting": "Roligt att se dig",
+    "recentlyPlayed": "Nyligen spelade",
     "yourPlaylists": "Dina spellistor",
-    "recentAlbums": "Nyligen tillagda album"
+    "recentAlbums": "Nyligen tillagda album",
+    "madeForYou": "Gjord för dig",
+    "mostPlayed": "Mest spelade",
+    "onRepeat": "På repeat",
+    "genreMix": "Genremix",
+    "songsCount": "{count} låtar"
   },
   "search": {
     "title": "Sök i ditt bibliotek",
@@ -122,7 +131,10 @@
     "play": "Spela",
     "pause": "Pausa",
     "next": "Nästa",
-    "repeat": "Upprepa"
+    "repeat": "Upprepa",
+    "sleepTimer": "Insomningstimer",
+    "sleepEndOfTrack": "Låtens slut",
+    "sleepOff": "Stäng av"
   },
   "settings": {
     "title": "Inställningar",
@@ -136,6 +148,8 @@
     "accentColorDesc": "Välj appens färgschema",
     "blurBg": "Suddig bakgrund från omslagsbild",
     "blurBgDesc": "Fyller bakgrunden med en suddig version av den aktuella låtens omslagsbild",
+    "dynamicAccentColor": "Dynamisk accentfärg",
+    "dynamicAccentColorDesc": "Färgar appens accentfärg efter omslaget för aktuell låt",
     "language": "Språk",
     "languageDesc": "Välj appens visningsspråk",
     "audio": "Ljud",
@@ -145,6 +159,9 @@
     "crossfadeDesc": "Tonar över slutet av en låt till början av nästa",
     "replayGain": "Volymnormalisering",
     "replayGainDesc": "Jämnar ut volymskillnader mellan låtar (kräver ReplayGain-data på servern)",
+    "equalizer": "Equalizer",
+    "equalizerDesc": "Forma ljudet med en 5-bands grafisk equalizer (endast dator)",
+    "equalizerReset": "Återställ",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Visar vad du lyssnar på i din Discord-profil (endast dator)",
     "discordConnect": "Anslut",
@@ -171,6 +188,7 @@
   "errors": {
     "generic": "Något gick fel: {error}",
     "couldNotAddToPlaylist": "Det gick inte att lägga till låten i spellistan.",
+    "couldNotRemoveFromPlaylist": "Det gick inte att ta bort låten från spellistan.",
     "couldNotUpdateLike": "Det gick inte att uppdatera gilla-status.",
     "couldNotUploadArt": "Det gick inte att ladda upp omslagsbilden.",
     "couldNotCreatePlaylist": "Det gick inte att skapa spellistan."
@@ -178,5 +196,30 @@
   "update": {
     "available": "JellyWave {version} är tillgänglig.",
     "view": "Visa"
+  },
+  "stats": {
+    "title": "Din statistik",
+    "totalPlays": "Totalt antal spelningar",
+    "timeListened": "Lyssnartid",
+    "artistsPlayed": "Lyssnade artister",
+    "activity": "Lyssningsaktivitet",
+    "topTracks": "Mest spelade låtar",
+    "topArtists": "Mest spelade artister",
+    "topAlbums": "Mest spelade album",
+    "plays": "{count} spelning",
+    "playsPlural": "{count} spelningar",
+    "empty": "Lyssna på musik för att börja bygga din statistik."
+  },
+  "queue": {
+    "addToQueue": "Lägg till i kö",
+    "unlike": "Ta bort som favorit",
+    "remove": "Ta bort"
+  },
+  "connect": {
+    "title": "Connect",
+    "loading": "Söker efter enheter…",
+    "empty": "Inga andra enheter hittades.",
+    "nowPlaying": "Spelar {title}",
+    "errorSend": "Det gick inte att skicka uppspelning till den enheten."
   }
 }

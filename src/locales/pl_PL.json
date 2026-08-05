@@ -20,7 +20,9 @@
     "loggingIn": "Logowanie…",
     "errorWrongCredentials": "Nieprawidłowa nazwa użytkownika lub hasło.",
     "errorServer": "Serwer odpowiedział kodem {status}.",
-    "errorGeneric": "Nie udało się zalogować. Sprawdź adres serwera i spróbuj ponownie."
+    "errorGeneric": "Nie udało się zalogować. Sprawdź adres serwera i spróbuj ponownie.",
+    "errorUnreachable": "Nie udało się połączyć z serwerem, ale nadal jesteś zalogowany — sprawdź połączenie i spróbuj ponownie.",
+    "retry": "Spróbuj ponownie"
   },
   "nav": {
     "home": "Strona główna",
@@ -34,7 +36,8 @@
     "playlists": "Playlisty",
     "createPlaylist": "Utwórz playlistę",
     "back": "Wstecz",
-    "forward": "Dalej"
+    "forward": "Dalej",
+    "stats": "Statystyki"
   },
   "header": {
     "searchPlaceholder": "Czego chcesz posłuchać?"
@@ -45,8 +48,14 @@
   },
   "home": {
     "greeting": "Miło Cię widzieć",
+    "recentlyPlayed": "Ostatnio odtwarzane",
     "yourPlaylists": "Twoje playlisty",
-    "recentAlbums": "Ostatnio dodane albumy"
+    "recentAlbums": "Ostatnio dodane albumy",
+    "madeForYou": "Dla Ciebie",
+    "mostPlayed": "Najczęściej odtwarzane",
+    "onRepeat": "W kółko",
+    "genreMix": "Mix gatunkowy",
+    "songsCount": "{count} utworów"
   },
   "search": {
     "title": "Przeszukaj swoją bibliotekę",
@@ -122,7 +131,10 @@
     "play": "Odtwórz",
     "pause": "Pauza",
     "next": "Następny",
-    "repeat": "Powtarzaj"
+    "repeat": "Powtarzaj",
+    "sleepTimer": "Wyłącznik czasowy",
+    "sleepEndOfTrack": "Koniec utworu",
+    "sleepOff": "Wyłącz"
   },
   "settings": {
     "title": "Ustawienia",
@@ -136,6 +148,8 @@
     "accentColorDesc": "Wybierz schemat kolorów aplikacji",
     "blurBg": "Rozmyte tło okładki",
     "blurBgDesc": "Wypełnia tło rozmytą wersją okładki aktualnego utworu",
+    "dynamicAccentColor": "Dynamiczny kolor akcentu",
+    "dynamicAccentColorDesc": "Barwi kolor akcentu aplikacji zgodnie z okładką aktualnej piosenki",
     "language": "Język",
     "languageDesc": "Wybierz język wyświetlania aplikacji",
     "audio": "Dźwięk",
@@ -145,6 +159,9 @@
     "crossfadeDesc": "Płynnie łączy koniec jednego utworu z początkiem następnego",
     "replayGain": "Normalizacja głośności",
     "replayGainDesc": "Wyrównuje różnice głośności między utworami (wymaga danych ReplayGain na serwerze)",
+    "equalizer": "Korektor",
+    "equalizerDesc": "Dostosuj dźwięk za pomocą 5-pasmowego korektora graficznego (tylko na komputerze)",
+    "equalizerReset": "Resetuj",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Pokazuje na Twoim profilu Discord to, czego słuchasz (tylko desktop)",
     "discordConnect": "Połącz",
@@ -171,6 +188,7 @@
   "errors": {
     "generic": "Coś poszło nie tak: {error}",
     "couldNotAddToPlaylist": "Nie udało się dodać utworu do playlisty.",
+    "couldNotRemoveFromPlaylist": "Nie udało się usunąć utworu z playlisty.",
     "couldNotUpdateLike": "Nie udało się zaktualizować statusu polubienia.",
     "couldNotUploadArt": "Nie udało się przesłać okładki.",
     "couldNotCreatePlaylist": "Nie udało się utworzyć playlisty."
@@ -178,5 +196,30 @@
   "update": {
     "available": "Dostępny jest JellyWave {version}.",
     "view": "Zobacz"
+  },
+  "stats": {
+    "title": "Twoje statystyki",
+    "totalPlays": "Łącznie odtworzeń",
+    "timeListened": "Czas słuchania",
+    "artistsPlayed": "Odsłuchani artyści",
+    "activity": "Aktywność słuchania",
+    "topTracks": "Najczęściej odtwarzane utwory",
+    "topArtists": "Najczęściej odtwarzani artyści",
+    "topAlbums": "Najczęściej odtwarzane albumy",
+    "plays": "{count} odtworzenie",
+    "playsPlural": "{count} odtworzeń",
+    "empty": "Słuchaj muzyki, aby zacząć budować swoje statystyki."
+  },
+  "queue": {
+    "addToQueue": "Dodaj do kolejki",
+    "unlike": "Usuń z ulubionych",
+    "remove": "Usuń"
+  },
+  "connect": {
+    "title": "Connect",
+    "loading": "Szukanie urządzeń…",
+    "empty": "Nie znaleziono innych urządzeń.",
+    "nowPlaying": "Odtwarza {title}",
+    "errorSend": "Nie udało się wysłać odtwarzania na to urządzenie."
   }
 }

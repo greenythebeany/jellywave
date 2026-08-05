@@ -20,7 +20,9 @@
     "loggingIn": "Přihlašování…",
     "errorWrongCredentials": "Nesprávné uživatelské jméno nebo heslo.",
     "errorServer": "Server odpověděl s kódem {status}.",
-    "errorGeneric": "Přihlášení se nezdařilo. Zkontrolujte adresu serveru a zkuste to znovu."
+    "errorGeneric": "Přihlášení se nezdařilo. Zkontrolujte adresu serveru a zkuste to znovu.",
+    "errorUnreachable": "Nepodařilo se připojit k serveru, ale stále jsi přihlášen — zkontroluj připojení a zkus to znovu.",
+    "retry": "Zkusit znovu"
   },
   "nav": {
     "home": "Domů",
@@ -34,7 +36,8 @@
     "playlists": "Playlisty",
     "createPlaylist": "Vytvořit playlist",
     "back": "Zpět",
-    "forward": "Vpřed"
+    "forward": "Vpřed",
+    "stats": "Statistiky"
   },
   "header": {
     "searchPlaceholder": "Co si chcete poslechnout?"
@@ -45,8 +48,14 @@
   },
   "home": {
     "greeting": "Rádi vás vidíme",
+    "recentlyPlayed": "Nedávno přehrané",
     "yourPlaylists": "Vaše playlisty",
-    "recentAlbums": "Nedávno přidaná alba"
+    "recentAlbums": "Nedávno přidaná alba",
+    "madeForYou": "Vytvořeno pro tebe",
+    "mostPlayed": "Nejhranější",
+    "onRepeat": "Pořád dokola",
+    "genreMix": "Žánrový mix",
+    "songsCount": "{count} skladeb"
   },
   "search": {
     "title": "Prohledat vaši knihovnu",
@@ -122,7 +131,10 @@
     "play": "Přehrát",
     "pause": "Pozastavit",
     "next": "Další",
-    "repeat": "Opakovat"
+    "repeat": "Opakovat",
+    "sleepTimer": "Časovač spánku",
+    "sleepEndOfTrack": "Konec skladby",
+    "sleepOff": "Vypnout"
   },
   "settings": {
     "title": "Nastavení",
@@ -136,6 +148,8 @@
     "accentColorDesc": "Vyberte barevné schéma aplikace",
     "blurBg": "Rozmazané pozadí z obalu",
     "blurBgDesc": "Vyplní pozadí rozmazanou verzí obalu aktuální skladby",
+    "dynamicAccentColor": "Dynamická barva zvýraznění",
+    "dynamicAccentColorDesc": "Obarví barvu zvýraznění aplikace podle obalu aktuální skladby",
     "language": "Jazyk",
     "languageDesc": "Vyberte zobrazovací jazyk aplikace",
     "audio": "Zvuk",
@@ -145,6 +159,9 @@
     "crossfadeDesc": "Plynule prolne konec jedné skladby se začátkem další",
     "replayGain": "Normalizace hlasitosti",
     "replayGainDesc": "Vyrovnává rozdíly v hlasitosti mezi skladbami (vyžaduje data ReplayGain na serveru)",
+    "equalizer": "Ekvalizér",
+    "equalizerDesc": "Uprav zvuk pomocí 5pásmového grafického ekvalizéru (pouze na počítači)",
+    "equalizerReset": "Obnovit",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Zobrazí na tvém Discord profilu, co právě posloucháš (pouze desktop)",
     "discordConnect": "Připojit",
@@ -171,6 +188,7 @@
   "errors": {
     "generic": "Něco se pokazilo: {error}",
     "couldNotAddToPlaylist": "Skladbu se nepodařilo přidat do playlistu.",
+    "couldNotRemoveFromPlaylist": "Skladbu se nepodařilo odebrat z playlistu.",
     "couldNotUpdateLike": "Stav oblíbenosti se nepodařilo aktualizovat.",
     "couldNotUploadArt": "Obal se nepodařilo nahrát.",
     "couldNotCreatePlaylist": "Playlist se nepodařilo vytvořit."
@@ -178,5 +196,30 @@
   "update": {
     "available": "JellyWave {version} je dostupný.",
     "view": "Zobrazit"
+  },
+  "stats": {
+    "title": "Tvoje statistiky",
+    "totalPlays": "Celkem přehráno",
+    "timeListened": "Doba poslechu",
+    "artistsPlayed": "Poslouchaní interpreti",
+    "activity": "Aktivita poslechu",
+    "topTracks": "Nejposlouchanější skladby",
+    "topArtists": "Nejposlouchanější interpreti",
+    "topAlbums": "Nejposlouchanější alba",
+    "plays": "{count} přehrání",
+    "playsPlural": "{count} přehrání",
+    "empty": "Poslouchej hudbu a začni budovat své statistiky."
+  },
+  "queue": {
+    "addToQueue": "Přidat do fronty",
+    "unlike": "Zrušit oblíbené",
+    "remove": "Odebrat"
+  },
+  "connect": {
+    "title": "Connect",
+    "loading": "Hledají se zařízení…",
+    "empty": "Nebyla nalezena žádná další zařízení.",
+    "nowPlaying": "Přehrává {title}",
+    "errorSend": "Přehrávání se nepodařilo odeslat do tohoto zařízení."
   }
 }

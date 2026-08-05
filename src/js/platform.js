@@ -70,6 +70,13 @@ export function exitApp() {
   window.Capacitor?.Plugins?.App?.exitApp();
 }
 
+// style: 'light' | 'medium' | 'heavy' — matches Haptics' ImpactStyle values,
+// passed as a plain string since the plugin's own enum isn't importable
+// without a bundler (see the module header note above).
+export function hapticImpact(style = 'light') {
+  window.Capacitor?.Plugins?.Haptics?.impact({ style }).catch(() => {});
+}
+
 // Android 13+ requires this to be granted at runtime before the media
 // notification (posted by the native MediaSession plugin's foreground
 // service) will actually show — without it playback still works, the

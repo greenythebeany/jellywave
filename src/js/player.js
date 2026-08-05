@@ -1,8 +1,14 @@
+import { isDesktop } from './platform.js';
+
 export const RepeatMode = {
   OFF: 'off',
   ALL: 'all',
   ONE: 'one'
 };
+
+// Center frequencies (Hz) for the built-in graphic equalizer's peaking
+// filters — a standard 5-band spread from sub-bass to presence/air.
+export const EQ_BANDS = [60, 250, 1000, 4000, 12000];
 
 // How soon before a track's natural end we start pre-buffering the next one
 // (gapless) — needs to be enough time for the network fetch to get ahead of
@@ -32,6 +38,17 @@ export class Player {
     this._preloaded = false;
     this._transitioning = false;
     this._fadeRAF = null;
+
+    // Shared Web Audio graph (per <audio> element: source -> EQ filter chain
+    // -> analyser -> destination), used by both the built-in equalizer and
+    // the cat jam beat analyser so they don't fight over the same element —
+    // createMediaElementSource() may only be called once per element, ever.
+    // Desktop-only: see syncCatJamVisibility() in app.js for why rerouting
+    // through Web Audio is unsafe on Android's WebView.
+    this._audioCtx = null;
+    this._audioGraphs = new WeakMap();
+    this.eqEnabled = false;
+    this.eqGains = new Array(EQ_BANDS.length).fill(0);
 
     this.queue = [];
     this.originalQueue = [];
@@ -109,6 +126,69 @@ export class Player {
   setReplayGainEnabled(enabled) {
     this.replayGainEnabled = !!enabled;
     this._applyVolume(this.audio);
+  }
+
+  // ---------- Shared Web Audio graph (equalizer + analyser) ----------
+
+  _ensureAudioGraph(el) {
+    if (!isDesktop) return null;
+    if (!this._audioCtx) this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (this._audioCtx.state === 'suspended') this._audioCtx.resume().catch(() => {});
+    let graph = this._audioGraphs.get(el);
+    if (graph) return graph;
+    const source = this._audioCtx.createMediaElementSource(el);
+    const filters = EQ_BANDS.map((freq, i) => {
+      const filter = this._audioCtx.createBiquadFilter();
+      filter.type = 'peaking';
+      filter.frequency.value = freq;
+      filter.Q.value = 1;
+      filter.gain.value = this.eqEnabled ? this.eqGains[i] : 0;
+      return filter;
+    });
+    const analyser = this._audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.6;
+    source.connect(filters[0]);
+    for (let i = 0; i < filters.length - 1; i++) filters[i].connect(filters[i + 1]);
+    filters[filters.length - 1].connect(analyser);
+    analyser.connect(this._audioCtx.destination); // keep normal playback audible
+    graph = { source, filters, analyser };
+    this._audioGraphs.set(el, graph);
+    return graph;
+  }
+
+  // Used by the cat jam beat detector — shares this same graph rather than
+  // opening its own, since a second createMediaElementSource() on the same
+  // element would throw.
+  getAnalyser(el = this.audio) {
+    return this._ensureAudioGraph(el)?.analyser || null;
+  }
+
+  setEqualizerEnabled(enabled) {
+    this.eqEnabled = !!enabled;
+    if (this.eqEnabled) {
+      // Build both elements' graphs up front so the setting stays audible
+      // across gapless/crossfade swaps between them, not just the active one.
+      this._ensureAudioGraph(this._audioA);
+      this._ensureAudioGraph(this._audioB);
+    }
+    this._applyEqGains();
+  }
+
+  setEqualizerBand(index, gainDb) {
+    if (index < 0 || index >= this.eqGains.length) return;
+    this.eqGains[index] = Math.min(12, Math.max(-12, gainDb));
+    if (this.eqEnabled) this._applyEqGains();
+  }
+
+  _applyEqGains() {
+    for (const el of [this._audioA, this._audioB]) {
+      const graph = this._audioGraphs.get(el);
+      if (!graph) continue;
+      graph.filters.forEach((filter, i) => {
+        filter.gain.value = this.eqEnabled ? this.eqGains[i] : 0;
+      });
+    }
   }
 
   // ---------- MediaSession (lock-screen / notification controls) ----------
@@ -228,6 +308,47 @@ export class Player {
     this.queueSourceId = sourceId;
     this._emit('queuechange');
     this._loadCurrent(true);
+  }
+
+  // Appends a single track to the end of the current queue without
+  // replacing it — if nothing is playing yet, this just starts it instead.
+  enqueue(track) {
+    if (this.currentIndex < 0 || !this.queue.length) {
+      this.setQueue([track], 0);
+      return;
+    }
+    this.queue.push(track);
+    this.originalQueue.push(track);
+    this._emit('queuechange');
+  }
+
+  // Removes one queue entry by its position in the (possibly shuffled)
+  // queue. Refuses to remove the currently playing track — swipe-to-remove
+  // is for upcoming/past entries, not what's actively playing.
+  removeFromQueueAt(index) {
+    if (index < 0 || index >= this.queue.length || index === this.currentIndex) return;
+    const [removed] = this.queue.splice(index, 1);
+    const originalIdx = this.originalQueue.indexOf(removed);
+    if (originalIdx >= 0) this.originalQueue.splice(originalIdx, 1);
+    if (index < this.currentIndex) this.currentIndex -= 1;
+    this._emit('queuechange');
+  }
+
+  // Moves one upcoming queue entry to a new position. Like removeFromQueueAt,
+  // this only touches "Up Next" — moving the currently playing entry itself
+  // isn't a meaningful operation here.
+  reorderQueueAt(fromIndex, toIndex) {
+    if (
+      fromIndex < 0 || fromIndex >= this.queue.length ||
+      toIndex < 0 || toIndex >= this.queue.length ||
+      fromIndex === toIndex ||
+      fromIndex === this.currentIndex || toIndex === this.currentIndex
+    ) return;
+    const [moved] = this.queue.splice(fromIndex, 1);
+    this.queue.splice(toIndex, 0, moved);
+    if (fromIndex < this.currentIndex && toIndex >= this.currentIndex) this.currentIndex -= 1;
+    else if (fromIndex > this.currentIndex && toIndex <= this.currentIndex) this.currentIndex += 1;
+    this._emit('queuechange');
   }
 
   _shuffled(tracks) {

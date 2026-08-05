@@ -1,6 +1,23 @@
 // Minimal Jellyfin REST API client — just what a music client needs.
 
-const DEVICE_ID = 'jellywave-desktop';
+// Must be unique per install, not per app — the Connect feature (Sessions
+// API) tells devices apart by DeviceId, and a shared constant here would
+// make every JellyWave install look like the same device reconnecting,
+// breaking both the "other devices" list and self-exclusion from it.
+const DEVICE_ID_KEY = 'jellywave:deviceId';
+function loadOrCreateDeviceId() {
+  try {
+    let id = localStorage.getItem(DEVICE_ID_KEY);
+    if (!id) {
+      id = `jellywave-${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+      localStorage.setItem(DEVICE_ID_KEY, id);
+    }
+    return id;
+  } catch (err) {
+    return `jellywave-${Math.random().toString(36).slice(2)}`;
+  }
+}
+const DEVICE_ID = loadOrCreateDeviceId();
 const CLIENT_NAME = 'JellyWave';
 const CLIENT_VERSION = '1.0.0';
 
@@ -76,8 +93,21 @@ export class JellyfinClient {
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null) url.searchParams.set(k, v);
     });
-    const res = await fetch(url, { headers: this._headers() });
-    if (!res.ok) throw new Error(`Jellyfin request failed: ${res.status}`);
+    let res;
+    try {
+      res = await fetch(url, { headers: this._headers() });
+    } catch (err) {
+      // fetch itself threw — no response at all (offline, DNS, server down,
+      // etc). Distinct from an actual HTTP error response.
+      const netErr = new Error(`Could not reach server: ${err.message}`);
+      netErr.isNetworkError = true;
+      throw netErr;
+    }
+    if (!res.ok) {
+      const err = new Error(`Jellyfin request failed: ${res.status}`);
+      err.status = res.status;
+      throw err;
+    }
     if (res.status === 204) return null;
     return res.json();
   }
@@ -212,6 +242,18 @@ export class JellyfinClient {
     if (!res.ok) throw new Error(`Could not add song to playlist (${res.status}).`);
   }
 
+  // entryId is the playlist-entry id (PlaylistItemId from getPlaylistItems),
+  // not the underlying song's own Id — needed so removing one occurrence of
+  // a song that appears twice in the same playlist removes only that one.
+  async removeFromPlaylist(playlistId, entryId) {
+    const params = new URLSearchParams({ entryIds: entryId });
+    const res = await fetch(`${this.serverUrl}/Playlists/${playlistId}/Items?${params.toString()}`, {
+      method: 'DELETE',
+      headers: this._headers()
+    });
+    if (!res.ok) throw new Error(`Could not remove song from playlist (${res.status}).`);
+  }
+
   async uploadPlaylistImage(playlistId, file) {
     const base64 = await new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -297,6 +339,80 @@ export class JellyfinClient {
       })
     ]);
     return [...(artistsData.Items || []), ...(itemsData.Items || [])];
+  }
+
+  // ---------- Connect (Sessions API remote control) ----------
+
+  get deviceId() {
+    return DEVICE_ID;
+  }
+
+  wsUrl() {
+    const wsBase = this.serverUrl.replace(/^http/, 'ws');
+    const params = new URLSearchParams({ api_key: this.accessToken, deviceId: DEVICE_ID });
+    return `${wsBase}/socket?${params.toString()}`;
+  }
+
+  // Sessions this user is allowed to remote-control, excluding this device's
+  // own session — that's the actual device list a "Connect" picker shows.
+  async getSessions() {
+    const data = await this._get('/Sessions', { ControllableByUserId: this.userId });
+    return (data || []).filter((s) => s.DeviceId !== DEVICE_ID);
+  }
+
+  async sendPlayCommand(sessionId, itemIds, startPositionTicks = 0) {
+    const params = new URLSearchParams({
+      ItemIds: Array.isArray(itemIds) ? itemIds.join(',') : itemIds,
+      StartPositionTicks: String(Math.round(startPositionTicks)),
+      PlayCommand: 'PlayNow'
+    });
+    const res = await fetch(`${this.serverUrl}/Sessions/${sessionId}/Playing?${params.toString()}`, {
+      method: 'POST',
+      headers: this._headers()
+    });
+    if (!res.ok) throw new Error(`Could not start playback on that device (${res.status}).`);
+  }
+
+  // command: one of Jellyfin's PlaystateCommand values — Stop, Pause,
+  // Unpause, NextTrack, PreviousTrack, Seek (needs SeekPositionTicks).
+  async sendPlaystateCommand(sessionId, command, extraParams = {}) {
+    const qs = new URLSearchParams(extraParams).toString();
+    const res = await fetch(`${this.serverUrl}/Sessions/${sessionId}/Playing/${command}${qs ? `?${qs}` : ''}`, {
+      method: 'POST',
+      headers: this._headers()
+    });
+    if (!res.ok) throw new Error(`Could not send command (${res.status}).`);
+  }
+
+  // Self-reporting so this device shows up as "Now Playing" and is
+  // controllable to other Jellyfin clients — the counterpart to
+  // getSessions()/sendPlayCommand() on the controlling side. Best-effort:
+  // failures here shouldn't interrupt local playback, so callers swallow errors.
+  async reportPlaybackStart(payload) {
+    const res = await fetch(`${this.serverUrl}/Sessions/Playing`, {
+      method: 'POST',
+      headers: this._headers(),
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error(`Could not report playback start (${res.status}).`);
+  }
+
+  async reportPlaybackProgress(payload) {
+    const res = await fetch(`${this.serverUrl}/Sessions/Playing/Progress`, {
+      method: 'POST',
+      headers: this._headers(),
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error(`Could not report playback progress (${res.status}).`);
+  }
+
+  async reportPlaybackStopped(payload) {
+    const res = await fetch(`${this.serverUrl}/Sessions/Playing/Stopped`, {
+      method: 'POST',
+      headers: this._headers(),
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error(`Could not report playback stop (${res.status}).`);
   }
 
   imageUrl(item, type = 'Primary', maxSize = 500) {

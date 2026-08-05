@@ -1,6 +1,6 @@
 {
   "name": "jellywave",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A sleek, Spotify-style desktop client for your own Jellyfin music server",
   "main": "main.js",
   "author": "",
@@ -21,6 +21,7 @@
     "@capacitor/app": "^8.1.1",
     "@capacitor/cli": "^8.5.0",
     "@capacitor/core": "^8.5.0",
+    "@capacitor/haptics": "^8.0.2",
     "@capacitor/ios": "^8.5.0",
     "@capacitor/local-notifications": "^8.2.1",
     "@capacitor/preferences": "^8.0.1",

@@ -3,7 +3,9 @@ import { Player, RepeatMode } from './player.js';
 import { fetchLyrics } from './lyrics.js';
 import { getSettings, updateSettings, applySettings, currentBitrateKbps, PALETTES, AUDIO_QUALITIES } from './settings.js';
 import { LOCALES, loadLocale, applyTranslations, t } from './i18n.js';
-import { platform, isDesktop, isMobile, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt } from './platform.js';
+import { platform, isDesktop, isMobile, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
+import { recordPlay, getRecentlyPlayed, getMostPlayed, getOnRepeat, getStats } from './history.js';
+import { createConnect } from './connect.js';
 
 // ---------- DOM refs ----------
 const loginScreen = document.getElementById('login-screen');
@@ -11,6 +13,7 @@ const appRoot = document.getElementById('app');
 const loginForm = document.getElementById('login-form');
 const loginError = document.getElementById('login-error');
 const btnLogin = document.getElementById('btn-login');
+const btnRetryConnection = document.getElementById('btn-retry-connection');
 
 const viewRoot = document.getElementById('view-root');
 const playlistListEl = document.getElementById('playlist-list');
@@ -45,9 +48,14 @@ const paletteGrid = document.getElementById('palette-grid');
 const audioQualitySelect = document.getElementById('audio-quality-select');
 const languageSelect = document.getElementById('language-select');
 const toggleArtBackground = document.getElementById('toggle-art-background');
+const toggleDynamicAccentColor = document.getElementById('toggle-dynamic-accent-color');
 const crossfadeSlider = document.getElementById('crossfade-slider');
 const crossfadeValue = document.getElementById('crossfade-value');
 const toggleReplayGain = document.getElementById('toggle-replaygain');
+const toggleEqualizer = document.getElementById('toggle-equalizer');
+const equalizerBandsRow = document.getElementById('equalizer-bands-row');
+const eqBandSliders = document.querySelectorAll('.eq-band-slider');
+const btnEqReset = document.getElementById('btn-eq-reset');
 const toggleCatJam = document.getElementById('toggle-cat-jam');
 const catJamVideo = document.getElementById('cat-jam');
 const catJamScaleRow = document.getElementById('cat-jam-scale-row');
@@ -88,6 +96,14 @@ const volumeBar = document.getElementById('volume-bar');
 const volumeIcon = document.getElementById('volume-icon');
 const btnLyrics = document.getElementById('btn-lyrics');
 const btnCloseLyrics = document.getElementById('btn-close-lyrics');
+const btnSleepTimer = document.getElementById('btn-sleep-timer');
+const btnSleepTimerMobile = document.getElementById('btn-sleep-timer-mobile');
+const sleepTimerMenu = document.getElementById('sleep-timer-menu');
+const sleepTimerBadge = document.getElementById('sleep-timer-badge');
+const sleepTimerOff = document.getElementById('sleep-timer-off');
+const btnConnect = document.getElementById('btn-connect');
+const connectMenu = document.getElementById('connect-menu');
+const connectDeviceList = document.getElementById('connect-device-list');
 
 // Mobile full-screen player controls (mirror of the desktop mini-player ones above)
 const mobileBtnPlay = document.getElementById('mobile-btn-play');
@@ -105,6 +121,7 @@ const mobileTimeTotal = document.getElementById('mobile-time-total');
 // ---------- State ----------
 let jellyfin = null;
 let player = null;
+let connect = null;
 let currentLyrics = null;
 let lyricsTrackId = null;
 let viewHistory = [];
@@ -235,6 +252,9 @@ function syncCardStates() {
 async function init() {
   if (isMobile) requestNotificationPermission();
   if (isDesktop) wireUpdateToast();
+  if (isDesktop) wireMediaKeys();
+  wireSleepTimer();
+  wireConnectMenu();
   volumeBar.style.setProperty('--pct', '50%');
   updateVolumeIcon(50);
   await loadLocale(getSettings().language);
@@ -244,18 +264,48 @@ async function init() {
   wireCreatePlaylistUI();
   wireBackButton();
 
+  await tryRestoreSession();
+}
+
+// A stale/invalid token (401) genuinely needs a fresh login. Anything else —
+// a network blip, the server restarting, a slow response — shouldn't nuke a
+// perfectly good saved session and force re-entering credentials; retry a
+// couple of times first, and if it's still unreachable, offer a "Retry"
+// button that re-attempts with the same saved session rather than clearing it.
+async function tryRestoreSession() {
   const saved = await sessionStore.load();
-  if (saved && saved.serverUrl && saved.accessToken && saved.userId) {
-    jellyfin = new JellyfinClient(saved);
+  if (!saved || !saved.serverUrl || !saved.accessToken || !saved.userId) {
+    showLogin();
+    return;
+  }
+  jellyfin = new JellyfinClient(saved);
+
+  const attempts = 3;
+  for (let i = 0; i < attempts; i++) {
     try {
       await jellyfin.ping();
       await enterApp(saved.username);
       return;
     } catch (err) {
-      jellyfin = null;
+      if (err?.status === 401) {
+        jellyfin = null;
+        await sessionStore.clear();
+        showLogin();
+        return;
+      }
+      if (i < attempts - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 800 * (i + 1)));
+        continue;
+      }
+      // Exhausted retries on a network/server error — keep the saved
+      // session intact and let the user retry manually instead of forcing
+      // them to log back in.
+      showLogin();
+      loginError.textContent = t('login.errorUnreachable');
+      loginError.hidden = false;
+      btnRetryConnection.hidden = false;
     }
   }
-  showLogin();
 }
 
 function showLogin() {
@@ -271,6 +321,10 @@ async function enterApp(username) {
   const savedSettings = getSettings();
   player.setCrossfadeSeconds(savedSettings.crossfadeSeconds || 0);
   player.setReplayGainEnabled(!!savedSettings.replayGainEnabled);
+  (savedSettings.eqGains || []).forEach((gain, i) => player.setEqualizerBand(i, gain));
+  player.setEqualizerEnabled(!!savedSettings.eqEnabled);
+  connect = createConnect(jellyfin, player);
+  connect.start();
   wirePlayer();
 
   accountUsername.textContent = username || '';
@@ -294,9 +348,18 @@ async function enterApp(username) {
 }
 
 // ---------- Login form ----------
+btnRetryConnection.addEventListener('click', async () => {
+  btnRetryConnection.disabled = true;
+  loginError.hidden = true;
+  btnRetryConnection.hidden = true;
+  await tryRestoreSession();
+  btnRetryConnection.disabled = false;
+});
+
 loginForm.addEventListener('submit', async (evt) => {
   evt.preventDefault();
   loginError.hidden = true;
+  btnRetryConnection.hidden = true;
   btnLogin.disabled = true;
   btnLogin.textContent = t('login.loggingIn');
 
@@ -339,6 +402,7 @@ document.addEventListener('click', (evt) => {
 });
 menuLogout.addEventListener('click', async () => {
   await sessionStore.clear();
+  connect?.stop();
   jellyfin = null;
   player?.audio.pause();
   location.reload();
@@ -391,6 +455,11 @@ function wireSettingsUI() {
     updateBgArt();
   });
 
+  toggleDynamicAccentColor.addEventListener('change', () => {
+    updateSettings({ dynamicAccentColor: toggleDynamicAccentColor.checked });
+    updateDynamicAccentColor();
+  });
+
   crossfadeSlider.addEventListener('input', () => {
     const seconds = Number(crossfadeSlider.value);
     crossfadeValue.textContent = seconds === 0 ? 'Off' : `${seconds}s`;
@@ -404,6 +473,39 @@ function wireSettingsUI() {
   toggleReplayGain.addEventListener('change', () => {
     updateSettings({ replayGainEnabled: toggleReplayGain.checked });
     player?.setReplayGainEnabled(toggleReplayGain.checked);
+  });
+
+  toggleEqualizer.addEventListener('change', () => {
+    updateSettings({ eqEnabled: toggleEqualizer.checked });
+    player?.setEqualizerEnabled(toggleEqualizer.checked);
+    setHidden(equalizerBandsRow, !toggleEqualizer.checked);
+  });
+
+  eqBandSliders.forEach((slider) => {
+    const band = Number(slider.dataset.band);
+    const valueEl = document.querySelector(`.eq-band-value[data-band-value="${band}"]`);
+    slider.addEventListener('input', () => {
+      const gain = Number(slider.value);
+      valueEl.textContent = gain > 0 ? `+${gain}` : `${gain}`;
+      player?.setEqualizerBand(band, gain);
+    });
+    slider.addEventListener('change', () => {
+      const gains = getSettings().eqGains ? [...getSettings().eqGains] : [0, 0, 0, 0, 0];
+      gains[band] = Number(slider.value);
+      updateSettings({ eqGains: gains });
+    });
+  });
+
+  btnEqReset.addEventListener('click', () => {
+    const gains = [0, 0, 0, 0, 0];
+    eqBandSliders.forEach((slider) => {
+      const band = Number(slider.dataset.band);
+      slider.value = 0;
+      const valueEl = document.querySelector(`.eq-band-value[data-band-value="${band}"]`);
+      valueEl.textContent = '0';
+      player?.setEqualizerBand(band, 0);
+    });
+    updateSettings({ eqGains: gains });
   });
 
   toggleCatJam.addEventListener('change', () => {
@@ -473,6 +575,97 @@ function updateBgArt() {
   }
 }
 
+// Dynamic accent color — samples the current track's cover art and overrides
+// the palette's --accent/--seek-*/--accent-bg vars via inline styles on <html>
+// (inline styles win over any selector-based rule, so this cleanly overrides
+// whichever palette is active without touching the palette CSS itself).
+let dynamicAccentTrackId = null;
+
+async function updateDynamicAccentColor(track) {
+  track = track || player?.currentTrack;
+  if (!getSettings().dynamicAccentColor || !track) {
+    clearDynamicAccentColor();
+    dynamicAccentTrackId = null;
+    return;
+  }
+  if (dynamicAccentTrackId === track.Id) return;
+  dynamicAccentTrackId = track.Id;
+  const rgb = await extractDominantColor(artUrl(track, 'album', 64));
+  // Track may have changed (or the setting been turned off) while we awaited the image.
+  if (player?.currentTrack?.Id !== track.Id || !getSettings().dynamicAccentColor) return;
+  if (rgb) applyDynamicAccentColor(rgb);
+  else clearDynamicAccentColor();
+}
+
+// Jellyfin doesn't send CORS headers on image responses by default, which
+// taints the canvas and blocks getImageData() with a SecurityError. That's
+// expected for many self-hosted setups — fail silently and just skip the
+// dynamic color for that track rather than surfacing an error.
+function extractDominantColor(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const size = 24;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, size, size);
+        const { data } = ctx.getImageData(0, 0, size, size);
+        let sumR = 0, sumG = 0, sumB = 0, n = 0;
+        let bestSat = -1, bestColor = null;
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+          if (a < 128) continue;
+          const max = Math.max(r, g, b), min = Math.min(r, g, b);
+          const lightness = max / 255;
+          if (lightness < 0.12 || lightness > 0.92) continue; // near-black/near-white make poor accents
+          const sat = max === 0 ? 0 : (max - min) / max;
+          sumR += r; sumG += g; sumB += b; n++;
+          if (sat > bestSat && lightness > 0.25 && lightness < 0.85) {
+            bestSat = sat;
+            bestColor = [r, g, b];
+          }
+        }
+        if (bestColor && bestSat > 0.15) { resolve(bestColor); return; }
+        if (n > 0) { resolve([Math.round(sumR / n), Math.round(sumG / n), Math.round(sumB / n)]); return; }
+        resolve(null);
+      } catch (err) {
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+}
+
+function toHex([r, g, b]) {
+  return `#${[r, g, b].map((x) => Math.max(0, Math.min(255, Math.round(x))).toString(16).padStart(2, '0')).join('')}`;
+}
+
+function applyDynamicAccentColor(rgb) {
+  const [r, g, b] = rgb;
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  const hex = toHex(rgb);
+  const hoverHex = toHex([r + 25, g + 25, b + 25]);
+  const root = document.documentElement;
+  root.style.setProperty('--accent', hex);
+  root.style.setProperty('--accent-hover', hoverHex);
+  root.style.setProperty('--accent-contrast', luminance > 0.6 ? '#0a0a0a' : '#ffffff');
+  root.style.setProperty('--seek-start', hex);
+  root.style.setProperty('--seek-end', hoverHex);
+  root.style.setProperty('--accent-bg', hex);
+}
+
+function clearDynamicAccentColor() {
+  const root = document.documentElement;
+  ['--accent', '--accent-hover', '--accent-contrast', '--seek-start', '--seek-end', '--accent-bg'].forEach((prop) =>
+    root.style.removeProperty(prop)
+  );
+}
+
 // Discord Rich Presence — no-op on mobile/web (see setDiscordActivity).
 // Discord only embeds Rich Presence images served over HTTPS, so a
 // Jellyfin server on plain HTTP (typical for a LAN-only setup) can't be used
@@ -530,6 +723,156 @@ function updateDiscordPresence() {
   });
 }
 
+// ---------- Sleep timer ----------
+let sleepTimerHandle = null;
+let sleepTimerBadgeInterval = null;
+let sleepTimerEndAt = null;
+let sleepTimerAtEndOfTrack = false;
+
+function clearSleepTimer() {
+  if (sleepTimerHandle) clearTimeout(sleepTimerHandle);
+  if (sleepTimerBadgeInterval) clearInterval(sleepTimerBadgeInterval);
+  sleepTimerHandle = null;
+  sleepTimerBadgeInterval = null;
+  sleepTimerEndAt = null;
+  sleepTimerAtEndOfTrack = false;
+  sleepTimerBadge.hidden = true;
+  sleepTimerOff.hidden = true;
+  btnSleepTimer.classList.remove('active');
+  btnSleepTimerMobile.classList.remove('active');
+}
+
+function updateSleepTimerBadge() {
+  if (!sleepTimerEndAt) return;
+  const minutesLeft = Math.max(1, Math.ceil((sleepTimerEndAt - Date.now()) / 60000));
+  sleepTimerBadge.textContent = minutesLeft;
+  sleepTimerBadge.hidden = false;
+}
+
+function setSleepTimer(minutes) {
+  clearSleepTimer();
+  sleepTimerEndAt = Date.now() + minutes * 60000;
+  sleepTimerHandle = setTimeout(() => {
+    if (!player.audio.paused) player.togglePlay();
+    clearSleepTimer();
+  }, minutes * 60000);
+  updateSleepTimerBadge();
+  sleepTimerBadgeInterval = setInterval(updateSleepTimerBadge, 15000);
+  sleepTimerOff.hidden = false;
+  btnSleepTimer.classList.add('active');
+  btnSleepTimerMobile.classList.add('active');
+}
+
+function setSleepTimerEndOfTrack() {
+  clearSleepTimer();
+  sleepTimerAtEndOfTrack = true;
+  sleepTimerBadge.textContent = '•';
+  sleepTimerBadge.hidden = false;
+  sleepTimerOff.hidden = false;
+  btnSleepTimer.classList.add('active');
+  btnSleepTimerMobile.classList.add('active');
+}
+
+function openSleepTimerMenuNear(triggerEl) {
+  const rect = triggerEl.getBoundingClientRect();
+  sleepTimerMenu.hidden = false;
+  // Flip above the trigger if there's not enough room below (the desktop
+  // player-bar button sits at the very bottom of the window).
+  const menuHeight = sleepTimerMenu.offsetHeight;
+  const opensUp = rect.bottom + menuHeight + 8 > window.innerHeight;
+  sleepTimerMenu.style.top = opensUp ? `${rect.top - menuHeight - 8}px` : `${rect.bottom + 8}px`;
+  const left = Math.min(rect.left, window.innerWidth - sleepTimerMenu.offsetWidth - 8);
+  sleepTimerMenu.style.left = `${Math.max(8, left)}px`;
+}
+
+function wireSleepTimer() {
+  const triggers = [btnSleepTimer, btnSleepTimerMobile];
+  triggers.forEach((trigger) => {
+    trigger.addEventListener('click', (evt) => {
+      evt.stopPropagation();
+      if (!sleepTimerMenu.hidden) { sleepTimerMenu.hidden = true; return; }
+      openSleepTimerMenuNear(trigger);
+    });
+  });
+  document.addEventListener('click', (evt) => {
+    if (!sleepTimerMenu.hidden && !sleepTimerMenu.contains(evt.target) && !triggers.includes(evt.target) && !evt.target.closest('.sleep-timer-wrap, #btn-sleep-timer-mobile')) {
+      sleepTimerMenu.hidden = true;
+    }
+  });
+  sleepTimerMenu.querySelectorAll('.sleep-timer-option[data-minutes]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      setSleepTimer(Number(btn.dataset.minutes));
+      sleepTimerMenu.hidden = true;
+    });
+  });
+  sleepTimerMenu.querySelector('[data-end-of-track]').addEventListener('click', () => {
+    setSleepTimerEndOfTrack();
+    sleepTimerMenu.hidden = true;
+  });
+  sleepTimerOff.addEventListener('click', () => {
+    clearSleepTimer();
+    sleepTimerMenu.hidden = true;
+  });
+}
+
+// ---------- Connect (device handoff) ----------
+
+function openConnectMenuNear(triggerEl) {
+  const rect = triggerEl.getBoundingClientRect();
+  connectMenu.hidden = false;
+  const menuHeight = connectMenu.offsetHeight;
+  const opensUp = rect.bottom + menuHeight + 8 > window.innerHeight;
+  connectMenu.style.top = opensUp ? `${rect.top - menuHeight - 8}px` : `${rect.bottom + 8}px`;
+  const left = Math.min(rect.left, window.innerWidth - connectMenu.offsetWidth - 8);
+  connectMenu.style.left = `${Math.max(8, left)}px`;
+}
+
+async function loadConnectDevices() {
+  if (!connect) {
+    connectDeviceList.innerHTML = '';
+    connectDeviceList.appendChild(el('div', 'connect-empty', t('connect.empty')));
+    return;
+  }
+  connectDeviceList.innerHTML = `<div class="connect-loading">${escapeHtml(t('connect.loading'))}</div>`;
+  const devices = await connect.getDevices();
+  connectDeviceList.innerHTML = '';
+  if (!devices.length) {
+    connectDeviceList.appendChild(el('div', 'connect-empty', t('connect.empty')));
+    return;
+  }
+  devices.forEach((session) => {
+    const item = el('button', 'connect-device-item');
+    item.type = 'button';
+    const meta = session.NowPlayingItem
+      ? t('connect.nowPlaying', { title: session.NowPlayingItem.Name })
+      : (session.Client || '');
+    item.innerHTML = `<span class="connect-device-name">${escapeHtml(session.DeviceName || session.Client || 'Device')}</span><span class="connect-device-meta">${escapeHtml(meta)}</span>`;
+    item.addEventListener('click', async () => {
+      connectMenu.hidden = true;
+      try {
+        await connect.sendToDevice(session.Id);
+      } catch (err) {
+        alert(err.message || t('connect.errorSend'));
+      }
+    });
+    connectDeviceList.appendChild(item);
+  });
+}
+
+function wireConnectMenu() {
+  btnConnect.addEventListener('click', (evt) => {
+    evt.stopPropagation();
+    if (!connectMenu.hidden) { connectMenu.hidden = true; return; }
+    openConnectMenuNear(btnConnect);
+    loadConnectDevices();
+  });
+  document.addEventListener('click', (evt) => {
+    if (!connectMenu.hidden && !connectMenu.contains(evt.target) && evt.target !== btnConnect && !evt.target.closest('#btn-connect')) {
+      connectMenu.hidden = true;
+    }
+  });
+}
+
 // ---------- Cat Jam ----------
 // Real bass-onset detection via Web Audio's AnalyserNode. Rather than
 // overlaying a CSS bounce, the detected tempo instead drives the cat video's
@@ -539,33 +882,21 @@ function updateDiscordPresence() {
 // own bob cycle was authored at (~120bpm); actual detected tempo scales
 // speed relative to that.
 const REFERENCE_INTERVAL_MS = 500;
-let catJamAudioCtx = null;
-const catJamAnalysers = new WeakMap(); // audio element -> AnalyserNode (one per element, created once)
 let catJamRAF = null;
 let catJamBassAvg = 0;
 let catJamLastBeatAt = 0;
 let catJamBeatIntervalMs = REFERENCE_INTERVAL_MS;
-
-function getCatJamAnalyser(audioEl) {
-  if (!catJamAudioCtx) catJamAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (catJamAudioCtx.state === 'suspended') catJamAudioCtx.resume().catch(() => {});
-  if (catJamAnalysers.has(audioEl)) return catJamAnalysers.get(audioEl);
-  const source = catJamAudioCtx.createMediaElementSource(audioEl);
-  const analyser = catJamAudioCtx.createAnalyser();
-  analyser.fftSize = 256;
-  analyser.smoothingTimeConstant = 0.6;
-  source.connect(analyser);
-  analyser.connect(catJamAudioCtx.destination); // keep normal playback audible
-  catJamAnalysers.set(audioEl, analyser);
-  return analyser;
-}
 
 function catJamTick() {
   if (!getSettings().catJam) { catJamRAF = null; return; }
   catJamRAF = requestAnimationFrame(catJamTick);
   if (!player?.currentTrack || player.audio.paused) return;
 
-  const analyser = getCatJamAnalyser(player.audio);
+  // Shares the player's Web Audio graph (see Player.getAnalyser) rather than
+  // opening its own — a second createMediaElementSource() on the same
+  // <audio> element would throw.
+  const analyser = player.getAnalyser(player.audio);
+  if (!analyser) return;
   const data = new Uint8Array(analyser.frequencyBinCount);
   analyser.getByteFrequencyData(data);
 
@@ -617,14 +948,36 @@ function wireUpdateToast() {
   });
 }
 
+function wireMediaKeys() {
+  if (!window.api?.mediaKeys) return;
+  window.api.mediaKeys.onKey((key) => {
+    if (!player) return;
+    if (key === 'playpause') player.togglePlay();
+    else if (key === 'next') player.next(true);
+    else if (key === 'previous') player.previous();
+    else if (key === 'stop' && !player.audio.paused) player.togglePlay();
+  });
+}
+
 function refreshSettingsUI() {
   const s = getSettings();
   languageSelect.value = s.language;
   toggleArtBackground.checked = !!s.artBackground;
+  toggleDynamicAccentColor.checked = !!s.dynamicAccentColor;
   crossfadeSlider.value = s.crossfadeSeconds || 0;
   crossfadeValue.textContent = s.crossfadeSeconds ? `${s.crossfadeSeconds}s` : 'Off';
   crossfadeSlider.style.setProperty('--pct', rangeFillPercent(((s.crossfadeSeconds || 0) / 12) * 100, crossfadeSlider, 13));
   toggleReplayGain.checked = !!s.replayGainEnabled;
+  toggleEqualizer.checked = !!s.eqEnabled;
+  setHidden(equalizerBandsRow, !s.eqEnabled);
+  const eqGains = s.eqGains || [0, 0, 0, 0, 0];
+  eqBandSliders.forEach((slider) => {
+    const band = Number(slider.dataset.band);
+    const gain = eqGains[band] || 0;
+    slider.value = gain;
+    const valueEl = document.querySelector(`.eq-band-value[data-band-value="${band}"]`);
+    valueEl.textContent = gain > 0 ? `+${gain}` : `${gain}`;
+  });
   toggleCatJam.checked = !!s.catJam;
   setHidden(catJamScaleRow, !s.catJam);
   const catScale = s.catJamScale || 1;
@@ -729,6 +1082,7 @@ async function loadPlaylistSidebar() {
     span.textContent = pl.Name;
     item.appendChild(span);
     item.addEventListener('click', () => navigateTo({ view: 'playlist', id: pl.Id, name: pl.Name }));
+    wirePlaylistDropTarget(item, pl.Id);
     playlistListEl.appendChild(item);
   });
 }
@@ -789,6 +1143,7 @@ async function renderView(state) {
       case 'playlist': await renderPlaylistDetail(state.id, state.name); break;
       case 'album': await renderAlbumDetail(state.id); break;
       case 'artist': await renderArtistDetail(state.id, state.name); break;
+      case 'stats': renderStats(); break;
       default: await renderHome();
     }
   } catch (err) {
@@ -799,21 +1154,127 @@ async function renderView(state) {
 }
 
 // ---------- Views ----------
+// History entries are lightweight snapshots, not full Jellyfin items —
+// reshape into the minimal shape buildCard()/artUrl()/openCollection() need.
+function historyEntryToCardItem(e) {
+  return {
+    Id: e.id,
+    Name: e.name,
+    Album: e.album,
+    AlbumArtist: e.artist,
+    AlbumId: e.albumId,
+    ImageTags: e.imageTag ? { Primary: e.imageTag } : {}
+  };
+}
+
+function shuffleArray(arr) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+async function resolveHistoryEntriesToTracks(entries) {
+  if (!entries.length) return [];
+  if (!allSongsCache) allSongsCache = await jellyfin.getAllSongs(musicLibraryId);
+  const byId = new Map(allSongsCache.map((tr) => [tr.Id, tr]));
+  return entries.map((e) => byId.get(e.id)).filter(Boolean);
+}
+
+function buildSmartMixCard({ title, subtitle, art, onPlay }) {
+  const card = el('div', 'card');
+  const artWrap = el('div', 'card-art-wrap');
+  const img = document.createElement('img');
+  img.className = 'card-art';
+  img.src = art || placeholderArt('album');
+  artWrap.appendChild(img);
+  const playBtn = el('button', 'card-play-btn');
+  playBtn.innerHTML = '<svg class="icon-play-all-play" viewBox="0 0 24 24"><path d="M8 5v14l12-7z"/></svg>';
+  playBtn.addEventListener('click', (evt) => { evt.stopPropagation(); onPlay(); });
+  artWrap.appendChild(playBtn);
+  card.appendChild(artWrap);
+  card.appendChild(el('div', 'card-title', escapeHtml(title)));
+  if (subtitle) card.appendChild(el('div', 'card-subtitle', escapeHtml(subtitle)));
+  card.addEventListener('click', onPlay);
+  return card;
+}
+
+function buildSmartMixCards(genres) {
+  const cards = [];
+  const mostPlayed = getMostPlayed(30);
+  const onRepeat = getOnRepeat(30);
+
+  if (mostPlayed.length >= 3) {
+    cards.push(buildSmartMixCard({
+      title: t('home.mostPlayed'),
+      subtitle: t('home.songsCount', { count: mostPlayed.length }),
+      art: mostPlayed[0].imageTag ? artUrl(historyEntryToCardItem(mostPlayed[0])) : null,
+      onPlay: async () => {
+        const tracks = await resolveHistoryEntriesToTracks(mostPlayed);
+        if (tracks.length) player.setQueue(tracks, 0, 'smart:most-played');
+      }
+    }));
+  }
+
+  if (onRepeat.length >= 3) {
+    cards.push(buildSmartMixCard({
+      title: t('home.onRepeat'),
+      subtitle: t('home.songsCount', { count: onRepeat.length }),
+      art: onRepeat[0].imageTag ? artUrl(historyEntryToCardItem(onRepeat[0])) : null,
+      onPlay: async () => {
+        const tracks = await resolveHistoryEntriesToTracks(onRepeat);
+        if (tracks.length) player.setQueue(tracks, 0, 'smart:on-repeat');
+      }
+    }));
+  }
+
+  genres.slice(0, 2).forEach((genre) => {
+    cards.push(buildSmartMixCard({
+      title: genre.Name,
+      subtitle: t('home.genreMix'),
+      art: artUrl(genre, 'album'),
+      onPlay: async () => {
+        const tracks = await jellyfin.getSongsByGenre(genre.Id);
+        if (tracks.length) player.setQueue(shuffleArray(tracks).slice(0, 50), 0, `smart:genre:${genre.Id}`);
+      }
+    }));
+  });
+
+  return cards;
+}
+
 async function renderHome() {
-  const [playlists, albums] = await Promise.all([
+  const [playlists, albums, genres] = await Promise.all([
     jellyfin.getPlaylists(),
-    jellyfin.getAlbums(musicLibraryId)
+    jellyfin.getAlbums(musicLibraryId),
+    jellyfin.getMusicGenres().catch(() => [])
   ]);
 
   viewRoot.innerHTML = '';
   viewRoot.appendChild(el('div', 'view-title', t('home.greeting')));
 
+  const recentlyPlayed = getRecentlyPlayed(12);
+  if (recentlyPlayed.length) {
+    viewRoot.appendChild(el('div', 'section-title', t('home.recentlyPlayed')));
+    viewRoot.appendChild(buildCardGrid(recentlyPlayed.map(historyEntryToCardItem), 'song'));
+  }
+
+  const smartMixCards = buildSmartMixCards(genres);
+  if (smartMixCards.length) {
+    viewRoot.appendChild(el('div', 'section-title', t('home.madeForYou')));
+    const grid = el('div', 'card-grid');
+    smartMixCards.forEach((card) => grid.appendChild(card));
+    viewRoot.appendChild(grid);
+  }
+
   if (playlists.length) {
-    viewRoot.appendChild(el('div', 'section-title', 'Your Playlists'));
+    viewRoot.appendChild(el('div', 'section-title', t('home.yourPlaylists')));
     viewRoot.appendChild(buildCardGrid(playlists.slice(0, 12), 'playlist'));
   }
 
-  viewRoot.appendChild(el('div', 'section-title', 'Recently Added Albums'));
+  viewRoot.appendChild(el('div', 'section-title', t('home.recentAlbums')));
   viewRoot.appendChild(buildCardGrid(albums.slice(0, 12), 'album'));
 }
 
@@ -865,7 +1326,68 @@ async function renderLikedSongs() {
     viewRoot.appendChild(el('div', 'empty-state', t('liked.empty')));
     return;
   }
-  viewRoot.appendChild(buildTrackTable(liked, liked));
+  viewRoot.appendChild(buildTrackTable(liked, liked, { isLikedView: true }));
+}
+
+function renderStats() {
+  const stats = getStats();
+  viewRoot.innerHTML = '';
+  viewRoot.appendChild(el('div', 'view-title', t('stats.title')));
+
+  if (!stats.totalPlays) {
+    viewRoot.appendChild(el('div', 'empty-state', t('stats.empty')));
+    return;
+  }
+
+  const hours = Math.floor(stats.totalMinutes / 60);
+  const mins = stats.totalMinutes % 60;
+  const timeLabel = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+
+  const summary = el('div', 'stats-summary');
+  summary.appendChild(el('div', 'stat-box', `<div class="stat-value">${stats.totalPlays}</div><div class="stat-label">${escapeHtml(t('stats.totalPlays'))}</div>`));
+  summary.appendChild(el('div', 'stat-box', `<div class="stat-value">${escapeHtml(timeLabel)}</div><div class="stat-label">${escapeHtml(t('stats.timeListened'))}</div>`));
+  summary.appendChild(el('div', 'stat-box', `<div class="stat-value">${stats.topArtists.length}</div><div class="stat-label">${escapeHtml(t('stats.artistsPlayed'))}</div>`));
+  viewRoot.appendChild(summary);
+
+  if (stats.dailyActivity.some((d) => d.count > 0)) {
+    viewRoot.appendChild(el('div', 'section-title', t('stats.activity')));
+    const chart = el('div', 'stats-chart');
+    const max = Math.max(1, ...stats.dailyActivity.map((d) => d.count));
+    stats.dailyActivity.forEach((day) => {
+      const bar = el('div', 'stats-chart-bar');
+      bar.style.setProperty('--bar-pct', `${Math.round((day.count / max) * 100)}%`);
+      bar.title = `${new Date(day.date).toLocaleDateString()}: ${day.count}`;
+      chart.appendChild(bar);
+    });
+    viewRoot.appendChild(chart);
+  }
+
+  const playsLabel = (count) => t(count === 1 ? 'stats.plays' : 'stats.playsPlural', { count });
+
+  if (stats.topTracks.length) {
+    viewRoot.appendChild(el('div', 'section-title', t('stats.topTracks')));
+    viewRoot.appendChild(buildCardGrid(stats.topTracks.map(historyEntryToCardItem), 'song'));
+  }
+
+  const buildRankedList = (rows, labelKey) => {
+    const list = el('div', 'stats-list');
+    rows.forEach((row, i) => {
+      const item = el('div', 'stats-list-row');
+      item.innerHTML = `<span class="stats-list-rank">${i + 1}</span><span class="stats-list-name">${escapeHtml(row[labelKey])}</span><span class="stats-list-count">${escapeHtml(playsLabel(row.count))}</span>`;
+      list.appendChild(item);
+    });
+    return list;
+  };
+
+  if (stats.topArtists.length) {
+    viewRoot.appendChild(el('div', 'section-title', t('stats.topArtists')));
+    viewRoot.appendChild(buildRankedList(stats.topArtists, 'artist'));
+  }
+
+  if (stats.topAlbums.length) {
+    viewRoot.appendChild(el('div', 'section-title', t('stats.topAlbums')));
+    viewRoot.appendChild(buildRankedList(stats.topAlbums, 'album'));
+  }
 }
 
 async function renderAlbums() {
@@ -900,7 +1422,8 @@ function renderLibrary() {
     { view: 'liked', icon: 'fi-br-heart', label: t('nav.liked') },
     { view: 'genres', icon: 'fi-br-guitars', label: t('nav.genres') },
     { view: 'albums', icon: 'fi-br-album', label: t('nav.albums') },
-    { view: 'artists', icon: 'fi-br-user', label: t('nav.artists') }
+    { view: 'artists', icon: 'fi-br-user', label: t('nav.artists') },
+    { view: 'stats', icon: 'fi-br-stats', label: t('nav.stats') }
   ];
   entries.forEach(({ view, icon, label }) => {
     const card = el('div', 'card genre-card');
@@ -980,7 +1503,7 @@ async function renderPlaylistDetail(id, name) {
     viewRoot.appendChild(el('div', 'empty-state', t('playlist.empty')));
     return;
   }
-  viewRoot.appendChild(buildTrackTable(tracks, tracks, { sourceId: id }));
+  viewRoot.appendChild(buildTrackTable(tracks, tracks, { sourceId: id, playlistId: id }));
 }
 
 async function renderAlbumDetail(id) {
@@ -1080,6 +1603,7 @@ function buildCard(item, kind) {
   if (subtitle) card.appendChild(el('div', 'card-subtitle', escapeHtml(subtitle)));
 
   card.addEventListener('click', () => openCollection(item, kind));
+  if (kind === 'playlist') wirePlaylistDropTarget(card, item.Id);
   return card;
 }
 
@@ -1235,6 +1759,43 @@ function buildTrackTable(tracks, queueRef, opts = {}) {
       player.setQueue(queueRef, startIdx >= 0 ? startIdx : 0);
     });
 
+    // Swipe right always queues the track up next; swipe left's meaning
+    // depends on what list this is — remove from playlist, unlike, or
+    // (elsewhere, like All Songs/Album) nothing, since there's no sensible
+    // "remove" for those.
+    let onSwipeLeft = null;
+    if (opts.playlistId && track.PlaylistItemId) {
+      onSwipeLeft = async () => {
+        try {
+          await jellyfin.removeFromPlaylist(opts.playlistId, track.PlaylistItemId);
+          row.remove();
+        } catch (err) {
+          alert(err.message || t('errors.couldNotRemoveFromPlaylist'));
+        }
+      };
+    } else if (opts.isLikedView) {
+      onSwipeLeft = async () => {
+        try {
+          await jellyfin.unlikeItem(track.Id);
+          row.remove();
+        } catch (err) {
+          alert(err.message || t('errors.couldNotUpdateLike'));
+        }
+      };
+    }
+    wireSwipeActions(row, { onSwipeRight: () => player.enqueue(track), onSwipeLeft });
+    wireTrackDragSource(row, track);
+
+    if (isDesktop) {
+      row.addEventListener('contextmenu', (evt) => {
+        openContextMenu(evt, buildTrackContextMenuItems(track, {
+          queueRef,
+          anchorEl: row,
+          onRemove: onSwipeLeft
+        }));
+      });
+    }
+
     tbody.appendChild(row);
   });
 
@@ -1258,6 +1819,71 @@ function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str ?? '';
   return div.innerHTML;
+}
+
+// Swipe right = onSwipeRight (e.g. add to queue), swipe left = onSwipeLeft
+// (e.g. remove) — mobile only. Omit whichever side has no meaningful action
+// for a given row (e.g. no swipe-left on a plain "All Songs" row, since
+// there's nothing sensible to remove it from) and that direction just won't
+// drag. onSwipeLeft is expected to remove the row from the DOM itself (via
+// a re-render) once its own async work finishes — this only animates it.
+function wireSwipeActions(rowEl, { onSwipeRight, onSwipeLeft } = {}) {
+  if (!isMobile || (!onSwipeRight && !onSwipeLeft)) return;
+  const THRESHOLD = 70;
+  let startX = 0, startY = 0, dx = 0, dragging = false, decided = false, horizontal = false;
+
+  rowEl.style.touchAction = 'pan-y';
+
+  rowEl.addEventListener('touchstart', (evt) => {
+    if (evt.touches.length !== 1) return;
+    startX = evt.touches[0].clientX;
+    startY = evt.touches[0].clientY;
+    dx = 0; dragging = true; decided = false; horizontal = false;
+  }, { passive: true });
+
+  rowEl.addEventListener('touchmove', (evt) => {
+    if (!dragging) return;
+    const x = evt.touches[0].clientX;
+    const y = evt.touches[0].clientY;
+    const rawDx = x - startX;
+    if (!decided) {
+      if (Math.abs(rawDx) < 8 && Math.abs(y - startY) < 8) return;
+      horizontal = Math.abs(rawDx) > Math.abs(y - startY);
+      decided = true;
+    }
+    if (!horizontal) return;
+    if ((rawDx > 0 && !onSwipeRight) || (rawDx < 0 && !onSwipeLeft)) return;
+    dx = rawDx;
+    evt.preventDefault();
+    rowEl.style.transform = `translateX(${dx}px)`;
+    rowEl.classList.toggle('swipe-queue', dx > 20);
+    rowEl.classList.toggle('swipe-remove', dx < -20);
+  }, { passive: false });
+
+  const finish = () => {
+    if (!dragging) return;
+    dragging = false;
+    rowEl.style.transition = 'transform 0.18s ease';
+    if (horizontal && dx > THRESHOLD && onSwipeRight) {
+      hapticImpact('light');
+      onSwipeRight();
+      rowEl.style.transform = 'translateX(0)';
+    } else if (horizontal && dx < -THRESHOLD && onSwipeLeft) {
+      hapticImpact('medium');
+      rowEl.style.transform = 'translateX(-100%)';
+      rowEl.style.opacity = '0';
+      onSwipeLeft();
+    } else {
+      rowEl.style.transform = '';
+    }
+    setTimeout(() => {
+      rowEl.style.transition = '';
+      rowEl.classList.remove('swipe-queue', 'swipe-remove');
+    }, 200);
+    dx = 0;
+  };
+  rowEl.addEventListener('touchend', finish);
+  rowEl.addEventListener('touchcancel', finish);
 }
 
 // ---------- Player wiring ----------
@@ -1376,8 +2002,10 @@ function wirePlayer() {
     syncPlayAllButton();
     syncCardStates();
     updateBgArt();
+    updateDynamicAccentColor(track);
     updateDiscordPresence();
     syncCatJamVisibility();
+    recordPlay(track);
 
     if (!lyricsPanel.hidden) {
       if (activePanelTab === 'lyrics') loadLyricsForCurrentTrack();
@@ -1417,6 +2045,13 @@ function wirePlayer() {
     mobileTimeCurrent.textContent = formatTime(current);
     if (duration) { timeTotal.textContent = formatTime(duration); mobileTimeTotal.textContent = formatTime(duration); }
     updateActiveLyricLine(current);
+
+    // "End of track" sleep timer: pause just short of the natural end so it
+    // never lets the next track start, rather than pausing after the fact.
+    if (sleepTimerAtEndOfTrack && duration && duration - current < 0.5) {
+      player.togglePlay();
+      clearSleepTimer();
+    }
   });
 }
 
@@ -1482,6 +2117,136 @@ function closeAddToPlaylistMenu() {
   }
 }
 
+// ---------- Drag-and-drop a track onto a playlist (desktop) ----------
+const TRACK_DND_TYPE = 'application/x-jellywave-track-id';
+
+function wireTrackDragSource(row, track) {
+  if (!isDesktop) return;
+  row.draggable = true;
+  row.addEventListener('dragstart', (evt) => {
+    evt.dataTransfer.setData(TRACK_DND_TYPE, track.Id);
+    evt.dataTransfer.effectAllowed = 'copy';
+    row.classList.add('dragging-source');
+  });
+  row.addEventListener('dragend', () => row.classList.remove('dragging-source'));
+}
+
+function wirePlaylistDropTarget(target, playlistId) {
+  if (!isDesktop) return;
+  target.addEventListener('dragover', (evt) => {
+    if (!evt.dataTransfer.types.includes(TRACK_DND_TYPE)) return;
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy';
+    target.classList.add('drop-target-active');
+  });
+  target.addEventListener('dragleave', () => target.classList.remove('drop-target-active'));
+  target.addEventListener('drop', async (evt) => {
+    if (!evt.dataTransfer.types.includes(TRACK_DND_TYPE)) return;
+    evt.preventDefault();
+    target.classList.remove('drop-target-active');
+    const trackId = evt.dataTransfer.getData(TRACK_DND_TYPE);
+    if (!trackId) return;
+    try {
+      await jellyfin.addToPlaylist(playlistId, trackId);
+    } catch (err) {
+      alert(err.message || t('errors.couldNotAddToPlaylist'));
+    }
+  });
+}
+
+// ---------- Right-click context menus (desktop) ----------
+let activeContextMenu = null;
+
+function closeContextMenu() {
+  if (activeContextMenu) {
+    activeContextMenu.remove();
+    activeContextMenu = null;
+  }
+}
+
+// items: array of { label, icon, danger, onClick } or the string 'separator'.
+function openContextMenu(evt, items) {
+  evt.preventDefault();
+  evt.stopPropagation();
+  closeContextMenu();
+  closeAddToPlaylistMenu();
+
+  const menu = el('div', 'account-menu context-menu');
+  items.forEach((item) => {
+    if (item === 'separator') { menu.appendChild(el('div', 'context-menu-sep')); return; }
+    const btn = el('button', item.danger ? 'danger' : '', `<i class="fi ${item.icon}"></i><span>${escapeHtml(item.label)}</span>`);
+    btn.type = 'button';
+    btn.addEventListener('click', () => { closeContextMenu(); item.onClick(); });
+    menu.appendChild(btn);
+  });
+
+  document.body.appendChild(menu);
+  const width = menu.offsetWidth;
+  const height = menu.offsetHeight;
+  menu.style.left = `${Math.max(8, Math.min(evt.clientX, window.innerWidth - width - 8))}px`;
+  menu.style.top = `${Math.max(8, Math.min(evt.clientY, window.innerHeight - height - 8))}px`;
+  activeContextMenu = menu;
+
+  setTimeout(() => {
+    document.addEventListener('click', closeContextMenu, { once: true });
+  }, 0);
+}
+
+// Shared menu contents for a single track — used by both track-table rows
+// and queue rows. `queueCtx` carries the queue this track lives in (so
+// "Play" can start the right list) plus optional playlist/queue-removal info.
+function buildTrackContextMenuItems(track, queueCtx = {}) {
+  const items = [];
+  items.push({
+    label: t('player.play'),
+    icon: 'fi-br-play',
+    onClick: queueCtx.onPlay || (() => {
+      const list = queueCtx.queueRef || [track];
+      const startIdx = list.findIndex((tr) => tr.Id === track.Id);
+      player.setQueue(list, startIdx >= 0 ? startIdx : 0);
+    })
+  });
+  items.push({
+    label: t('queue.addToQueue'),
+    icon: 'fi-br-list-music',
+    onClick: () => player.enqueue(track)
+  });
+  items.push({
+    label: track.UserData?.IsFavorite ? t('queue.unlike') : t('track.like'),
+    icon: 'fi-br-heart',
+    onClick: async () => {
+      const liked = !track.UserData?.IsFavorite;
+      track.UserData = { ...(track.UserData || {}), IsFavorite: liked };
+      try {
+        if (liked) await jellyfin.likeItem(track.Id);
+        else await jellyfin.unlikeItem(track.Id);
+        syncCardStates();
+      } catch (err) {
+        track.UserData.IsFavorite = !liked;
+        alert(err.message || t('errors.couldNotUpdateLike'));
+      }
+    }
+  });
+  items.push({
+    label: t('track.addToPlaylist'),
+    icon: 'fi-br-add',
+    onClick: (evt) => openAddToPlaylistMenu(track, queueCtx.anchorEl || document.body)
+  });
+  items.push('separator');
+  if (track.AlbumId) {
+    items.push({ label: t('kind.album'), icon: 'fi-br-album', onClick: () => navigateTo({ view: 'album', id: track.AlbumId }) });
+  }
+  if (track.ArtistItems?.length) {
+    const artist = track.ArtistItems[0];
+    items.push({ label: t('kind.artist'), icon: 'fi-br-user', onClick: () => navigateTo({ view: 'artist', id: artist.Id, name: formatDisplayName(artist.Name) }) });
+  }
+  if (queueCtx.onRemove) {
+    items.push('separator');
+    items.push({ label: t('queue.remove'), icon: 'fi-br-trash', danger: true, onClick: queueCtx.onRemove });
+  }
+  return items;
+}
+
 function showPanelTab(tab) {
   activePanelTab = tab;
   tabLyrics.classList.toggle('active', tab === 'lyrics');
@@ -1494,6 +2259,7 @@ function showPanelTab(tab) {
 
 function buildQueueRow(track, idx, isPlaying) {
   const row = el('div', isPlaying ? 'queue-row playing' : 'queue-row');
+  row.dataset.idx = idx;
   const img = document.createElement('img');
   img.src = artUrl(track);
   row.appendChild(img);
@@ -1501,7 +2267,92 @@ function buildQueueRow(track, idx, isPlaying) {
   text.innerHTML = `<div class="queue-row-title">${escapeHtml(track.Name)}</div><div class="queue-row-artist">${escapeHtml(artistNames(track))}</div>`;
   row.appendChild(text);
   row.addEventListener('click', () => player.playAt(idx));
+
+  // Can't remove/reorder what's currently playing this way — only "Up Next" rows.
+  if (!isPlaying) {
+    wireSwipeActions(row, {
+      // Delay the actual removal slightly so the slide-out animation has
+      // time to play before renderQueue() (triggered by queuechange) wipes
+      // and rebuilds the whole list out from under it.
+      onSwipeLeft: () => setTimeout(() => player.removeFromQueueAt(idx), 180)
+    });
+    const handle = el('div', 'queue-row-handle', '<i class="fi fi-br-grip"></i>');
+    handle.addEventListener('click', (evt) => evt.stopPropagation());
+    row.appendChild(handle);
+    wireQueueDragHandle(handle, row);
+  }
+
+  if (isDesktop) {
+    row.addEventListener('contextmenu', (evt) => {
+      openContextMenu(evt, buildTrackContextMenuItems(track, {
+        onPlay: () => player.playAt(idx),
+        anchorEl: row,
+        onRemove: isPlaying ? null : () => player.removeFromQueueAt(idx)
+      }));
+    });
+  }
+
   return row;
+}
+
+// Drag-to-reorder via a dedicated handle (rather than the whole row) so it
+// never has to be disambiguated from the swipe-to-remove gesture on the
+// same row — Pointer Events unify mouse (desktop) and touch (mobile).
+function wireQueueDragHandle(handle, row) {
+  handle.addEventListener('pointerdown', (evt) => {
+    evt.preventDefault();
+    evt.stopPropagation();
+    const startY = evt.clientY;
+    const fromIdx = Number(row.dataset.idx);
+    let currentToIdx = fromIdx;
+    row.classList.add('dragging');
+    handle.setPointerCapture(evt.pointerId);
+
+    const onMove = (moveEvt) => {
+      const dy = moveEvt.clientY - startY;
+      row.style.transform = `translateY(${dy}px)`;
+      row.style.zIndex = '10';
+
+      // Swap DOM position with whichever sibling row the dragged row's
+      // center has now crossed, live, so the list visibly reshuffles as you
+      // drag rather than only snapping into place on release.
+      const siblings = [...row.parentElement.querySelectorAll('.queue-row:not(.playing)')];
+      const rowRect = row.getBoundingClientRect();
+      const rowCenter = rowRect.top + rowRect.height / 2;
+      for (const sibling of siblings) {
+        if (sibling === row) continue;
+        const sibRect = sibling.getBoundingClientRect();
+        const sibCenter = sibRect.top + sibRect.height / 2;
+        const sibIdx = Number(sibling.dataset.idx);
+        const movingDown = currentToIdx < sibIdx;
+        const crossed = movingDown ? rowCenter > sibCenter : rowCenter < sibCenter;
+        if (crossed) {
+          if (movingDown) sibling.parentElement.insertBefore(row, sibling.nextSibling);
+          else sibling.parentElement.insertBefore(row, sibling);
+          currentToIdx = sibIdx;
+          break;
+        }
+      }
+    };
+
+    const onUp = () => {
+      handle.releasePointerCapture(evt.pointerId);
+      handle.removeEventListener('pointermove', onMove);
+      handle.removeEventListener('pointerup', onUp);
+      handle.removeEventListener('pointercancel', onUp);
+      row.classList.remove('dragging');
+      row.style.transform = '';
+      row.style.zIndex = '';
+      if (currentToIdx !== fromIdx) {
+        hapticImpact('light');
+        player.reorderQueueAt(fromIdx, currentToIdx);
+      }
+    };
+
+    handle.addEventListener('pointermove', onMove);
+    handle.addEventListener('pointerup', onUp);
+    handle.addEventListener('pointercancel', onUp);
+  });
 }
 
 function renderQueue() {

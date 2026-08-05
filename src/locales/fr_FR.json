@@ -20,7 +20,9 @@
     "loggingIn": "Connexion en cours…",
     "errorWrongCredentials": "Nom d'utilisateur ou mot de passe incorrect.",
     "errorServer": "Le serveur a répondu avec {status}.",
-    "errorGeneric": "Impossible de se connecter. Vérifiez l'adresse du serveur et réessayez."
+    "errorGeneric": "Impossible de se connecter. Vérifiez l'adresse du serveur et réessayez.",
+    "errorUnreachable": "Impossible de joindre votre serveur, mais vous êtes toujours connecté — vérifiez votre connexion et réessayez.",
+    "retry": "Réessayer"
   },
   "nav": {
     "home": "Accueil",
@@ -34,7 +36,8 @@
     "playlists": "Playlists",
     "createPlaylist": "Créer une playlist",
     "back": "Retour",
-    "forward": "Avancer"
+    "forward": "Avancer",
+    "stats": "Stats"
   },
   "header": {
     "searchPlaceholder": "Que voulez-vous écouter ?"
@@ -45,8 +48,14 @@
   },
   "home": {
     "greeting": "Ravi de vous revoir",
+    "recentlyPlayed": "Écoutés récemment",
     "yourPlaylists": "Vos playlists",
-    "recentAlbums": "Albums ajoutés récemment"
+    "recentAlbums": "Albums ajoutés récemment",
+    "madeForYou": "Fait pour vous",
+    "mostPlayed": "Les plus écoutés",
+    "onRepeat": "En boucle",
+    "genreMix": "Mix par genre",
+    "songsCount": "{count} titres"
   },
   "search": {
     "title": "Rechercher dans votre bibliothèque",
@@ -122,7 +131,10 @@
     "play": "Lecture",
     "pause": "Pause",
     "next": "Suivant",
-    "repeat": "Répéter"
+    "repeat": "Répéter",
+    "sleepTimer": "Minuterie de veille",
+    "sleepEndOfTrack": "Fin du morceau",
+    "sleepOff": "Désactiver"
   },
   "settings": {
     "title": "Paramètres",
@@ -136,6 +148,8 @@
     "accentColorDesc": "Choisissez le thème de couleur de l'application",
     "blurBg": "Arrière-plan flouté de la pochette",
     "blurBgDesc": "Remplit l'arrière-plan avec une version floutée de la pochette du titre en cours",
+    "dynamicAccentColor": "Couleur d'accent dynamique",
+    "dynamicAccentColorDesc": "Teinte la couleur d'accent de l'application selon la pochette de la chanson en cours",
     "language": "Langue",
     "languageDesc": "Choisissez la langue d'affichage de l'application",
     "audio": "Audio",
@@ -145,6 +159,9 @@
     "crossfadeDesc": "Fondu entre la fin d'un morceau et le début du suivant",
     "replayGain": "Normalisation du volume",
     "replayGainDesc": "Uniformise les différences de volume entre les morceaux (nécessite des données ReplayGain sur le serveur)",
+    "equalizer": "Égaliseur",
+    "equalizerDesc": "Ajustez le son avec un égaliseur graphique à 5 bandes (bureau uniquement)",
+    "equalizerReset": "Réinitialiser",
     "discordPresence": "Statut enrichi Discord",
     "discordPresenceDesc": "Affiche ce que vous écoutez sur votre profil Discord (bureau uniquement)",
     "discordConnect": "Connecter",
@@ -171,6 +188,7 @@
   "errors": {
     "generic": "Une erreur est survenue : {error}",
     "couldNotAddToPlaylist": "Impossible d'ajouter le titre à la playlist.",
+    "couldNotRemoveFromPlaylist": "Impossible de retirer le titre de la playlist.",
     "couldNotUpdateLike": "Impossible de mettre à jour le statut « aimé ».",
     "couldNotUploadArt": "Impossible de téléverser la pochette.",
     "couldNotCreatePlaylist": "Impossible de créer la playlist."
@@ -178,5 +196,30 @@
   "update": {
     "available": "JellyWave {version} est disponible.",
     "view": "Voir"
+  },
+  "stats": {
+    "title": "Vos statistiques",
+    "totalPlays": "Écoutes totales",
+    "timeListened": "Temps d'écoute",
+    "artistsPlayed": "Artistes écoutés",
+    "activity": "Activité d'écoute",
+    "topTracks": "Titres les plus écoutés",
+    "topArtists": "Artistes les plus écoutés",
+    "topAlbums": "Albums les plus écoutés",
+    "plays": "{count} écoute",
+    "playsPlural": "{count} écoutes",
+    "empty": "Écoutez de la musique pour commencer à construire vos statistiques."
+  },
+  "queue": {
+    "addToQueue": "Ajouter à la file d'attente",
+    "unlike": "Ne plus aimer",
+    "remove": "Retirer"
+  },
+  "connect": {
+    "title": "Connect",
+    "loading": "Recherche d’appareils…",
+    "empty": "Aucun autre appareil trouvé.",
+    "nowPlaying": "Lecture de {title}",
+    "errorSend": "Impossible d'envoyer la lecture vers cet appareil."
   }
 }

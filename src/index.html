@@ -64,6 +64,7 @@
         </label>
         <button type="submit" id="btn-login" class="btn-primary" data-i18n="login.logIn">Log In</button>
         <p id="login-error" class="login-error" hidden></p>
+        <button type="button" id="btn-retry-connection" class="btn-primary" hidden data-i18n="login.retry">Retry</button>
       </form>
     </div>
   </div>
@@ -99,6 +100,10 @@
         <button class="nav-item" data-view="artists">
           <i class="fi fi-br-user"></i>
           <span data-i18n="nav.artists">Artists</span>
+        </button>
+        <button class="nav-item" data-view="stats">
+          <i class="fi fi-br-stats"></i>
+          <span data-i18n="nav.stats">Stats</span>
         </button>
       </nav>
       <div class="sidebar-divider"></div>
@@ -149,7 +154,7 @@
           <button id="tab-lyrics" class="panel-tab active" data-tab="lyrics" type="button" data-i18n="nowPlaying.lyricsTab">Lyrics</button>
           <button id="tab-queue" class="panel-tab" data-tab="queue" type="button" data-i18n="nowPlaying.queueTab">Queue</button>
         </div>
-        <span class="lyrics-header-spacer" aria-hidden="true"></span>
+        <button id="btn-sleep-timer-mobile" class="btn-icon-plain lyrics-header-spacer" type="button" data-i18n-title="player.sleepTimer" title="Sleep timer"><i class="fi fi-br-moon"></i></button>
       </div>
       <div class="now-playing-summary">
         <img id="now-playing-art" class="now-playing-art" alt="" />
@@ -228,6 +233,15 @@
       </div>
 
       <div class="player-extra">
+        <div class="sleep-timer-wrap">
+          <button id="btn-sleep-timer" class="ctrl-btn" data-i18n-title="player.sleepTimer" title="Sleep timer">
+            <i class="fi fi-br-moon"></i>
+          </button>
+          <span id="sleep-timer-badge" class="sleep-timer-badge" hidden></span>
+        </div>
+        <button id="btn-connect" class="ctrl-btn" data-i18n-title="connect.title" title="Connect">
+          <i class="fi fi-br-cast"></i>
+        </button>
         <button id="btn-lyrics" class="ctrl-btn" data-i18n-title="nowPlaying.title" title="Now Playing">
           <i class="fi fi-br-list-music"></i>
         </button>
@@ -316,6 +330,16 @@
           </div>
           <div class="settings-row">
             <div>
+              <div class="settings-row-label" data-i18n="settings.dynamicAccentColor">Dynamic accent color</div>
+              <div class="settings-row-desc" data-i18n="settings.dynamicAccentColorDesc">Tint the app's accent color to match the current song's cover art</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-dynamic-accent-color" />
+              <span class="switch-track"></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div>
               <div class="settings-row-label" data-i18n="settings.catJam">Jam on paw level</div>
               <div class="settings-row-desc" data-i18n="settings.catJamDesc">Show a cat that bounces to the beat next to the player</div>
             </div>
@@ -365,6 +389,46 @@
           </div>
           <div class="settings-row">
             <div>
+              <div class="settings-row-label" data-i18n="settings.equalizer">Equalizer</div>
+              <div class="settings-row-desc" data-i18n="settings.equalizerDesc">Shape the sound with a 5-band graphic equalizer (desktop only)</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-equalizer" />
+              <span class="switch-track"></span>
+            </label>
+          </div>
+          <div class="settings-row settings-row-stack" id="equalizer-bands-row" hidden>
+            <div class="eq-bands">
+              <div class="eq-band">
+                <span class="eq-band-value" data-band-value="0">0</span>
+                <div class="eq-band-slider-wrap"><input type="range" class="eq-band-slider" data-band="0" min="-12" max="12" step="1" value="0" /></div>
+                <span class="eq-band-label">60</span>
+              </div>
+              <div class="eq-band">
+                <span class="eq-band-value" data-band-value="1">0</span>
+                <div class="eq-band-slider-wrap"><input type="range" class="eq-band-slider" data-band="1" min="-12" max="12" step="1" value="0" /></div>
+                <span class="eq-band-label">250</span>
+              </div>
+              <div class="eq-band">
+                <span class="eq-band-value" data-band-value="2">0</span>
+                <div class="eq-band-slider-wrap"><input type="range" class="eq-band-slider" data-band="2" min="-12" max="12" step="1" value="0" /></div>
+                <span class="eq-band-label">1K</span>
+              </div>
+              <div class="eq-band">
+                <span class="eq-band-value" data-band-value="3">0</span>
+                <div class="eq-band-slider-wrap"><input type="range" class="eq-band-slider" data-band="3" min="-12" max="12" step="1" value="0" /></div>
+                <span class="eq-band-label">4K</span>
+              </div>
+              <div class="eq-band">
+                <span class="eq-band-value" data-band-value="4">0</span>
+                <div class="eq-band-slider-wrap"><input type="range" class="eq-band-slider" data-band="4" min="-12" max="12" step="1" value="0" /></div>
+                <span class="eq-band-label">12K</span>
+              </div>
+            </div>
+            <button type="button" id="btn-eq-reset" class="attribution-link" data-i18n="settings.equalizerReset">Reset</button>
+          </div>
+          <div class="settings-row">
+            <div>
               <div class="settings-row-label" data-i18n="settings.discordPresence">Discord Rich Presence</div>
               <div class="settings-row-desc" data-i18n="settings.discordPresenceDesc">Shows what you're listening to on your Discord profile (desktop only)</div>
             </div>
@@ -398,6 +462,22 @@
     <span id="update-toast-text" data-i18n="update.available">A new version is available.</span>
     <a id="update-toast-link" href="#" target="_blank" rel="noopener noreferrer" data-i18n="update.view">View</a>
     <button id="update-toast-dismiss" class="btn-icon-plain" type="button"><i class="fi fi-br-cross-small"></i></button>
+  </div>
+
+  <div id="sleep-timer-menu" class="account-menu sleep-timer-menu" hidden>
+    <div class="account-menu-name" data-i18n="player.sleepTimer">Sleep timer</div>
+    <button type="button" class="sleep-timer-option" data-minutes="5">5 min</button>
+    <button type="button" class="sleep-timer-option" data-minutes="15">15 min</button>
+    <button type="button" class="sleep-timer-option" data-minutes="30">30 min</button>
+    <button type="button" class="sleep-timer-option" data-minutes="45">45 min</button>
+    <button type="button" class="sleep-timer-option" data-minutes="60">60 min</button>
+    <button type="button" class="sleep-timer-option" data-end-of-track="1" data-i18n="player.sleepEndOfTrack">End of track</button>
+    <button type="button" id="sleep-timer-off" class="sleep-timer-option danger" data-i18n="player.sleepOff" hidden>Turn off</button>
+  </div>
+
+  <div id="connect-menu" class="account-menu connect-menu" hidden>
+    <div class="account-menu-name" data-i18n="connect.title">Connect</div>
+    <div id="connect-device-list" class="connect-device-list"></div>
   </div>
 
   <script type="module" src="js/app.js"></script>

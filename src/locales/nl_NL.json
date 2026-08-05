@@ -20,7 +20,9 @@
     "loggingIn": "Bezig met inloggen…",
     "errorWrongCredentials": "Onjuiste gebruikersnaam of wachtwoord.",
     "errorServer": "De server antwoordde met {status}.",
-    "errorGeneric": "Inloggen mislukt. Controleer het serveradres en probeer het opnieuw."
+    "errorGeneric": "Inloggen mislukt. Controleer het serveradres en probeer het opnieuw.",
+    "errorUnreachable": "Kon je server niet bereiken, maar je bent nog steeds ingelogd — controleer je verbinding en probeer opnieuw.",
+    "retry": "Opnieuw proberen"
   },
   "nav": {
     "home": "Start",
@@ -34,7 +36,8 @@
     "playlists": "Afspeellijsten",
     "createPlaylist": "Afspeellijst maken",
     "back": "Terug",
-    "forward": "Vooruit"
+    "forward": "Vooruit",
+    "stats": "Statistieken"
   },
   "header": {
     "searchPlaceholder": "Wat wil je afspelen?"
@@ -45,8 +48,14 @@
   },
   "home": {
     "greeting": "Fijn je te zien",
+    "recentlyPlayed": "Onlangs afgespeeld",
     "yourPlaylists": "Jouw afspeellijsten",
-    "recentAlbums": "Onlangs toegevoegde albums"
+    "recentAlbums": "Onlangs toegevoegde albums",
+    "madeForYou": "Voor jou gemaakt",
+    "mostPlayed": "Meest afgespeeld",
+    "onRepeat": "Continu herhaald",
+    "genreMix": "Genremix",
+    "songsCount": "{count} nummers"
   },
   "search": {
     "title": "Doorzoek je bibliotheek",
@@ -122,7 +131,10 @@
     "play": "Afspelen",
     "pause": "Pauzeren",
     "next": "Volgende",
-    "repeat": "Herhalen"
+    "repeat": "Herhalen",
+    "sleepTimer": "Slaaptimer",
+    "sleepEndOfTrack": "Einde van nummer",
+    "sleepOff": "Uitschakelen"
   },
   "settings": {
     "title": "Instellingen",
@@ -136,6 +148,8 @@
     "accentColorDesc": "Kies het kleurenschema van de app",
     "blurBg": "Vervaagde achtergrond van hoes",
     "blurBgDesc": "Vult de achtergrond met een vervaagde versie van de hoes van het huidige nummer",
+    "dynamicAccentColor": "Dynamische accentkleur",
+    "dynamicAccentColorDesc": "Kleurt het accent van de app op basis van de hoes van het huidige nummer",
     "language": "Taal",
     "languageDesc": "Kies de weergavetaal van de app",
     "audio": "Audio",
@@ -145,6 +159,9 @@
     "crossfadeDesc": "Vervaagt het einde van één nummer naar het begin van het volgende",
     "replayGain": "Volumenormalisatie",
     "replayGainDesc": "Vereffent volumeverschillen tussen nummers (vereist ReplayGain-gegevens op de server)",
+    "equalizer": "Equalizer",
+    "equalizerDesc": "Pas het geluid aan met een 5-bands grafische equalizer (alleen desktop)",
+    "equalizerReset": "Resetten",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Toont wat je luistert op je Discord-profiel (alleen desktop)",
     "discordConnect": "Verbinden",
@@ -171,6 +188,7 @@
   "errors": {
     "generic": "Er is iets misgegaan: {error}",
     "couldNotAddToPlaylist": "Kon het nummer niet toevoegen aan de afspeellijst.",
+    "couldNotRemoveFromPlaylist": "Kon nummer niet verwijderen uit afspeellijst.",
     "couldNotUpdateLike": "Kon de leuk-status niet bijwerken.",
     "couldNotUploadArt": "Kon de hoes niet uploaden.",
     "couldNotCreatePlaylist": "Kon de afspeellijst niet maken."
@@ -178,5 +196,30 @@
   "update": {
     "available": "JellyWave {version} is beschikbaar.",
     "view": "Bekijken"
+  },
+  "stats": {
+    "title": "Jouw statistieken",
+    "totalPlays": "Totaal afspelen",
+    "timeListened": "Luistertijd",
+    "artistsPlayed": "Beluisterde artiesten",
+    "activity": "Luisteractiviteit",
+    "topTracks": "Meest gespeelde nummers",
+    "topArtists": "Meest gespeelde artiesten",
+    "topAlbums": "Meest gespeelde albums",
+    "plays": "{count} keer afgespeeld",
+    "playsPlural": "{count} keer afgespeeld",
+    "empty": "Luister naar muziek om je statistieken op te bouwen."
+  },
+  "queue": {
+    "addToQueue": "Toevoegen aan wachtrij",
+    "unlike": "Niet meer leuk",
+    "remove": "Verwijderen"
+  },
+  "connect": {
+    "title": "Connect",
+    "loading": "Apparaten zoeken…",
+    "empty": "Geen andere apparaten gevonden.",
+    "nowPlaying": "Speelt {title}",
+    "errorSend": "Kon afspelen niet naar dat apparaat sturen."
   }
 }

@@ -20,7 +20,9 @@
     "loggingIn": "Prihlasovanie…",
     "errorWrongCredentials": "Nesprávne používateľské meno alebo heslo.",
     "errorServer": "Server odpovedal s kódom {status}.",
-    "errorGeneric": "Prihlásenie zlyhalo. Skontrolujte adresu servera a skúste to znova."
+    "errorGeneric": "Prihlásenie zlyhalo. Skontrolujte adresu servera a skúste to znova.",
+    "errorUnreachable": "Nepodarilo sa pripojiť k serveru, no stále si prihlásený — skontroluj pripojenie a skús znova.",
+    "retry": "Skúsiť znova"
   },
   "nav": {
     "home": "Domov",
@@ -34,7 +36,8 @@
     "playlists": "Playlisty",
     "createPlaylist": "Vytvoriť playlist",
     "back": "Späť",
-    "forward": "Dopredu"
+    "forward": "Dopredu",
+    "stats": "Štatistiky"
   },
   "header": {
     "searchPlaceholder": "Čo si chcete vypočuť?"
@@ -45,8 +48,14 @@
   },
   "home": {
     "greeting": "Vitajte späť",
+    "recentlyPlayed": "Nedávno prehrané",
     "yourPlaylists": "Vaše playlisty",
-    "recentAlbums": "Naposledy pridané albumy"
+    "recentAlbums": "Naposledy pridané albumy",
+    "madeForYou": "Vytvorené pre teba",
+    "mostPlayed": "Najhranejšie",
+    "onRepeat": "Stále dokola",
+    "genreMix": "Žánrový mix",
+    "songsCount": "{count} skladieb"
   },
   "search": {
     "title": "Prehľadať vašu knižnicu",
@@ -122,7 +131,10 @@
     "play": "Prehrať",
     "pause": "Pozastaviť",
     "next": "Ďalšia",
-    "repeat": "Opakovať"
+    "repeat": "Opakovať",
+    "sleepTimer": "Časovač spánku",
+    "sleepEndOfTrack": "Koniec skladby",
+    "sleepOff": "Vypnúť"
   },
   "settings": {
     "title": "Nastavenia",
@@ -136,6 +148,8 @@
     "accentColorDesc": "Vyberte farebnú schému aplikácie",
     "blurBg": "Rozmazané pozadie z obalu",
     "blurBgDesc": "Vyplní pozadie rozmazanou verziou obalu aktuálnej skladby",
+    "dynamicAccentColor": "Dynamická farba zvýraznenia",
+    "dynamicAccentColorDesc": "Sfarbí farbu zvýraznenia aplikácie podľa obalu aktuálnej skladby",
     "language": "Jazyk",
     "languageDesc": "Vyberte zobrazovací jazyk aplikácie",
     "audio": "Zvuk",
@@ -145,6 +159,9 @@
     "crossfadeDesc": "Plynulo prelína koniec jednej skladby so začiatkom ďalšej",
     "replayGain": "Normalizácia hlasitosti",
     "replayGainDesc": "Vyrovnáva rozdiely v hlasitosti medzi skladbami (vyžaduje údaje ReplayGain na serveri)",
+    "equalizer": "Ekvalizér",
+    "equalizerDesc": "Uprav zvuk pomocou 5-pásmového grafického ekvalizéra (iba na počítači)",
+    "equalizerReset": "Obnoviť",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Zobrazí na tvojom Discord profile, čo práve počúvaš (iba desktop)",
     "discordConnect": "Pripojiť",
@@ -171,6 +188,7 @@
   "errors": {
     "generic": "Niečo sa pokazilo: {error}",
     "couldNotAddToPlaylist": "Skladbu sa nepodarilo pridať do playlistu.",
+    "couldNotRemoveFromPlaylist": "Skladbu sa nepodarilo odstrániť z playlistu.",
     "couldNotUpdateLike": "Stav obľúbenosti sa nepodarilo aktualizovať.",
     "couldNotUploadArt": "Obal sa nepodarilo nahrať.",
     "couldNotCreatePlaylist": "Playlist sa nepodarilo vytvoriť."
@@ -178,5 +196,30 @@
   "update": {
     "available": "JellyWave {version} je dostupný.",
     "view": "Zobraziť"
+  },
+  "stats": {
+    "title": "Tvoje štatistiky",
+    "totalPlays": "Celkovo prehraté",
+    "timeListened": "Čas počúvania",
+    "artistsPlayed": "Počúvaní interpreti",
+    "activity": "Aktivita počúvania",
+    "topTracks": "Najpočúvanejšie skladby",
+    "topArtists": "Najpočúvanejší interpreti",
+    "topAlbums": "Najpočúvanejšie albumy",
+    "plays": "{count} prehratie",
+    "playsPlural": "{count} prehratí",
+    "empty": "Počúvaj hudbu a začni budovať svoje štatistiky."
+  },
+  "queue": {
+    "addToQueue": "Pridať do frontu",
+    "unlike": "Zrušiť obľúbené",
+    "remove": "Odstrániť"
+  },
+  "connect": {
+    "title": "Connect",
+    "loading": "Hľadajú sa zariadenia…",
+    "empty": "Nenašli sa žiadne ďalšie zariadenia.",
+    "nowPlaying": "Prehráva {title}",
+    "errorSend": "Prehrávanie sa nepodarilo odoslať do tohto zariadenia."
   }
 }

@@ -20,7 +20,9 @@
     "loggingIn": "Anmeldung läuft…",
     "errorWrongCredentials": "Falscher Benutzername oder falsches Passwort.",
     "errorServer": "Der Server hat mit {status} geantwortet.",
-    "errorGeneric": "Anmeldung fehlgeschlagen. Überprüfe die Serveradresse und versuche es erneut."
+    "errorGeneric": "Anmeldung fehlgeschlagen. Überprüfe die Serveradresse und versuche es erneut.",
+    "errorUnreachable": "Server nicht erreichbar, du bist aber weiterhin angemeldet — Verbindung prüfen und erneut versuchen.",
+    "retry": "Erneut versuchen"
   },
   "nav": {
     "home": "Start",
@@ -34,7 +36,8 @@
     "playlists": "Playlists",
     "createPlaylist": "Playlist erstellen",
     "back": "Zurück",
-    "forward": "Vorwärts"
+    "forward": "Vorwärts",
+    "stats": "Statistik"
   },
   "header": {
     "searchPlaceholder": "Was möchtest du hören?"
@@ -45,8 +48,14 @@
   },
   "home": {
     "greeting": "Schön, dich zu sehen",
+    "recentlyPlayed": "Kürzlich gespielt",
     "yourPlaylists": "Deine Playlists",
-    "recentAlbums": "Kürzlich hinzugefügte Alben"
+    "recentAlbums": "Kürzlich hinzugefügte Alben",
+    "madeForYou": "Für dich gemacht",
+    "mostPlayed": "Meistgespielt",
+    "onRepeat": "In Dauerschleife",
+    "genreMix": "Genre-Mix",
+    "songsCount": "{count} Titel"
   },
   "search": {
     "title": "Durchsuche deine Bibliothek",
@@ -122,7 +131,10 @@
     "play": "Abspielen",
     "pause": "Pause",
     "next": "Weiter",
-    "repeat": "Wiederholen"
+    "repeat": "Wiederholen",
+    "sleepTimer": "Einschlaf-Timer",
+    "sleepEndOfTrack": "Ende des Titels",
+    "sleepOff": "Ausschalten"
   },
   "settings": {
     "title": "Einstellungen",
@@ -136,6 +148,8 @@
     "accentColorDesc": "Wähle das Farbschema der App",
     "blurBg": "Unscharfer Cover-Hintergrund",
     "blurBgDesc": "Füllt den Hintergrund mit einer unscharfen Version des aktuellen Covers",
+    "dynamicAccentColor": "Dynamische Akzentfarbe",
+    "dynamicAccentColorDesc": "Färbt die Akzentfarbe der App passend zum Cover des aktuellen Songs",
     "language": "Sprache",
     "languageDesc": "Wähle die Anzeigesprache der App",
     "audio": "Audio",
@@ -145,6 +159,9 @@
     "crossfadeDesc": "Blendet das Ende eines Songs in den Anfang des nächsten über",
     "replayGain": "Lautstärkenormalisierung",
     "replayGainDesc": "Gleicht Lautstärkeunterschiede zwischen Titeln aus (benötigt ReplayGain-Daten auf dem Server)",
+    "equalizer": "Equalizer",
+    "equalizerDesc": "Klang mit einem 5-Band-Grafik-Equalizer formen (nur Desktop)",
+    "equalizerReset": "Zurücksetzen",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Zeigt auf deinem Discord-Profil, was du gerade hörst (nur Desktop)",
     "discordConnect": "Verbinden",
@@ -171,6 +188,7 @@
   "errors": {
     "generic": "Etwas ist schiefgelaufen: {error}",
     "couldNotAddToPlaylist": "Song konnte nicht zur Playlist hinzugefügt werden.",
+    "couldNotRemoveFromPlaylist": "Song konnte nicht aus der Playlist entfernt werden.",
     "couldNotUpdateLike": "Like-Status konnte nicht aktualisiert werden.",
     "couldNotUploadArt": "Cover konnte nicht hochgeladen werden.",
     "couldNotCreatePlaylist": "Playlist konnte nicht erstellt werden."
@@ -178,5 +196,30 @@
   "update": {
     "available": "JellyWave {version} ist verfügbar.",
     "view": "Ansehen"
+  },
+  "stats": {
+    "title": "Deine Statistik",
+    "totalPlays": "Wiedergaben insgesamt",
+    "timeListened": "Hörzeit",
+    "artistsPlayed": "Gehörte Künstler",
+    "activity": "Hörverlauf",
+    "topTracks": "Meistgehörte Titel",
+    "topArtists": "Meistgehörte Künstler",
+    "topAlbums": "Meistgehörte Alben",
+    "plays": "{count} Wiedergabe",
+    "playsPlural": "{count} Wiedergaben",
+    "empty": "Höre Musik, um deine Statistik aufzubauen."
+  },
+  "queue": {
+    "addToQueue": "Zur Warteschlange hinzufügen",
+    "unlike": "Nicht mehr mögen",
+    "remove": "Entfernen"
+  },
+  "connect": {
+    "title": "Connect",
+    "loading": "Geräte werden gesucht…",
+    "empty": "Keine weiteren Geräte gefunden.",
+    "nowPlaying": "Spielt {title}",
+    "errorSend": "Wiedergabe konnte nicht an dieses Gerät gesendet werden."
   }
 }

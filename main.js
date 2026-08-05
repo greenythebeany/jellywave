@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, safeStorage, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, safeStorage, shell, globalShortcut } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { Client: DiscordRpcClient } = require('@xhayper/discord-rpc');
@@ -61,10 +61,33 @@ app.whenReady().then(() => {
       })
       .catch(() => {});
   }, 4000);
+
+  // Hardware media keys (play/pause/next/prev on a keyboard) — these are
+  // global accelerators Electron recognizes specially, so they work even
+  // when the app isn't focused, same as they would for any other player.
+  const mediaKeyMap = {
+    MediaPlayPause: 'playpause',
+    MediaNextTrack: 'next',
+    MediaPreviousTrack: 'previous',
+    MediaStop: 'stop'
+  };
+  Object.entries(mediaKeyMap).forEach(([accelerator, key]) => {
+    try {
+      globalShortcut.register(accelerator, () => {
+        mainWindow?.webContents.send('media-key', key);
+      });
+    } catch (err) {
+      // Some OS/keyboard combos don't expose these — non-fatal either way.
+    }
+  });
 });
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
 });
 
 ipcMain.handle('update:check', async () => {

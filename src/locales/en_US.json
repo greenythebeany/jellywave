@@ -20,7 +20,9 @@
     "loggingIn": "Logging in…",
     "errorWrongCredentials": "Wrong username or password.",
     "errorServer": "Server responded with {status}.",
-    "errorGeneric": "Could not sign in. Check your server address and try again."
+    "errorGeneric": "Could not sign in. Check your server address and try again.",
+    "errorUnreachable": "Could not reach your server, but you're still signed in — check your connection and retry.",
+    "retry": "Retry"
   },
   "nav": {
     "home": "Home",
@@ -34,7 +36,8 @@
     "playlists": "Playlists",
     "createPlaylist": "Create playlist",
     "back": "Back",
-    "forward": "Forward"
+    "forward": "Forward",
+    "stats": "Stats"
   },
   "header": {
     "searchPlaceholder": "What do you want to play?"
@@ -45,6 +48,12 @@
   },
   "home": {
     "greeting": "Good to see you",
+    "recentlyPlayed": "Recently Played",
+    "madeForYou": "Made For You",
+    "mostPlayed": "Most Played",
+    "onRepeat": "On Repeat",
+    "genreMix": "Genre Mix",
+    "songsCount": "{count} songs",
     "yourPlaylists": "Your Playlists",
     "recentAlbums": "Recently Added Albums"
   },
@@ -122,7 +131,10 @@
     "play": "Play",
     "pause": "Pause",
     "next": "Next",
-    "repeat": "Repeat"
+    "repeat": "Repeat",
+    "sleepTimer": "Sleep timer",
+    "sleepEndOfTrack": "End of track",
+    "sleepOff": "Turn off"
   },
   "settings": {
     "title": "Settings",
@@ -136,6 +148,8 @@
     "accentColorDesc": "Pick the app's color scheme",
     "blurBg": "Blurred cover art background",
     "blurBgDesc": "Fill the background with a blurred version of the current song's art",
+    "dynamicAccentColor": "Dynamic accent color",
+    "dynamicAccentColorDesc": "Tint the app's accent color to match the current song's cover art",
     "language": "Language",
     "languageDesc": "Choose the app's display language",
     "audio": "Audio",
@@ -145,6 +159,9 @@
     "crossfadeDesc": "Blend the end of one song into the start of the next",
     "replayGain": "Volume normalization",
     "replayGainDesc": "Even out loudness differences between tracks (needs ReplayGain data on the server)",
+    "equalizer": "Equalizer",
+    "equalizerDesc": "Shape the sound with a 5-band graphic equalizer (desktop only)",
+    "equalizerReset": "Reset",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Shows what you're listening to on your Discord profile (desktop only)",
     "discordConnect": "Connect",
@@ -171,6 +188,7 @@
   "errors": {
     "generic": "Something went wrong: {error}",
     "couldNotAddToPlaylist": "Could not add song to playlist.",
+    "couldNotRemoveFromPlaylist": "Could not remove song from playlist.",
     "couldNotUpdateLike": "Could not update like status.",
     "couldNotUploadArt": "Could not upload cover art.",
     "couldNotCreatePlaylist": "Could not create playlist."
@@ -178,5 +196,30 @@
   "update": {
     "available": "JellyWave {version} is available.",
     "view": "View"
+  },
+  "stats": {
+    "title": "Your Stats",
+    "totalPlays": "Total Plays",
+    "timeListened": "Time Listened",
+    "artistsPlayed": "Artists Played",
+    "activity": "Listening Activity",
+    "topTracks": "Top Tracks",
+    "topArtists": "Top Artists",
+    "topAlbums": "Top Albums",
+    "plays": "{count} play",
+    "playsPlural": "{count} plays",
+    "empty": "Play some music to start building your stats."
+  },
+  "queue": {
+    "addToQueue": "Add to queue",
+    "unlike": "Unlike",
+    "remove": "Remove"
+  },
+  "connect": {
+    "title": "Connect",
+    "loading": "Looking for devices…",
+    "empty": "No other devices found.",
+    "nowPlaying": "Playing {title}",
+    "errorSend": "Could not send playback to that device."
   }
 }

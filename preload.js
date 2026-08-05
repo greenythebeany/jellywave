@@ -26,5 +26,10 @@ contextBridge.exposeInMainWorld('api', {
     onAvailable: (callback) => {
       ipcRenderer.on('update:available', (_event, result) => callback(result));
     }
+  },
+  mediaKeys: {
+    onKey: (callback) => {
+      ipcRenderer.on('media-key', (_event, key) => callback(key));
+    }
   }
 });

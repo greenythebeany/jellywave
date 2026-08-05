@@ -99,23 +99,21 @@ npm run dist        # build a Windows installer
 
 The Android project lives in `android/` and is a standard Capacitor project — open it in Android Studio, or build from the command line with `./gradlew assembleRelease` after setting up your own signing keystore in `android/keystore/keystore.properties`.
 
-## Roadmap
+## What's new in 1.0.1
 
-Not yet started, roughly in the order they'll likely land:
-
-- Fix session getting logged out on transient network/server errors instead of only on an actual expired token
+- Fixed session getting logged out on transient network/server errors instead of only on an actual expired token
 - Sleep timer (stop playback after N minutes, or at the end of the current track)
 - Recently played history view, separate from "recently added"
 - Keyboard media key support on desktop (play/pause/skip from your keyboard, not just in-app)
 - Smart playlists (auto-generated "most played," "on repeat," genre mixes)
 - Swipe gestures on Android track lists (swipe to queue / remove)
-- Queue drag-to-reorder (long-press and drag a queue item to a new position)
-- Dynamic UI accent color pulled from the currently playing album art, Spotify-style
+- Queue drag-to-reorder (drag a queue item to a new position by its handle)
+- Dynamic UI accent color pulled from the currently playing album art, Spotify-style (opt-in in Settings)
 - Personal listening stats page (top artists/tracks, total listening time), built from local play history
-- Built-in equalizer (bass boost / vocal boost / custom band EQ)
-- Right-click context menu on desktop for tracks/albums/artists
-- Drag-and-drop a track onto a playlist in the sidebar, on desktop
-- Spotify Connect-style device handoff, letting playback be started on one device and picked up or controlled from another — likely built on Jellyfin's own `/Sessions` remote-control API rather than a custom relay
+- Built-in 5-band equalizer (desktop)
+- Right-click context menu on desktop for tracks and queue items
+- Drag-and-drop a track onto a playlist in the sidebar or a playlist card, on desktop
+- Spotify Connect-style device handoff, built on Jellyfin's own `/Sessions` API — hand off playback to another device, or let another Jellyfin client cast to JellyWave
 
 ## Acknowledgements
 

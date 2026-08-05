@@ -20,7 +20,9 @@
     "loggingIn": "Accesso in corso…",
     "errorWrongCredentials": "Nome utente o password errati.",
     "errorServer": "Il server ha risposto con {status}.",
-    "errorGeneric": "Impossibile accedere. Controlla l'indirizzo del server e riprova."
+    "errorGeneric": "Impossibile accedere. Controlla l'indirizzo del server e riprova.",
+    "errorUnreachable": "Impossibile raggiungere il server, ma hai ancora effettuato l'accesso — controlla la connessione e riprova.",
+    "retry": "Riprova"
   },
   "nav": {
     "home": "Home",
@@ -34,7 +36,8 @@
     "playlists": "Playlist",
     "createPlaylist": "Crea playlist",
     "back": "Indietro",
-    "forward": "Avanti"
+    "forward": "Avanti",
+    "stats": "Statistiche"
   },
   "header": {
     "searchPlaceholder": "Cosa vuoi ascoltare?"
@@ -45,8 +48,14 @@
   },
   "home": {
     "greeting": "Bello rivederti",
+    "recentlyPlayed": "Ascoltati di recente",
     "yourPlaylists": "Le tue playlist",
-    "recentAlbums": "Album aggiunti di recente"
+    "recentAlbums": "Album aggiunti di recente",
+    "madeForYou": "Fatto per te",
+    "mostPlayed": "Più ascoltati",
+    "onRepeat": "In loop",
+    "genreMix": "Mix per genere",
+    "songsCount": "{count} brani"
   },
   "search": {
     "title": "Cerca nella tua libreria",
@@ -122,7 +131,10 @@
     "play": "Riproduci",
     "pause": "Pausa",
     "next": "Successivo",
-    "repeat": "Ripeti"
+    "repeat": "Ripeti",
+    "sleepTimer": "Timer di spegnimento",
+    "sleepEndOfTrack": "Fine del brano",
+    "sleepOff": "Disattiva"
   },
   "settings": {
     "title": "Impostazioni",
@@ -136,6 +148,8 @@
     "accentColorDesc": "Scegli lo schema colori dell'app",
     "blurBg": "Sfondo sfocato dalla copertina",
     "blurBgDesc": "Riempie lo sfondo con una versione sfocata della copertina del brano corrente",
+    "dynamicAccentColor": "Colore accento dinamico",
+    "dynamicAccentColorDesc": "Colora l'accento dell'app in base alla copertina del brano in riproduzione",
     "language": "Lingua",
     "languageDesc": "Scegli la lingua dell'app",
     "audio": "Audio",
@@ -145,6 +159,9 @@
     "crossfadeDesc": "Sfuma la fine di un brano nell'inizio del successivo",
     "replayGain": "Normalizzazione del volume",
     "replayGainDesc": "Uniforma le differenze di volume tra i brani (richiede dati ReplayGain sul server)",
+    "equalizer": "Equalizzatore",
+    "equalizerDesc": "Modella il suono con un equalizzatore grafico a 5 bande (solo desktop)",
+    "equalizerReset": "Ripristina",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Mostra cosa stai ascoltando sul tuo profilo Discord (solo desktop)",
     "discordConnect": "Connetti",
@@ -171,6 +188,7 @@
   "errors": {
     "generic": "Qualcosa è andato storto: {error}",
     "couldNotAddToPlaylist": "Impossibile aggiungere il brano alla playlist.",
+    "couldNotRemoveFromPlaylist": "Impossibile rimuovere il brano dalla playlist.",
     "couldNotUpdateLike": "Impossibile aggiornare lo stato \"mi piace\".",
     "couldNotUploadArt": "Impossibile caricare la copertina.",
     "couldNotCreatePlaylist": "Impossibile creare la playlist."
@@ -178,5 +196,30 @@
   "update": {
     "available": "JellyWave {version} è disponibile.",
     "view": "Visualizza"
+  },
+  "stats": {
+    "title": "Le tue statistiche",
+    "totalPlays": "Riproduzioni totali",
+    "timeListened": "Tempo di ascolto",
+    "artistsPlayed": "Artisti ascoltati",
+    "activity": "Attività di ascolto",
+    "topTracks": "Brani più ascoltati",
+    "topArtists": "Artisti più ascoltati",
+    "topAlbums": "Album più ascoltati",
+    "plays": "{count} riproduzione",
+    "playsPlural": "{count} riproduzioni",
+    "empty": "Ascolta musica per iniziare a costruire le tue statistiche."
+  },
+  "queue": {
+    "addToQueue": "Aggiungi alla coda",
+    "unlike": "Rimuovi dai preferiti",
+    "remove": "Rimuovi"
+  },
+  "connect": {
+    "title": "Connect",
+    "loading": "Ricerca dispositivi…",
+    "empty": "Nessun altro dispositivo trovato.",
+    "nowPlaying": "In riproduzione {title}",
+    "errorSend": "Impossibile inviare la riproduzione a quel dispositivo."
   }
 }

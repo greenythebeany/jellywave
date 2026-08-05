@@ -20,7 +20,9 @@
     "loggingIn": "Iniciando sesión…",
     "errorWrongCredentials": "Usuario o contraseña incorrectos.",
     "errorServer": "El servidor respondió con {status}.",
-    "errorGeneric": "No se pudo iniciar sesión. Comprueba la dirección del servidor e inténtalo de nuevo."
+    "errorGeneric": "No se pudo iniciar sesión. Comprueba la dirección del servidor e inténtalo de nuevo.",
+    "errorUnreachable": "No se pudo conectar con tu servidor, pero sigues conectado — revisa tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar"
   },
   "nav": {
     "home": "Inicio",
@@ -34,7 +36,8 @@
     "playlists": "Listas",
     "createPlaylist": "Crear lista",
     "back": "Atrás",
-    "forward": "Adelante"
+    "forward": "Adelante",
+    "stats": "Estadísticas"
   },
   "header": {
     "searchPlaceholder": "¿Qué quieres escuchar?"
@@ -45,8 +48,14 @@
   },
   "home": {
     "greeting": "Qué bueno verte",
+    "recentlyPlayed": "Reproducidos recientemente",
     "yourPlaylists": "Tus listas",
-    "recentAlbums": "Álbumes añadidos recientemente"
+    "recentAlbums": "Álbumes añadidos recientemente",
+    "madeForYou": "Hecho para ti",
+    "mostPlayed": "Más reproducidas",
+    "onRepeat": "En bucle",
+    "genreMix": "Mezcla de género",
+    "songsCount": "{count} canciones"
   },
   "search": {
     "title": "Busca en tu biblioteca",
@@ -122,7 +131,10 @@
     "play": "Reproducir",
     "pause": "Pausar",
     "next": "Siguiente",
-    "repeat": "Repetir"
+    "repeat": "Repetir",
+    "sleepTimer": "Temporizador",
+    "sleepEndOfTrack": "Fin de la canción",
+    "sleepOff": "Desactivar"
   },
   "settings": {
     "title": "Ajustes",
@@ -136,6 +148,8 @@
     "accentColorDesc": "Elige el esquema de color de la aplicación",
     "blurBg": "Fondo difuminado de la portada",
     "blurBgDesc": "Rellena el fondo con una versión difuminada de la portada actual",
+    "dynamicAccentColor": "Color de acento dinámico",
+    "dynamicAccentColorDesc": "Tiñe el color de acento de la app según la portada de la canción actual",
     "language": "Idioma",
     "languageDesc": "Elige el idioma de la aplicación",
     "audio": "Audio",
@@ -145,6 +159,9 @@
     "crossfadeDesc": "Combina el final de una canción con el inicio de la siguiente",
     "replayGain": "Normalización de volumen",
     "replayGainDesc": "Equilibra las diferencias de volumen entre canciones (requiere datos de ReplayGain en el servidor)",
+    "equalizer": "Ecualizador",
+    "equalizerDesc": "Ajusta el sonido con un ecualizador gráfico de 5 bandas (solo escritorio)",
+    "equalizerReset": "Restablecer",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Muestra lo que estás escuchando en tu perfil de Discord (solo escritorio)",
     "discordConnect": "Conectar",
@@ -171,6 +188,7 @@
   "errors": {
     "generic": "Algo salió mal: {error}",
     "couldNotAddToPlaylist": "No se pudo añadir la canción a la lista.",
+    "couldNotRemoveFromPlaylist": "No se pudo quitar la canción de la lista de reproducción.",
     "couldNotUpdateLike": "No se pudo actualizar el estado de me gusta.",
     "couldNotUploadArt": "No se pudo subir la portada.",
     "couldNotCreatePlaylist": "No se pudo crear la lista."
@@ -178,5 +196,30 @@
   "update": {
     "available": "JellyWave {version} está disponible.",
     "view": "Ver"
+  },
+  "stats": {
+    "title": "Tus estadísticas",
+    "totalPlays": "Reproducciones totales",
+    "timeListened": "Tiempo escuchado",
+    "artistsPlayed": "Artistas escuchados",
+    "activity": "Actividad de escucha",
+    "topTracks": "Canciones más escuchadas",
+    "topArtists": "Artistas más escuchados",
+    "topAlbums": "Álbumes más escuchados",
+    "plays": "{count} reproducción",
+    "playsPlural": "{count} reproducciones",
+    "empty": "Escucha música para empezar a construir tus estadísticas."
+  },
+  "queue": {
+    "addToQueue": "Añadir a la cola",
+    "unlike": "Ya no me gusta",
+    "remove": "Quitar"
+  },
+  "connect": {
+    "title": "Connect",
+    "loading": "Buscando dispositivos…",
+    "empty": "No se encontraron otros dispositivos.",
+    "nowPlaying": "Reproduciendo {title}",
+    "errorSend": "No se pudo enviar la reproducción a ese dispositivo."
   }
 }

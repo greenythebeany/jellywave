@@ -232,6 +232,13 @@ svg { fill: currentColor; width: 100%; height: 100%; }
   text-align: left;
 }
 .playlist-item:hover, .playlist-item.active { color: var(--text-primary); background: var(--bg-highlight); }
+.playlist-item.drop-target-active, .card.drop-target-active {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background: var(--bg-highlight);
+}
+.track-row[draggable="true"] { cursor: grab; }
+.track-row.dragging-source { opacity: 0.4; }
 .playlist-item .pl-thumb {
   width: 44px; height: 44px; border-radius: 4px; object-fit: cover;
   background: var(--bg-card);
@@ -330,6 +337,8 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 }
 .account-menu-name { padding: 8px 10px; font-size: 12.5px; color: var(--text-tertiary); border-bottom: 1px solid var(--border-subtle); margin-bottom: 4px; }
 .add-playlist-menu { position: fixed !important; top: auto; right: auto; max-height: 260px; overflow-y: auto; z-index: 300; }
+.context-menu { position: fixed !important; top: auto; right: auto; z-index: 320; }
+.context-menu-sep { height: 1px; background: var(--border-subtle); margin: 4px 6px; }
 .account-menu button {
   width: 100%; text-align: left; padding: 9px 10px; border-radius: var(--radius-sm);
   font-size: 13.5px; font-weight: 600; color: var(--text-primary);
@@ -344,6 +353,29 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 
 .view-title { font-size: 27px; font-weight: 800; margin: 8px 0 20px; letter-spacing: -0.3px; }
 .section-title { font-size: 19px; font-weight: 700; margin: 24px 0 14px; }
+
+/* Personal listening stats page */
+.stats-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; }
+.stat-box { background: var(--bg-card); border-radius: var(--radius-md); padding: 18px 20px; }
+.stat-value { font-size: 28px; font-weight: 800; letter-spacing: -0.3px; }
+.stat-label { font-size: 13px; color: var(--text-tertiary); margin-top: 4px; }
+.stats-chart { display: flex; align-items: flex-end; gap: 6px; height: 90px; background: var(--bg-card); border-radius: var(--radius-md); padding: 14px 16px; }
+.stats-chart-bar { flex: 1; height: 100%; display: flex; align-items: flex-end; }
+.stats-chart-bar::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: var(--bar-pct, 2%);
+  min-height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--accent-bg);
+}
+.stats-list { background: var(--bg-card); border-radius: var(--radius-md); overflow: hidden; }
+.stats-list-row { display: flex; align-items: center; gap: 14px; padding: 10px 18px; border-bottom: 1px solid var(--border-subtle); }
+.stats-list-row:last-child { border-bottom: none; }
+.stats-list-rank { width: 22px; color: var(--text-tertiary); font-size: 13px; font-weight: 700; }
+.stats-list-name { flex: 1; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stats-list-count { color: var(--text-tertiary); font-size: 13px; }
 
 /* Card grid (albums / artists / playlists) */
 .card-grid {
@@ -530,6 +562,14 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .queue-row-text { min-width: 0; }
 .queue-row-title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .queue-row-artist { font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.queue-row-handle {
+  flex-shrink: 0; width: 22px; height: 22px; margin-left: auto;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-tertiary); font-size: 15px;
+  cursor: grab; touch-action: none;
+}
+.queue-row-handle:hover { color: var(--text-secondary); }
+.queue-row.dragging { background: var(--bg-highlight); box-shadow: 0 8px 20px rgba(0,0,0,0.35); cursor: grabbing; }
 .queue-empty { color: var(--text-tertiary); font-size: 13.5px; text-align: center; margin-top: 30px; padding: 0 16px; }
 
 /* ---------- Player bar ---------- */
@@ -587,6 +627,28 @@ input[type="range"].seek-bar, input[type="range"].volume-bar {
 .player-extra { display: flex; align-items: center; justify-content: flex-end; gap: 16px; }
 .volume-icon { font-size: 19px; color: var(--text-secondary); flex-shrink: 0; }
 input[type="range"].volume-bar { width: 110px; flex: none; }
+
+.track-row.swipe-queue, .queue-row.swipe-queue { background: color-mix(in srgb, var(--accent) 25%, transparent) !important; }
+.track-row.swipe-remove, .queue-row.swipe-remove { background: color-mix(in srgb, var(--danger) 25%, transparent) !important; }
+
+.sleep-timer-wrap { position: relative; }
+.btn-icon-plain.active { color: var(--accent); }
+.sleep-timer-badge {
+  position: absolute; top: -4px; right: -6px;
+  background: var(--accent); color: var(--accent-contrast);
+  font-size: 9.5px; font-weight: 800; line-height: 1;
+  padding: 2px 4px; border-radius: 999px; min-width: 14px; text-align: center;
+  pointer-events: none;
+}
+.sleep-timer-menu { position: fixed; width: 170px; z-index: 300; }
+.sleep-timer-option { font-size: 13px; }
+
+.connect-menu { position: fixed; width: 240px; z-index: 300; max-height: 300px; overflow-y: auto; }
+.connect-device-list { display: flex; flex-direction: column; }
+.connect-device-item { display: flex; flex-direction: column; align-items: flex-start !important; gap: 2px; }
+.connect-device-name { font-size: 13.5px; font-weight: 600; }
+.connect-device-meta { font-size: 11.5px; color: var(--text-tertiary); font-weight: 500; }
+.connect-empty, .connect-loading { padding: 10px; font-size: 12.5px; color: var(--text-tertiary); }
 
 .update-toast {
   position: fixed; right: 20px; bottom: 20px; z-index: 500;
@@ -658,6 +720,22 @@ input[type="range"].volume-bar { width: 110px; flex: none; }
 .crossfade-control input[type="range"] { width: 110px; height: 5px; }
 .crossfade-control input[type="range"]::-webkit-slider-thumb { opacity: 1; width: 13px; height: 13px; }
 .crossfade-value { font-size: 12.5px; font-weight: 700; color: var(--text-secondary); width: 32px; text-align: right; }
+
+/* Built-in equalizer: each band is a horizontal range slider rotated -90deg
+   into a vertical fader, centered inside a fixed-size wrap via the classic
+   translate(-50%,-50%) + rotate() idiom. */
+.eq-bands { display: flex; justify-content: space-between; gap: 6px; padding: 6px 4px 2px; }
+.eq-band { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; }
+.eq-band-value { font-size: 11px; font-weight: 700; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.eq-band-slider-wrap { position: relative; width: 24px; height: 110px; }
+.eq-band-slider {
+  position: absolute; top: 50%; left: 50%;
+  width: 110px; height: 5px; margin: 0;
+  transform: translate(-50%, -50%) rotate(-90deg);
+}
+.eq-band-slider::-webkit-slider-thumb { opacity: 1; width: 13px; height: 13px; }
+.eq-band-label { font-size: 10.5px; color: var(--text-tertiary); }
+#btn-eq-reset { margin-top: 12px; align-self: flex-start; background: none; border: none; cursor: pointer; font-size: 12.5px; }
 
 .segmented { display: flex; background: var(--bg-highlight); border-radius: 999px; padding: 3px; gap: 2px; }
 .segmented button {

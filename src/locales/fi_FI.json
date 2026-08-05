@@ -20,7 +20,9 @@
     "loggingIn": "Kirjaudutaan…",
     "errorWrongCredentials": "Väärä käyttäjätunnus tai salasana.",
     "errorServer": "Palvelin vastasi koodilla {status}.",
-    "errorGeneric": "Kirjautuminen epäonnistui. Tarkista palvelimen osoite ja yritä uudelleen."
+    "errorGeneric": "Kirjautuminen epäonnistui. Tarkista palvelimen osoite ja yritä uudelleen.",
+    "errorUnreachable": "Palvelimeen ei saatu yhteyttä, mutta olet yhä kirjautuneena — tarkista yhteys ja yritä uudelleen.",
+    "retry": "Yritä uudelleen"
   },
   "nav": {
     "home": "Koti",
@@ -34,7 +36,8 @@
     "playlists": "Soittolistat",
     "createPlaylist": "Luo soittolista",
     "back": "Takaisin",
-    "forward": "Eteenpäin"
+    "forward": "Eteenpäin",
+    "stats": "Tilastot"
   },
   "header": {
     "searchPlaceholder": "Mitä haluat kuunnella?"
@@ -45,8 +48,14 @@
   },
   "home": {
     "greeting": "Mukava nähdä sinua",
+    "recentlyPlayed": "Äskettäin toistetut",
     "yourPlaylists": "Soittolistasi",
-    "recentAlbums": "Äskettäin lisätyt albumit"
+    "recentAlbums": "Äskettäin lisätyt albumit",
+    "madeForYou": "Sinulle tehty",
+    "mostPlayed": "Eniten soitetut",
+    "onRepeat": "Toistuvasti kuunneltu",
+    "genreMix": "Genresekoitus",
+    "songsCount": "{count} kappaletta"
   },
   "search": {
     "title": "Hae kirjastostasi",
@@ -122,7 +131,10 @@
     "play": "Toista",
     "pause": "Tauko",
     "next": "Seuraava",
-    "repeat": "Toisto"
+    "repeat": "Toisto",
+    "sleepTimer": "Uniajastin",
+    "sleepEndOfTrack": "Kappaleen loppuun",
+    "sleepOff": "Pois päältä"
   },
   "settings": {
     "title": "Asetukset",
@@ -136,6 +148,8 @@
     "accentColorDesc": "Valitse sovelluksen väriteema",
     "blurBg": "Sumea tausta kansikuvasta",
     "blurBgDesc": "Täyttää taustan nykyisen kappaleen kansikuvan sumealla versiolla",
+    "dynamicAccentColor": "Dynaaminen korostusväri",
+    "dynamicAccentColorDesc": "Sävyttää sovelluksen korostusvärin nykyisen kappaleen kannen mukaan",
     "language": "Kieli",
     "languageDesc": "Valitse sovelluksen näyttökieli",
     "audio": "Ääni",
@@ -145,6 +159,9 @@
     "crossfadeDesc": "Häivyttää kappaleen lopun seuraavan alkuun",
     "replayGain": "Äänenvoimakkuuden normalisointi",
     "replayGainDesc": "Tasoittaa kappaleiden välisiä äänenvoimakkuuseroja (vaatii ReplayGain-tiedot palvelimella)",
+    "equalizer": "Taajuuskorjain",
+    "equalizerDesc": "Muokkaa ääntä 5-kaistaisella graafisella taajuuskorjaimella (vain työpöytä)",
+    "equalizerReset": "Palauta",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Näyttää mitä kuuntelet Discord-profiilissasi (vain työpöytä)",
     "discordConnect": "Yhdistä",
@@ -171,6 +188,7 @@
   "errors": {
     "generic": "Jokin meni pieleen: {error}",
     "couldNotAddToPlaylist": "Kappaletta ei voitu lisätä soittolistaan.",
+    "couldNotRemoveFromPlaylist": "Kappaletta ei voitu poistaa soittolistalta.",
     "couldNotUpdateLike": "Tykkäystilaa ei voitu päivittää.",
     "couldNotUploadArt": "Kansikuvaa ei voitu ladata.",
     "couldNotCreatePlaylist": "Soittolistaa ei voitu luoda."
@@ -178,5 +196,30 @@
   "update": {
     "available": "JellyWave {version} on saatavilla.",
     "view": "Näytä"
+  },
+  "stats": {
+    "title": "Omat tilastosi",
+    "totalPlays": "Toistoja yhteensä",
+    "timeListened": "Kuunteluaika",
+    "artistsPlayed": "Kuunnellut artistit",
+    "activity": "Kuunteluaktiivisuus",
+    "topTracks": "Kuunnelluimmat kappaleet",
+    "topArtists": "Kuunnelluimmat artistit",
+    "topAlbums": "Kuunnelluimmat albumit",
+    "plays": "{count} toisto",
+    "playsPlural": "{count} toistoa",
+    "empty": "Kuuntele musiikkia aloittaaksesi tilastojesi kerryttämisen."
+  },
+  "queue": {
+    "addToQueue": "Lisää jonoon",
+    "unlike": "Poista suosikeista",
+    "remove": "Poista"
+  },
+  "connect": {
+    "title": "Connect",
+    "loading": "Etsitään laitteita…",
+    "empty": "Muita laitteita ei löytynyt.",
+    "nowPlaying": "Toistaa {title}",
+    "errorSend": "Toistoa ei voitu lähettää kyseiselle laitteelle."
   }
 }
