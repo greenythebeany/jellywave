@@ -377,16 +377,11 @@ svg { fill: currentColor; width: 100%; height: 100%; }
   gap: 20px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding-bottom: 10px;
-  margin-bottom: -10px;
   scroll-snap-type: x proximity;
-  scrollbar-width: thin;
+  scrollbar-width: none; /* Firefox */
 }
 .card-row .card { flex: 0 0 170px; scroll-snap-align: start; }
-.card-row::-webkit-scrollbar { height: 8px; }
-.card-row::-webkit-scrollbar-track { background: transparent; }
-.card-row::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 999px; }
-.card-row::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+.card-row::-webkit-scrollbar { display: none; } /* Chromium / Android WebView */
 .card {
   background: var(--bg-card);
   border-radius: var(--radius-md);
