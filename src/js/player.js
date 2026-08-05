@@ -59,6 +59,7 @@ export class Player {
 
     this.listeners = {
       trackchange: [],
+      trackended: [],
       playstate: [],
       timeupdate: [],
       queuechange: []
@@ -291,8 +292,8 @@ export class Player {
     this.listeners[event]?.push(callback);
   }
 
-  _emit(event) {
-    this.listeners[event]?.forEach((cb) => cb());
+  _emit(event, payload) {
+    this.listeners[event]?.forEach((cb) => cb(payload));
   }
 
   get currentTrack() {
@@ -446,6 +447,12 @@ export class Player {
     // just let it finish.
     if (this._transitioning) return;
 
+    // The <audio> element's own 'ended' event only fires when a track has
+    // genuinely played to its natural end — unlike 'trackchange', which also
+    // fires on manual skips. This is the one place that should count as a
+    // real, completed play (server-side PlayCount, stats, etc.).
+    this._emit('trackended', this.currentTrack);
+
     // If gapless pre-buffering already has the next track loaded and ready
     // in the inactive element, swap to it instantly instead of doing a
     // fresh network fetch — that's the whole point of gapless playback.
@@ -523,6 +530,7 @@ export class Player {
     const nextTrack = this._peekNextTrack();
     if (!nextTrack) return;
     this._transitioning = true;
+    const outgoingTrack = this.currentTrack;
 
     const outgoing = this.audio;
     const incoming = this._inactiveAudio;
@@ -546,6 +554,7 @@ export class Player {
       }
       outgoing.pause();
       outgoing.currentTime = 0;
+      this._emit('trackended', outgoingTrack);
       this._advanceIndexForNext();
       this._activeIsA = !this._activeIsA;
       this._transitioning = false;

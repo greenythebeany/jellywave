@@ -4,7 +4,6 @@ import { fetchLyrics } from './lyrics.js';
 import { getSettings, updateSettings, applySettings, currentBitrateKbps, PALETTES, AUDIO_QUALITIES } from './settings.js';
 import { LOCALES, loadLocale, applyTranslations, t } from './i18n.js';
 import { platform, isDesktop, isMobile, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
-import { recordPlay, getRecentlyPlayed, getMostPlayed, getOnRepeat, getStats } from './history.js';
 import { createConnect } from './connect.js';
 
 // ---------- DOM refs ----------
@@ -1143,7 +1142,7 @@ async function renderView(state) {
       case 'playlist': await renderPlaylistDetail(state.id, state.name); break;
       case 'album': await renderAlbumDetail(state.id); break;
       case 'artist': await renderArtistDetail(state.id, state.name); break;
-      case 'stats': renderStats(); break;
+      case 'stats': await renderStats(); break;
       case 'smartMix': await renderSmartMix(state); break;
       default: await renderHome();
     }
@@ -1155,18 +1154,6 @@ async function renderView(state) {
 }
 
 // ---------- Views ----------
-// History entries are lightweight snapshots, not full Jellyfin items —
-// reshape into the minimal shape buildCard()/artUrl()/openCollection() need.
-function historyEntryToCardItem(e) {
-  return {
-    Id: e.id,
-    Name: e.name,
-    Album: e.album,
-    AlbumArtist: e.artist,
-    AlbumId: e.albumId,
-    ImageTags: e.imageTag ? { Primary: e.imageTag } : {}
-  };
-}
 
 function shuffleArray(arr) {
   const copy = [...arr];
@@ -1177,11 +1164,77 @@ function shuffleArray(arr) {
   return copy;
 }
 
-async function resolveHistoryEntriesToTracks(entries) {
-  if (!entries.length) return [];
+async function ensureAllSongsCache() {
   if (!allSongsCache) allSongsCache = await jellyfin.getAllSongs(musicLibraryId);
-  const byId = new Map(allSongsCache.map((tr) => [tr.Id, tr]));
-  return entries.map((e) => byId.get(e.id)).filter(Boolean);
+  return allSongsCache;
+}
+
+// A collab track's Artists can be several names ("Avantasia" + "Tobias
+// Sammet" + guest features) — count each one individually rather than the
+// joined display string, or every distinct lineup becomes its own "artist".
+function individualArtistNames(track) {
+  if (track.Artists && track.Artists.length) return track.Artists.map(formatDisplayName);
+  if (track.AlbumArtist) return [formatDisplayName(track.AlbumArtist)];
+  return [];
+}
+
+// "Most Played" / "On Repeat" / "Recently Played" / stats all read Jellyfin's
+// own UserData (PlayCount, LastPlayedDate) instead of anything stored
+// locally — UserData lives on the account server-side, so these follow the
+// user across devices instead of being stuck in one browser's storage.
+function accountRecentlyPlayed(limit = 12) {
+  if (!allSongsCache) return [];
+  return allSongsCache
+    .filter((tr) => tr.UserData?.LastPlayedDate)
+    .sort((a, b) => new Date(b.UserData.LastPlayedDate) - new Date(a.UserData.LastPlayedDate))
+    .slice(0, limit);
+}
+
+function accountMostPlayed(limit = 30) {
+  if (!allSongsCache) return [];
+  return allSongsCache
+    .filter((tr) => (tr.UserData?.PlayCount || 0) > 0)
+    .sort((a, b) => (b.UserData.PlayCount || 0) - (a.UserData.PlayCount || 0))
+    .slice(0, limit);
+}
+
+function accountOnRepeat(limit = 30) {
+  if (!allSongsCache) return [];
+  const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
+  return allSongsCache
+    .filter((tr) => (tr.UserData?.PlayCount || 0) >= 3 && tr.UserData?.LastPlayedDate && new Date(tr.UserData.LastPlayedDate).getTime() >= cutoff)
+    .sort((a, b) => (b.UserData.PlayCount || 0) - (a.UserData.PlayCount || 0))
+    .slice(0, limit);
+}
+
+function accountStats() {
+  const tracks = allSongsCache || [];
+  let totalPlays = 0;
+  let totalMs = 0;
+  const artistCounts = new Map();
+  const albumCounts = new Map();
+  const topTracks = [];
+  for (const tr of tracks) {
+    const count = tr.UserData?.PlayCount || 0;
+    if (count <= 0) continue;
+    totalPlays += count;
+    totalMs += count * ((tr.RunTimeTicks || 0) / 10000);
+    individualArtistNames(tr).forEach((artist) => {
+      artistCounts.set(artist, (artistCounts.get(artist) || 0) + count);
+    });
+    if (tr.Album) albumCounts.set(tr.Album, (albumCounts.get(tr.Album) || 0) + count);
+    topTracks.push(tr);
+  }
+  topTracks.sort((a, b) => (b.UserData.PlayCount || 0) - (a.UserData.PlayCount || 0));
+  const topArtists = [...artistCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([artist, count]) => ({ artist, count }));
+  const topAlbums = [...albumCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([album, count]) => ({ album, count }));
+  return {
+    totalPlays,
+    totalMinutes: Math.round(totalMs / 60000),
+    topArtists,
+    topAlbums,
+    topTracks: topTracks.slice(0, 10)
+  };
 }
 
 function buildSmartMixCard({ title, subtitle, art, onPlay, onOpen }) {
@@ -1206,18 +1259,15 @@ function buildSmartMixCard({ title, subtitle, art, onPlay, onOpen }) {
 
 function buildSmartMixCards(genres) {
   const cards = [];
-  const mostPlayed = getMostPlayed(30);
-  const onRepeat = getOnRepeat(30);
+  const mostPlayed = accountMostPlayed(30);
+  const onRepeat = accountOnRepeat(30);
 
   if (mostPlayed.length >= 3) {
     cards.push(buildSmartMixCard({
       title: t('home.mostPlayed'),
       subtitle: t('home.songsCount', { count: mostPlayed.length }),
-      art: mostPlayed[0].imageTag ? artUrl(historyEntryToCardItem(mostPlayed[0])) : null,
-      onPlay: async () => {
-        const tracks = await resolveHistoryEntriesToTracks(mostPlayed);
-        if (tracks.length) player.setQueue(tracks, 0, 'smart:most-played');
-      },
+      art: artUrl(mostPlayed[0]),
+      onPlay: () => player.setQueue(mostPlayed, 0, 'smart:most-played'),
       onOpen: () => navigateTo({ view: 'smartMix', mixKind: 'most-played', title: t('home.mostPlayed') })
     }));
   }
@@ -1226,11 +1276,8 @@ function buildSmartMixCards(genres) {
     cards.push(buildSmartMixCard({
       title: t('home.onRepeat'),
       subtitle: t('home.songsCount', { count: onRepeat.length }),
-      art: onRepeat[0].imageTag ? artUrl(historyEntryToCardItem(onRepeat[0])) : null,
-      onPlay: async () => {
-        const tracks = await resolveHistoryEntriesToTracks(onRepeat);
-        if (tracks.length) player.setQueue(tracks, 0, 'smart:on-repeat');
-      },
+      art: artUrl(onRepeat[0]),
+      onPlay: () => player.setQueue(onRepeat, 0, 'smart:on-repeat'),
       onOpen: () => navigateTo({ view: 'smartMix', mixKind: 'on-repeat', title: t('home.onRepeat') })
     }));
   }
@@ -1254,9 +1301,11 @@ function buildSmartMixCards(genres) {
 async function renderSmartMix(state) {
   let tracks;
   if (state.mixKind === 'most-played') {
-    tracks = await resolveHistoryEntriesToTracks(getMostPlayed(30));
+    await ensureAllSongsCache();
+    tracks = accountMostPlayed(30);
   } else if (state.mixKind === 'on-repeat') {
-    tracks = await resolveHistoryEntriesToTracks(getOnRepeat(30));
+    await ensureAllSongsCache();
+    tracks = accountOnRepeat(30);
   } else {
     tracks = shuffleArray(await jellyfin.getSongsByGenre(state.genreId)).slice(0, 50);
   }
@@ -1282,16 +1331,17 @@ async function renderHome() {
   const [playlists, albums, genres] = await Promise.all([
     jellyfin.getPlaylists(),
     jellyfin.getAlbums(musicLibraryId),
-    jellyfin.getMusicGenres().catch(() => [])
+    jellyfin.getMusicGenres().catch(() => []),
+    ensureAllSongsCache()
   ]);
 
   viewRoot.innerHTML = '';
   viewRoot.appendChild(el('div', 'view-title', t('home.greeting')));
 
-  const recentlyPlayed = getRecentlyPlayed(12);
+  const recentlyPlayed = accountRecentlyPlayed(12);
   if (recentlyPlayed.length) {
     viewRoot.appendChild(el('div', 'section-title', t('home.recentlyPlayed')));
-    viewRoot.appendChild(buildCardGrid(recentlyPlayed.map(historyEntryToCardItem), 'song'));
+    viewRoot.appendChild(buildCardGrid(recentlyPlayed, 'song'));
   }
 
   const smartMixCards = buildSmartMixCards(genres);
@@ -1362,8 +1412,9 @@ async function renderLikedSongs() {
   viewRoot.appendChild(buildTrackTable(liked, liked, { isLikedView: true }));
 }
 
-function renderStats() {
-  const stats = getStats();
+async function renderStats() {
+  await ensureAllSongsCache();
+  const stats = accountStats();
   viewRoot.innerHTML = '';
   viewRoot.appendChild(el('div', 'view-title', t('stats.title')));
 
@@ -1382,24 +1433,11 @@ function renderStats() {
   summary.appendChild(el('div', 'stat-box', `<div class="stat-value">${stats.topArtists.length}</div><div class="stat-label">${escapeHtml(t('stats.artistsPlayed'))}</div>`));
   viewRoot.appendChild(summary);
 
-  if (stats.dailyActivity.some((d) => d.count > 0)) {
-    viewRoot.appendChild(el('div', 'section-title', t('stats.activity')));
-    const chart = el('div', 'stats-chart');
-    const max = Math.max(1, ...stats.dailyActivity.map((d) => d.count));
-    stats.dailyActivity.forEach((day) => {
-      const bar = el('div', 'stats-chart-bar');
-      bar.style.setProperty('--bar-pct', `${Math.round((day.count / max) * 100)}%`);
-      bar.title = `${new Date(day.date).toLocaleDateString()}: ${day.count}`;
-      chart.appendChild(bar);
-    });
-    viewRoot.appendChild(chart);
-  }
-
   const playsLabel = (count) => t(count === 1 ? 'stats.plays' : 'stats.playsPlural', { count });
 
   if (stats.topTracks.length) {
     viewRoot.appendChild(el('div', 'section-title', t('stats.topTracks')));
-    viewRoot.appendChild(buildCardGrid(stats.topTracks.map(historyEntryToCardItem), 'song'));
+    viewRoot.appendChild(buildCardGrid(stats.topTracks, 'song'));
   }
 
   const buildRankedList = (rows, labelKey) => {
@@ -2038,7 +2076,6 @@ function wirePlayer() {
     updateDynamicAccentColor(track);
     updateDiscordPresence();
     syncCatJamVisibility();
-    recordPlay(track);
 
     if (!lyricsPanel.hidden) {
       if (activePanelTab === 'lyrics') loadLyricsForCurrentTrack();
@@ -2047,6 +2084,23 @@ function wirePlayer() {
       currentLyrics = null;
       lyricsTrackId = null;
     }
+  });
+
+  // Only fires when a track actually finishes (natural end, gapless swap, or
+  // crossfade handoff) — not on a manual skip — so this is what should count
+  // as "a play" server-side. Marking it played on Jellyfin's account, rather
+  // than tracking locally, is what makes Most Played/On Repeat/stats follow
+  // the user across devices.
+  player.on('trackended', (track) => {
+    if (!track?.Id) return;
+    jellyfin.markPlayed(track.Id).then(() => {
+      // Optimistic local update so Home/Stats reflect it immediately,
+      // without waiting for a full re-fetch of allSongsCache.
+      const cached = allSongsCache?.find((tr) => tr.Id === track.Id);
+      if (cached) {
+        cached.UserData = { ...(cached.UserData || {}), PlayCount: (cached.UserData?.PlayCount || 0) + 1, LastPlayedDate: new Date().toISOString() };
+      }
+    }).catch(() => {});
   });
 
   player.on('playstate', () => {

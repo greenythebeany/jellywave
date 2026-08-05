@@ -292,6 +292,20 @@ export class JellyfinClient {
     if (!res.ok) throw new Error(`Could not like song (${res.status}).`);
   }
 
+  // Marks an item played server-side (increments UserData.PlayCount, bumps
+  // LastPlayedDate) — the standard Jellyfin endpoint real clients call on
+  // finishing a track. Since UserData travels with the account, not the
+  // device, this is what makes play counts/stats follow the user across
+  // devices instead of living in this one browser's local storage.
+  async markPlayed(itemId) {
+    const res = await fetch(`${this.serverUrl}/Users/${this.userId}/PlayedItems/${itemId}`, {
+      method: 'POST',
+      headers: this._headers()
+    });
+    if (!res.ok) throw new Error(`Could not mark item played (${res.status}).`);
+    return res.json();
+  }
+
   async unlikeItem(itemId) {
     const res = await fetch(`${this.serverUrl}/Users/${this.userId}/FavoriteItems/${itemId}`, {
       method: 'DELETE',

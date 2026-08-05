@@ -359,17 +359,6 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .stat-box { background: var(--bg-card); border-radius: var(--radius-md); padding: 18px 20px; }
 .stat-value { font-size: 28px; font-weight: 800; letter-spacing: -0.3px; }
 .stat-label { font-size: 13px; color: var(--text-tertiary); margin-top: 4px; }
-.stats-chart { display: flex; align-items: flex-end; gap: 6px; height: 90px; background: var(--bg-card); border-radius: var(--radius-md); padding: 14px 16px; }
-.stats-chart-bar { flex: 1; height: 100%; display: flex; align-items: flex-end; }
-.stats-chart-bar::before {
-  content: '';
-  display: block;
-  width: 100%;
-  height: var(--bar-pct, 2%);
-  min-height: 3px;
-  border-radius: 3px 3px 0 0;
-  background: var(--accent-bg);
-}
 .stats-list { background: var(--bg-card); border-radius: var(--radius-md); overflow: hidden; }
 .stats-list-row { display: flex; align-items: center; gap: 14px; padding: 10px 18px; border-bottom: 1px solid var(--border-subtle); }
 .stats-list-row:last-child { border-bottom: none; }

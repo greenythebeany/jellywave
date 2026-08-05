@@ -88,6 +88,14 @@ app.on('window-all-closed', () => {
 
 app.on('will-quit', () => {
   globalShortcut.unregisterAll();
+  // Release the Discord RPC IPC connection explicitly rather than leaving it
+  // to process teardown — matters for the updater, which detects a running
+  // instance by image name and can end up fighting a lingering handle.
+  try {
+    discordClient?.destroy();
+  } catch (err) {
+    // Already disconnected/never connected — nothing to clean up.
+  }
 });
 
 ipcMain.handle('update:check', async () => {
