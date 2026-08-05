@@ -112,6 +112,9 @@ Not yet started, roughly in the order they'll likely land:
 - Queue drag-to-reorder (long-press and drag a queue item to a new position)
 - Dynamic UI accent color pulled from the currently playing album art, Spotify-style
 - Personal listening stats page (top artists/tracks, total listening time), built from local play history
+- Built-in equalizer (bass boost / vocal boost / custom band EQ)
+- Right-click context menu on desktop for tracks/albums/artists
+- Drag-and-drop a track onto a playlist in the sidebar, on desktop
 - Spotify Connect-style device handoff, letting playback be started on one device and picked up or controlled from another — likely built on Jellyfin's own `/Sessions` remote-control API rather than a custom relay
 
 ## Acknowledgements
