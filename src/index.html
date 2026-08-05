@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' http: https: data:; media-src 'self' http: https:; connect-src 'self' http: https:; style-src 'self' 'unsafe-inline' https:; script-src 'self';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' http: https: data:; media-src 'self' http: https:; connect-src 'self' http: https: ws: wss:; style-src 'self' 'unsafe-inline' https:; script-src 'self';" />
   <title>JellyWave</title>
   <link rel="stylesheet" href="vendor/poppins/latin-400.css" />
   <link rel="stylesheet" href="vendor/poppins/latin-500.css" />
@@ -240,7 +240,7 @@
           <span id="sleep-timer-badge" class="sleep-timer-badge" hidden></span>
         </div>
         <button id="btn-connect" class="ctrl-btn" data-i18n-title="connect.title" title="Connect">
-          <i class="fi fi-br-cast"></i>
+          <i class="fi fi-br-screencast"></i>
         </button>
         <button id="btn-lyrics" class="ctrl-btn" data-i18n-title="nowPlaying.title" title="Now Playing">
           <i class="fi fi-br-list-music"></i>

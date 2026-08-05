@@ -1144,6 +1144,7 @@ async function renderView(state) {
       case 'album': await renderAlbumDetail(state.id); break;
       case 'artist': await renderArtistDetail(state.id, state.name); break;
       case 'stats': renderStats(); break;
+      case 'smartMix': await renderSmartMix(state); break;
       default: await renderHome();
     }
   } catch (err) {
@@ -1183,7 +1184,7 @@ async function resolveHistoryEntriesToTracks(entries) {
   return entries.map((e) => byId.get(e.id)).filter(Boolean);
 }
 
-function buildSmartMixCard({ title, subtitle, art, onPlay }) {
+function buildSmartMixCard({ title, subtitle, art, onPlay, onOpen }) {
   const card = el('div', 'card');
   const artWrap = el('div', 'card-art-wrap');
   const img = document.createElement('img');
@@ -1197,7 +1198,9 @@ function buildSmartMixCard({ title, subtitle, art, onPlay }) {
   card.appendChild(artWrap);
   card.appendChild(el('div', 'card-title', escapeHtml(title)));
   if (subtitle) card.appendChild(el('div', 'card-subtitle', escapeHtml(subtitle)));
-  card.addEventListener('click', onPlay);
+  // Clicking the card body opens the mix's track list, same as any other
+  // collection card — only the dedicated play button starts playback directly.
+  card.addEventListener('click', onOpen);
   return card;
 }
 
@@ -1214,7 +1217,8 @@ function buildSmartMixCards(genres) {
       onPlay: async () => {
         const tracks = await resolveHistoryEntriesToTracks(mostPlayed);
         if (tracks.length) player.setQueue(tracks, 0, 'smart:most-played');
-      }
+      },
+      onOpen: () => navigateTo({ view: 'smartMix', mixKind: 'most-played', title: t('home.mostPlayed') })
     }));
   }
 
@@ -1226,7 +1230,8 @@ function buildSmartMixCards(genres) {
       onPlay: async () => {
         const tracks = await resolveHistoryEntriesToTracks(onRepeat);
         if (tracks.length) player.setQueue(tracks, 0, 'smart:on-repeat');
-      }
+      },
+      onOpen: () => navigateTo({ view: 'smartMix', mixKind: 'on-repeat', title: t('home.onRepeat') })
     }));
   }
 
@@ -1238,11 +1243,39 @@ function buildSmartMixCards(genres) {
       onPlay: async () => {
         const tracks = await jellyfin.getSongsByGenre(genre.Id);
         if (tracks.length) player.setQueue(shuffleArray(tracks).slice(0, 50), 0, `smart:genre:${genre.Id}`);
-      }
+      },
+      onOpen: () => navigateTo({ view: 'smartMix', mixKind: 'genre', genreId: genre.Id, title: genre.Name })
     }));
   });
 
   return cards;
+}
+
+async function renderSmartMix(state) {
+  let tracks;
+  if (state.mixKind === 'most-played') {
+    tracks = await resolveHistoryEntriesToTracks(getMostPlayed(30));
+  } else if (state.mixKind === 'on-repeat') {
+    tracks = await resolveHistoryEntriesToTracks(getOnRepeat(30));
+  } else {
+    tracks = shuffleArray(await jellyfin.getSongsByGenre(state.genreId)).slice(0, 50);
+  }
+
+  viewRoot.innerHTML = '';
+  viewRoot.appendChild(buildDetailHeader({
+    kind: t('home.madeForYou'),
+    title: state.title,
+    sub: t(tracks.length === 1 ? 'playlist.songCount' : 'playlist.songCountPlural', { count: tracks.length }),
+    art: tracks[0] ? artUrl(tracks[0]) : placeholderArt('album'),
+    round: false,
+    onPlayAll: tracks.length ? () => player.setQueue(tracks, 0, `smart:${state.mixKind}:${state.genreId || ''}`) : undefined,
+    trackIds: tracks.map((tr) => tr.Id)
+  }));
+  if (!tracks.length) {
+    viewRoot.appendChild(el('div', 'empty-state', t('playlist.empty')));
+    return;
+  }
+  viewRoot.appendChild(buildTrackTable(tracks, tracks));
 }
 
 async function renderHome() {
@@ -2276,7 +2309,7 @@ function buildQueueRow(track, idx, isPlaying) {
       // and rebuilds the whole list out from under it.
       onSwipeLeft: () => setTimeout(() => player.removeFromQueueAt(idx), 180)
     });
-    const handle = el('div', 'queue-row-handle', '<i class="fi fi-br-grip"></i>');
+    const handle = el('div', 'queue-row-handle', '<i class="fi fi-br-grip-dots-vertical"></i>');
     handle.addEventListener('click', (evt) => evt.stopPropagation());
     row.appendChild(handle);
     wireQueueDragHandle(handle, row);

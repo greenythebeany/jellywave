@@ -25,12 +25,12 @@ function save(entries) {
 
 let entries = load();
 
-// Records a play, moving the track to the front if it was already there
-// rather than duplicating it, so "recently played" reflects the latest
-// listen instead of showing the same song twice.
+// One row per actual play event (not deduped by track) — needed so repeat
+// listens genuinely accumulate for Most Played / On Repeat / the stats page.
+// "Recently Played" (below) dedupes its own view on top of this log instead,
+// so a song on repeat still shows once there rather than cluttering the list.
 export function recordPlay(track) {
   if (!track?.Id) return;
-  entries = entries.filter((e) => e.id !== track.Id);
   entries.unshift({
     id: track.Id,
     name: track.Name,
@@ -45,8 +45,18 @@ export function recordPlay(track) {
   save(entries);
 }
 
+// Most-recent play of each track, most-recent first — the raw log can have
+// several rows per track, so dedupe here rather than at record time.
 export function getRecentlyPlayed(limit = 20) {
-  return entries.slice(0, limit);
+  const seen = new Set();
+  const result = [];
+  for (const e of entries) {
+    if (seen.has(e.id)) continue;
+    seen.add(e.id);
+    result.push(e);
+    if (result.length >= limit) break;
+  }
+  return result;
 }
 
 // Play counts across all recorded history, most-played first.

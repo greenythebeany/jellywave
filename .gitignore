@@ -7,6 +7,11 @@ yt_to_mp3.py
 # Secrets — the Android release signing keystore must never be public.
 android/keystore/
 
+# Portable JDKs used locally to work around a broken system Java on this
+# machine (Selector.open() can't establish its loopback pipe on Java 17+).
+android/jdk-17.0.20+8/
+android/jdk-11.0.32+9/
+
 # IDE
 .idea/
 
