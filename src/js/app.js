@@ -1485,7 +1485,7 @@ async function renderHome() {
   const recentlyPlayed = accountRecentlyPlayed(12);
   if (recentlyPlayed.length) {
     viewRoot.appendChild(el('div', 'section-title', t('home.recentlyPlayed')));
-    viewRoot.appendChild(buildCardGrid(recentlyPlayed, 'song'));
+    viewRoot.appendChild(buildCardRow(recentlyPlayed, 'song'));
   }
 
   const smartMixCards = buildSmartMixCards(genres);
@@ -1779,6 +1779,15 @@ function buildCardGrid(items, kind) {
   const grid = el('div', 'card-grid');
   items.forEach((item) => grid.appendChild(buildCard(item, kind)));
   return grid;
+}
+
+// A single horizontally-scrolling row instead of a wrapping grid — for
+// sections where the list can get long and a multi-row grid would push
+// everything else down the page.
+function buildCardRow(items, kind) {
+  const row = el('div', 'card-row');
+  items.forEach((item) => row.appendChild(buildCard(item, kind)));
+  return row;
 }
 
 function buildCard(item, kind) {
