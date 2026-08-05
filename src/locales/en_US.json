@@ -220,6 +220,8 @@
     "loading": "Looking for devices…",
     "empty": "No other devices found.",
     "nowPlaying": "Playing {title}",
-    "errorSend": "Could not send playback to that device."
+    "errorSend": "Could not send playback to that device.",
+    "connectedTo": "Connected to {device}",
+    "disconnect": "Disconnect"
   }
 }

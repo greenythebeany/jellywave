@@ -220,6 +220,8 @@
     "loading": "Ser etter enheter…",
     "empty": "Fant ingen andre enheter.",
     "nowPlaying": "Spiller {title}",
-    "errorSend": "Kunne ikke sende avspilling til den enheten."
+    "errorSend": "Kunne ikke sende avspilling til den enheten.",
+    "connectedTo": "Koblet til {device}",
+    "disconnect": "Koble fra"
   }
 }

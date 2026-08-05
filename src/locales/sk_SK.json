@@ -220,6 +220,8 @@
     "loading": "Hľadajú sa zariadenia…",
     "empty": "Nenašli sa žiadne ďalšie zariadenia.",
     "nowPlaying": "Prehráva {title}",
-    "errorSend": "Prehrávanie sa nepodarilo odoslať do tohto zariadenia."
+    "errorSend": "Prehrávanie sa nepodarilo odoslať do tohto zariadenia.",
+    "connectedTo": "Pripojené k {device}",
+    "disconnect": "Odpojiť"
   }
 }

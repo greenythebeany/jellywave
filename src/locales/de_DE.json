@@ -220,6 +220,8 @@
     "loading": "Geräte werden gesucht…",
     "empty": "Keine weiteren Geräte gefunden.",
     "nowPlaying": "Spielt {title}",
-    "errorSend": "Wiedergabe konnte nicht an dieses Gerät gesendet werden."
+    "errorSend": "Wiedergabe konnte nicht an dieses Gerät gesendet werden.",
+    "connectedTo": "Verbunden mit {device}",
+    "disconnect": "Trennen"
   }
 }

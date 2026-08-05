@@ -220,6 +220,8 @@
     "loading": "Recherche d’appareils…",
     "empty": "Aucun autre appareil trouvé.",
     "nowPlaying": "Lecture de {title}",
-    "errorSend": "Impossible d'envoyer la lecture vers cet appareil."
+    "errorSend": "Impossible d'envoyer la lecture vers cet appareil.",
+    "connectedTo": "Connecté à {device}",
+    "disconnect": "Déconnecter"
   }
 }

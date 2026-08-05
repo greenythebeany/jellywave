@@ -220,6 +220,8 @@
     "loading": "Etsitään laitteita…",
     "empty": "Muita laitteita ei löytynyt.",
     "nowPlaying": "Toistaa {title}",
-    "errorSend": "Toistoa ei voitu lähettää kyseiselle laitteelle."
+    "errorSend": "Toistoa ei voitu lähettää kyseiselle laitteelle.",
+    "connectedTo": "Yhdistetty laitteeseen {device}",
+    "disconnect": "Katkaise yhteys"
   }
 }

@@ -432,6 +432,17 @@ export class JellyfinClient {
     if (!res.ok) throw new Error(`Could not send command (${res.status}).`);
   }
 
+  // Non-playstate commands (volume, mute) — name: a GeneralCommandType like
+  // 'SetVolume' (Arguments: { Volume: '50' }), 'Mute', 'Unmute'.
+  async sendGeneralCommand(sessionId, name, args = {}) {
+    const res = await fetch(`${this.serverUrl}/Sessions/${sessionId}/Command`, {
+      method: 'POST',
+      headers: this._headers(),
+      body: JSON.stringify({ Name: name, Arguments: args })
+    });
+    if (!res.ok) throw new Error(`Could not send command (${res.status}).`);
+  }
+
   // Self-reporting so this device shows up as "Now Playing" and is
   // controllable to other Jellyfin clients — the counterpart to
   // getSessions()/sendPlayCommand() on the controlling side. Best-effort:

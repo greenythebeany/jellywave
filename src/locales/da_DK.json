@@ -220,6 +220,8 @@
     "loading": "Leder efter enheder…",
     "empty": "Ingen andre enheder fundet.",
     "nowPlaying": "Afspiller {title}",
-    "errorSend": "Kunne ikke sende afspilning til den enhed."
+    "errorSend": "Kunne ikke sende afspilning til den enhed.",
+    "connectedTo": "Forbundet til {device}",
+    "disconnect": "Afbryd"
   }
 }

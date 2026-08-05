@@ -220,6 +220,8 @@
     "loading": "Hledají se zařízení…",
     "empty": "Nebyla nalezena žádná další zařízení.",
     "nowPlaying": "Přehrává {title}",
-    "errorSend": "Přehrávání se nepodařilo odeslat do tohoto zařízení."
+    "errorSend": "Přehrávání se nepodařilo odeslat do tohoto zařízení.",
+    "connectedTo": "Připojeno k {device}",
+    "disconnect": "Odpojit"
   }
 }

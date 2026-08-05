@@ -220,6 +220,8 @@
     "loading": "Apparaten zoeken…",
     "empty": "Geen andere apparaten gevonden.",
     "nowPlaying": "Speelt {title}",
-    "errorSend": "Kon afspelen niet naar dat apparaat sturen."
+    "errorSend": "Kon afspelen niet naar dat apparaat sturen.",
+    "connectedTo": "Verbonden met {device}",
+    "disconnect": "Verbinding verbreken"
   }
 }

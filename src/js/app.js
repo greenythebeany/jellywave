@@ -325,6 +325,24 @@ async function enterApp(username) {
   player.setEqualizerEnabled(!!savedSettings.eqEnabled);
   connect = createConnect(jellyfin, player);
   connect.start();
+  connect.onRemoteStateChange(updateRemoteBarUI);
+
+  // Picking something new to play (an album, a track row, a playlist) goes
+  // through setQueue/playAt regardless of where the click came from — too
+  // many call sites to route each one through a connected check, so instead
+  // starting a fresh local play while connected just takes control back,
+  // same as it would on Spotify.
+  const localSetQueue = player.setQueue.bind(player);
+  player.setQueue = (...args) => {
+    if (connect.isConnected()) connect.disconnect();
+    return localSetQueue(...args);
+  };
+  const localPlayAt = player.playAt.bind(player);
+  player.playAt = (...args) => {
+    if (connect.isConnected()) connect.disconnect();
+    return localPlayAt(...args);
+  };
+
   wirePlayer();
 
   accountUsername.textContent = username || '';
@@ -833,6 +851,23 @@ async function loadConnectDevices() {
     connectDeviceList.appendChild(el('div', 'connect-empty', t('connect.empty')));
     return;
   }
+
+  const connected = connect.getConnectedDevice();
+  if (connected) {
+    connectDeviceList.innerHTML = '';
+    const status = el('div', 'connect-status', t('connect.connectedTo', { device: connected.name || 'Device' }));
+    connectDeviceList.appendChild(status);
+    const disconnectBtn = el('button', 'connect-device-item danger');
+    disconnectBtn.type = 'button';
+    disconnectBtn.innerHTML = `<span class="connect-device-name">${escapeHtml(t('connect.disconnect'))}</span>`;
+    disconnectBtn.addEventListener('click', () => {
+      connect.disconnect();
+      connectMenu.hidden = true;
+    });
+    connectDeviceList.appendChild(disconnectBtn);
+    return;
+  }
+
   connectDeviceList.innerHTML = `<div class="connect-loading">${escapeHtml(t('connect.loading'))}</div>`;
   const devices = await connect.getDevices();
   connectDeviceList.innerHTML = '';
@@ -843,14 +878,15 @@ async function loadConnectDevices() {
   devices.forEach((session) => {
     const item = el('button', 'connect-device-item');
     item.type = 'button';
+    const deviceName = session.DeviceName || session.Client || 'Device';
     const meta = session.NowPlayingItem
       ? t('connect.nowPlaying', { title: session.NowPlayingItem.Name })
       : (session.Client || '');
-    item.innerHTML = `<span class="connect-device-name">${escapeHtml(session.DeviceName || session.Client || 'Device')}</span><span class="connect-device-meta">${escapeHtml(meta)}</span>`;
+    item.innerHTML = `<span class="connect-device-name">${escapeHtml(deviceName)}</span><span class="connect-device-meta">${escapeHtml(meta)}</span>`;
     item.addEventListener('click', async () => {
       connectMenu.hidden = true;
       try {
-        await connect.sendToDevice(session.Id);
+        await connect.sendToDevice(session.Id, deviceName);
       } catch (err) {
         alert(err.message || t('connect.errorSend'));
       }
@@ -955,11 +991,115 @@ function wireMediaKeys() {
   if (!window.api?.mediaKeys) return;
   window.api.mediaKeys.onKey((key) => {
     if (!player) return;
-    if (key === 'playpause') player.togglePlay();
-    else if (key === 'next') player.next(true);
-    else if (key === 'previous') player.previous();
-    else if (key === 'stop' && !player.audio.paused) player.togglePlay();
+    if (key === 'playpause') uiTogglePlay();
+    else if (key === 'next') uiNext();
+    else if (key === 'previous') uiPrevious();
+    else if (key === 'stop' && !connect?.isConnected() && !player.audio.paused) uiTogglePlay();
   });
+}
+
+// ---------- Transport controls: local playback, or the connected remote
+// device when one is active (see wireConnectMenu / updateRemoteBarUI) ----------
+
+function uiTogglePlay() {
+  if (connect?.isConnected()) { connect.remoteTogglePlay(); return; }
+  player.togglePlay();
+}
+
+function uiNext() {
+  if (connect?.isConnected()) { connect.remoteNext(); return; }
+  player.next(true);
+}
+
+function uiPrevious() {
+  if (connect?.isConnected()) { connect.remotePrevious(); return; }
+  player.previous();
+}
+
+function uiSeekPercent(pct) {
+  if (connect?.isConnected()) { connect.remoteSeekPercent(pct); return; }
+  const duration = player.audio.duration || 0;
+  player.seekTo((pct / 100) * duration);
+}
+
+function uiSetVolumePercent(pct) {
+  if (connect?.isConnected()) { connect.remoteSetVolume(pct); return; }
+  player.setVolume(sliderToVolume(pct));
+}
+
+// Mirrors the connected device's actual playback state into the player bar
+// (art/title/artist/seek/time/play state/volume) — called on every Connect
+// poll tick, and once with `null` right when a connection drops so the bar
+// falls back to reflecting local state again.
+function updateRemoteBarUI(session) {
+  playerBar.classList.toggle('connected-remote', !!session);
+  btnConnect.classList.toggle('active', !!session);
+  btnConnectMobile.classList.toggle('active', !!session);
+  if (!session) {
+    // Disconnected — restore the bar to whatever's actually loaded locally
+    // (paused, since it was stopped for the handoff) instead of leaving the
+    // last-seen remote track showing.
+    const track = player.currentTrack;
+    if (track) {
+      playerArt.src = artUrl(track);
+      playerTitle.textContent = track.Name;
+      playerArtist.textContent = artistNames(track);
+      const playing = !player.audio.paused;
+      setHidden(iconPlay, playing);
+      setHidden(iconPause, !playing);
+      setHidden(mobileIconPlay, playing);
+      setHidden(mobileIconPause, !playing);
+      const duration = ticksToSeconds(track.RunTimeTicks) || player.audio.duration || 0;
+      const current = player.audio.currentTime || 0;
+      const pct = duration ? (current / duration) * 100 : 0;
+      seekBar.value = pct;
+      seekBar.style.setProperty('--pct', rangeFillPercent(pct, seekBar, 14));
+      mobileSeekBar.value = pct;
+      mobileSeekBar.style.setProperty('--pct', rangeFillPercent(pct, mobileSeekBar, 12));
+      timeCurrent.textContent = formatTime(current);
+      mobileTimeCurrent.textContent = formatTime(current);
+      if (duration) { timeTotal.textContent = formatTime(duration); mobileTimeTotal.textContent = formatTime(duration); }
+    }
+    const volPct = Math.round(Math.sqrt(player.baseVolume) * 100);
+    volumeBar.value = volPct;
+    volumeBar.style.setProperty('--pct', rangeFillPercent(volPct, volumeBar, 14));
+    updateVolumeIcon(volPct);
+    return;
+  }
+
+  playerBar.hidden = false;
+  appRoot.classList.add('has-track');
+
+  const item = session.NowPlayingItem;
+  const playState = session.PlayState || {};
+  if (item) {
+    playerArt.src = jellyfin.imageUrl(item) || placeholderArt('album');
+    playerTitle.textContent = item.Name || '';
+    playerArtist.textContent = artistNames(item);
+    const posSeconds = (playState.PositionTicks || 0) / 10000000;
+    const durSeconds = (item.RunTimeTicks || 0) / 10000000;
+    const pct = durSeconds ? (posSeconds / durSeconds) * 100 : 0;
+    seekBar.value = pct;
+    seekBar.style.setProperty('--pct', rangeFillPercent(pct, seekBar, 14));
+    mobileSeekBar.value = pct;
+    mobileSeekBar.style.setProperty('--pct', rangeFillPercent(pct, mobileSeekBar, 12));
+    timeCurrent.textContent = formatTime(posSeconds);
+    mobileTimeCurrent.textContent = formatTime(posSeconds);
+    timeTotal.textContent = formatTime(durSeconds);
+    mobileTimeTotal.textContent = formatTime(durSeconds);
+  }
+
+  const playing = !playState.IsPaused;
+  setHidden(iconPlay, playing);
+  setHidden(iconPause, !playing);
+  setHidden(mobileIconPlay, playing);
+  setHidden(mobileIconPause, !playing);
+
+  if (playState.VolumeLevel != null) {
+    volumeBar.value = playState.VolumeLevel;
+    volumeBar.style.setProperty('--pct', rangeFillPercent(playState.VolumeLevel, volumeBar, 14));
+    updateVolumeIcon(playState.VolumeLevel);
+  }
 }
 
 function refreshSettingsUI() {
@@ -1963,9 +2103,9 @@ function wireSwipeActions(rowEl, { onSwipeRight, onSwipeLeft } = {}) {
 
 // ---------- Player wiring ----------
 function wirePlayer() {
-  btnPlay.addEventListener('click', () => player.togglePlay());
-  btnPrev.addEventListener('click', () => player.previous());
-  btnNext.addEventListener('click', () => player.next(true));
+  btnPlay.addEventListener('click', () => uiTogglePlay());
+  btnPrev.addEventListener('click', () => uiPrevious());
+  btnNext.addEventListener('click', () => uiNext());
   btnShuffle.addEventListener('click', () => {
     player.toggleShuffle();
     btnShuffle.classList.toggle('active', player.shuffle);
@@ -1981,9 +2121,9 @@ function wirePlayer() {
   });
 
   // Mobile full-screen player controls — same player calls as the desktop ones.
-  mobileBtnPlay.addEventListener('click', () => player.togglePlay());
-  mobileBtnPrev.addEventListener('click', () => player.previous());
-  mobileBtnNext.addEventListener('click', () => player.next(true));
+  mobileBtnPlay.addEventListener('click', () => uiTogglePlay());
+  mobileBtnPrev.addEventListener('click', () => uiPrevious());
+  mobileBtnNext.addEventListener('click', () => uiNext());
   mobileBtnShuffle.addEventListener('click', () => {
     player.toggleShuffle();
     btnShuffle.classList.toggle('active', player.shuffle);
@@ -1995,8 +2135,7 @@ function wirePlayer() {
     mobileSeekBar.style.setProperty('--pct', rangeFillPercent(pct, mobileSeekBar, 12));
   });
   mobileSeekBar.addEventListener('change', () => {
-    const duration = player.audio.duration || 0;
-    player.seekTo((Number(mobileSeekBar.value) / 100) * duration);
+    uiSeekPercent(Number(mobileSeekBar.value));
     mobileSeekBar.style.setProperty('--pct', rangeFillPercent(Number(mobileSeekBar.value), mobileSeekBar, 12));
   });
 
@@ -2013,14 +2152,13 @@ function wirePlayer() {
     seekBar.style.setProperty('--pct', rangeFillPercent(pct, seekBar, 14));
   });
   seekBar.addEventListener('change', () => {
-    const duration = player.audio.duration || 0;
-    player.seekTo((Number(seekBar.value) / 100) * duration);
+    uiSeekPercent(Number(seekBar.value));
     seekBar.style.setProperty('--pct', rangeFillPercent(Number(seekBar.value), seekBar, 14));
   });
 
   volumeBar.addEventListener('input', () => {
     const val = Number(volumeBar.value);
-    player.setVolume(sliderToVolume(val));
+    uiSetVolumePercent(val);
     volumeBar.style.setProperty('--pct', rangeFillPercent(val, volumeBar, 14));
     updateVolumeIcon(val);
   });

@@ -220,6 +220,8 @@
     "loading": "Ricerca dispositivi…",
     "empty": "Nessun altro dispositivo trovato.",
     "nowPlaying": "In riproduzione {title}",
-    "errorSend": "Impossibile inviare la riproduzione a quel dispositivo."
+    "errorSend": "Impossibile inviare la riproduzione a quel dispositivo.",
+    "connectedTo": "Connesso a {device}",
+    "disconnect": "Disconnetti"
   }
 }

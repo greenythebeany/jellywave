@@ -21,6 +21,12 @@ export function createConnect(jellyfin, player) {
   let playSessionId = null;
   let stopped = false;
 
+  // ---------- Remote control (this device driving another JellyWave) ----------
+  let connectedDevice = null; // { id, name }
+  let lastRemoteState = null; // last polled SessionInfo for connectedDevice
+  let remotePollTimer = null;
+  const remoteStateListeners = [];
+
   function currentPositionTicks() {
     return Math.floor((player.audio.currentTime || 0) * 10000000);
   }
@@ -180,6 +186,9 @@ export function createConnect(jellyfin, player) {
     if (reconnectTimer) clearTimeout(reconnectTimer);
     if (keepAliveTimer) clearInterval(keepAliveTimer);
     if (progressTimer) clearInterval(progressTimer);
+    stopRemotePolling();
+    connectedDevice = null;
+    lastRemoteState = null;
     reportStopped();
     if (ws) { try { ws.close(); } catch (err) { /* ignore */ } ws = null; }
   }
@@ -194,15 +203,119 @@ export function createConnect(jellyfin, player) {
     }
   }
 
+  function emitRemoteState() {
+    remoteStateListeners.forEach((cb) => cb(connectedDevice ? lastRemoteState : null));
+  }
+
+  function onRemoteStateChange(cb) {
+    remoteStateListeners.push(cb);
+  }
+
+  function isConnected() {
+    return !!connectedDevice;
+  }
+
+  function getConnectedDevice() {
+    return connectedDevice;
+  }
+
+  // Polls the connected session's actual state (now-playing item, position,
+  // pause state) so the local UI can mirror what's really happening on the
+  // other device — Jellyfin only pushes this over WebSocket to the target
+  // session itself, not to the controller, so polling is the only option.
+  function stopRemotePolling() {
+    if (remotePollTimer) clearInterval(remotePollTimer);
+    remotePollTimer = null;
+  }
+
+  function startRemotePolling() {
+    stopRemotePolling();
+    const poll = async () => {
+      if (!connectedDevice) return;
+      let sessions;
+      try {
+        sessions = await jellyfin.getSessions();
+      } catch (err) {
+        return; // transient — try again next tick
+      }
+      const session = sessions.find((s) => s.Id === connectedDevice.id);
+      if (!session) {
+        // The other device closed/logged out — nothing left to control.
+        disconnect();
+        return;
+      }
+      lastRemoteState = session;
+      emitRemoteState();
+    };
+    poll();
+    remotePollTimer = setInterval(poll, 3000);
+  }
+
   // Hands the remaining queue (current track onward, at the current
-  // position) to another session — a "play here instead" handoff.
-  async function sendToDevice(sessionId) {
+  // position) to another session, then stops local playback — audio should
+  // only come from the device you handed off to, not both at once.
+  async function sendToDevice(sessionId, deviceName) {
     const track = player.currentTrack;
     if (!track || player.currentIndex < 0) return;
     const startTicks = currentPositionTicks();
     const remaining = player.queue.slice(player.currentIndex).map((tr) => tr.Id);
     await jellyfin.sendPlayCommand(sessionId, remaining.length ? remaining : [track.Id], startTicks);
+    player.audio.pause();
+    connectedDevice = { id: sessionId, name: deviceName };
+    startRemotePolling();
   }
 
-  return { start, stop, getDevices, sendToDevice };
+  // Drops back to controlling local playback. Does not touch the other
+  // device's playback — it keeps playing until the user pauses it there.
+  function disconnect() {
+    connectedDevice = null;
+    lastRemoteState = null;
+    stopRemotePolling();
+    emitRemoteState();
+  }
+
+  async function remoteCommand(command, extra) {
+    if (!connectedDevice) return;
+    try {
+      await jellyfin.sendPlaystateCommand(connectedDevice.id, command, extra);
+    } catch (err) {
+      // Best-effort — the poll loop will notice if the device is gone.
+    }
+  }
+
+  function remoteTogglePlay() {
+    remoteCommand(lastRemoteState?.PlayState?.IsPaused ? 'Unpause' : 'Pause');
+  }
+
+  function remoteNext() {
+    remoteCommand('NextTrack');
+  }
+
+  function remotePrevious() {
+    remoteCommand('PreviousTrack');
+  }
+
+  // percent: 0-100, position within the remote track's own duration.
+  function remoteSeekPercent(percent) {
+    const durationTicks = lastRemoteState?.NowPlayingItem?.RunTimeTicks || 0;
+    if (!durationTicks) return;
+    remoteCommand('Seek', { SeekPositionTicks: Math.floor((percent / 100) * durationTicks) });
+  }
+
+  // percent: 0-100 volume level, sent as-is — this is the remote device's
+  // own volume, unrelated to any local perceptual taper curve.
+  async function remoteSetVolume(percent) {
+    if (!connectedDevice) return;
+    try {
+      await jellyfin.sendGeneralCommand(connectedDevice.id, 'SetVolume', { Volume: String(Math.round(percent)) });
+    } catch (err) {
+      // Best-effort.
+    }
+  }
+
+  return {
+    start, stop, getDevices, sendToDevice,
+    isConnected, getConnectedDevice, disconnect, onRemoteStateChange,
+    remoteTogglePlay, remoteNext, remotePrevious, remoteSeekPercent, remoteSetVolume
+  };
 }

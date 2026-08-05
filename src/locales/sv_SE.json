@@ -220,6 +220,8 @@
     "loading": "Söker efter enheter…",
     "empty": "Inga andra enheter hittades.",
     "nowPlaying": "Spelar {title}",
-    "errorSend": "Det gick inte att skicka uppspelning till den enheten."
+    "errorSend": "Det gick inte att skicka uppspelning till den enheten.",
+    "connectedTo": "Ansluten till {device}",
+    "disconnect": "Koppla från"
   }
 }

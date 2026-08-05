@@ -220,6 +220,8 @@
     "loading": "Szukanie urządzeń…",
     "empty": "Nie znaleziono innych urządzeń.",
     "nowPlaying": "Odtwarza {title}",
-    "errorSend": "Nie udało się wysłać odtwarzania na to urządzenie."
+    "errorSend": "Nie udało się wysłać odtwarzania na to urządzenie.",
+    "connectedTo": "Połączono z {device}",
+    "disconnect": "Rozłącz"
   }
 }
