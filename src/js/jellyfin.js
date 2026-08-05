@@ -401,7 +401,11 @@ export class JellyfinClient {
   // own session — that's the actual device list a "Connect" picker shows.
   async getSessions() {
     const data = await this._get('/Sessions', { ControllableByUserId: this.userId });
-    return (data || []).filter((s) => s.DeviceId !== DEVICE_ID);
+    // ControllableByUserId returns every session this account can control —
+    // including plain jellyfin-web browser tabs and other official clients,
+    // not just JellyWave. Device handoff only makes sense between JellyWave
+    // instances, so narrow it to that.
+    return (data || []).filter((s) => s.DeviceId !== DEVICE_ID && s.Client === CLIENT_NAME);
   }
 
   async sendPlayCommand(sessionId, itemIds, startPositionTicks = 0) {
