@@ -123,6 +123,26 @@ export class JellyfinClient {
     return res.json();
   }
 
+  // Same network-vs-HTTP-error distinction as _get(), for one-off POSTs
+  // that only care whether the call succeeded (Connect's send commands) —
+  // a raw fetch() rejection surfaces as the browser's generic "Failed to
+  // fetch", which tells the user nothing about what actually went wrong.
+  async _fetchOk(url, options, failureMessage) {
+    let res;
+    try {
+      res = await fetch(url, options);
+    } catch (err) {
+      const netErr = new Error(`Could not reach server: ${err.message}`);
+      netErr.isNetworkError = true;
+      throw netErr;
+    }
+    if (!res.ok) {
+      const err = new Error(`${failureMessage} (${res.status}).`);
+      err.status = res.status;
+      throw err;
+    }
+  }
+
   // Hits an authenticated endpoint so a stale/invalid saved token is caught
   // here and sent back to the login screen, instead of silently proceeding
   // into a half-logged-in app that breaks on the first real request.
@@ -418,33 +438,32 @@ export class JellyfinClient {
       StartPositionTicks: String(Math.round(startPositionTicks)),
       PlayCommand: 'PlayNow'
     });
-    const res = await fetch(`${this.serverUrl}/Sessions/${sessionId}/Playing?${params.toString()}`, {
-      method: 'POST',
-      headers: this._headers()
-    });
-    if (!res.ok) throw new Error(`Could not start playback on that device (${res.status}).`);
+    await this._fetchOk(
+      `${this.serverUrl}/Sessions/${sessionId}/Playing?${params.toString()}`,
+      { method: 'POST', headers: this._headers() },
+      'Could not start playback on that device'
+    );
   }
 
   // command: one of Jellyfin's PlaystateCommand values — Stop, Pause,
   // Unpause, NextTrack, PreviousTrack, Seek (needs SeekPositionTicks).
   async sendPlaystateCommand(sessionId, command, extraParams = {}) {
     const qs = new URLSearchParams(extraParams).toString();
-    const res = await fetch(`${this.serverUrl}/Sessions/${sessionId}/Playing/${command}${qs ? `?${qs}` : ''}`, {
-      method: 'POST',
-      headers: this._headers()
-    });
-    if (!res.ok) throw new Error(`Could not send command (${res.status}).`);
+    await this._fetchOk(
+      `${this.serverUrl}/Sessions/${sessionId}/Playing/${command}${qs ? `?${qs}` : ''}`,
+      { method: 'POST', headers: this._headers() },
+      'Could not send command'
+    );
   }
 
   // Non-playstate commands (volume, mute) — name: a GeneralCommandType like
   // 'SetVolume' (Arguments: { Volume: '50' }), 'Mute', 'Unmute'.
   async sendGeneralCommand(sessionId, name, args = {}) {
-    const res = await fetch(`${this.serverUrl}/Sessions/${sessionId}/Command`, {
-      method: 'POST',
-      headers: this._headers(),
-      body: JSON.stringify({ Name: name, Arguments: args })
-    });
-    if (!res.ok) throw new Error(`Could not send command (${res.status}).`);
+    await this._fetchOk(
+      `${this.serverUrl}/Sessions/${sessionId}/Command`,
+      { method: 'POST', headers: this._headers(), body: JSON.stringify({ Name: name, Arguments: args }) },
+      'Could not send command'
+    );
   }
 
   // Self-reporting so this device shows up as "Now Playing" and is

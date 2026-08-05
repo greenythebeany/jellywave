@@ -1785,9 +1785,31 @@ function buildCardGrid(items, kind) {
 // sections where the list can get long and a multi-row grid would push
 // everything else down the page.
 function buildCardRow(items, kind) {
+  const wrap = el('div', 'card-row-wrap');
   const row = el('div', 'card-row');
   items.forEach((item) => row.appendChild(buildCard(item, kind)));
-  return row;
+  wrap.appendChild(row);
+
+  // Not everyone's mouse has horizontal/tilt scroll — let a normal vertical
+  // wheel scroll the row while hovering it, and back that up with visible
+  // nav arrows (desktop only; touch already scrolls this natively).
+  row.addEventListener('wheel', (evt) => {
+    if (evt.deltaY === 0) return;
+    evt.preventDefault();
+    row.scrollBy({ left: evt.deltaY, behavior: 'auto' });
+  }, { passive: false });
+
+  const scrollAmount = () => Math.max(300, row.clientWidth * 0.8);
+  const prevBtn = el('button', 'card-row-nav card-row-nav-prev', '<i class="fi fi-br-angle-small-left"></i>');
+  prevBtn.type = 'button';
+  prevBtn.addEventListener('click', () => row.scrollBy({ left: -scrollAmount(), behavior: 'smooth' }));
+  const nextBtn = el('button', 'card-row-nav card-row-nav-next', '<i class="fi fi-br-angle-small-right"></i>');
+  nextBtn.type = 'button';
+  nextBtn.addEventListener('click', () => row.scrollBy({ left: scrollAmount(), behavior: 'smooth' }));
+  wrap.appendChild(prevBtn);
+  wrap.appendChild(nextBtn);
+
+  return wrap;
 }
 
 function buildCard(item, kind) {

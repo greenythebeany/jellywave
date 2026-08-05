@@ -382,6 +382,20 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 }
 .card-row .card { flex: 0 0 170px; scroll-snap-align: start; }
 .card-row::-webkit-scrollbar { display: none; } /* Chromium / Android WebView */
+
+.card-row-wrap { position: relative; }
+.card-row-nav {
+  position: absolute; top: 40%; transform: translateY(-50%);
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+  color: var(--text-primary); display: flex; align-items: center; justify-content: center;
+  font-size: 16px; opacity: 0; transition: opacity 0.15s ease, background 0.15s ease;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4); z-index: 2; cursor: pointer;
+}
+.card-row-wrap:hover .card-row-nav { opacity: 1; }
+.card-row-nav:hover { background: var(--bg-card-hover); }
+.card-row-nav-prev { left: -8px; }
+.card-row-nav-next { right: -8px; }
 .card {
   background: var(--bg-card);
   border-radius: var(--radius-md);
@@ -866,6 +880,7 @@ body.platform-mobile .titlebar { display: none; }
   .detail-title { font-size: 28px; }
   .card-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; }
   .card-row { gap: 14px; }
+  .card-row-nav { display: none; } /* touch already scrolls this row natively */
   /* Match the ~2-up width card-grid settles on at this breakpoint (minmax(130px,1fr))
      instead of a fixed px value, so cards in a row and cards in a grid look the same
      size next to each other — a bit under half the row width leaves a peek of the
