@@ -228,27 +228,35 @@ export function createConnect(jellyfin, player) {
     remotePollTimer = null;
   }
 
+  async function pollRemoteState() {
+    if (!connectedDevice) return;
+    let sessions;
+    try {
+      sessions = await jellyfin.getSessions();
+    } catch (err) {
+      return; // transient — try again next tick
+    }
+    const session = sessions.find((s) => s.Id === connectedDevice.id);
+    if (!session) {
+      // The other device closed/logged out — nothing left to control.
+      disconnect();
+      return;
+    }
+    lastRemoteState = session;
+    emitRemoteState();
+  }
+
   function startRemotePolling() {
     stopRemotePolling();
-    const poll = async () => {
-      if (!connectedDevice) return;
-      let sessions;
-      try {
-        sessions = await jellyfin.getSessions();
-      } catch (err) {
-        return; // transient — try again next tick
-      }
-      const session = sessions.find((s) => s.Id === connectedDevice.id);
-      if (!session) {
-        // The other device closed/logged out — nothing left to control.
-        disconnect();
-        return;
-      }
-      lastRemoteState = session;
-      emitRemoteState();
-    };
-    poll();
-    remotePollTimer = setInterval(poll, 3000);
+    pollRemoteState();
+    remotePollTimer = setInterval(pollRemoteState, 3000);
+  }
+
+  // A command changes the remote device's state, but the poll loop might not
+  // tick for up to 3s — nudge it after a short delay so the UI catches up
+  // quickly instead of visibly lagging behind what you just did.
+  function pollSoon() {
+    setTimeout(pollRemoteState, 400);
   }
 
   // Hands the remaining queue (current track onward, at the current
@@ -278,6 +286,7 @@ export function createConnect(jellyfin, player) {
     if (!connectedDevice) return;
     try {
       await jellyfin.sendPlaystateCommand(connectedDevice.id, command, extra);
+      pollSoon();
     } catch (err) {
       // Best-effort — the poll loop will notice if the device is gone.
     }
@@ -308,6 +317,7 @@ export function createConnect(jellyfin, player) {
     if (!connectedDevice) return;
     try {
       await jellyfin.sendGeneralCommand(connectedDevice.id, 'SetVolume', { Volume: String(Math.round(percent)) });
+      pollSoon();
     } catch (err) {
       // Best-effort.
     }

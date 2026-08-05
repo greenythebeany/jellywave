@@ -102,7 +102,11 @@ export class JellyfinClient {
     });
     let res;
     try {
-      res = await fetch(url, { headers: this._headers() });
+      // Every GET here is dynamic/user-specific — most importantly, Connect's
+      // session polling hits the exact same /Sessions URL every few seconds,
+      // and without this the browser's HTTP cache can start quietly serving
+      // a stale response instead of actually hitting the server.
+      res = await fetch(url, { headers: this._headers(), cache: 'no-store' });
     } catch (err) {
       // fetch itself threw — no response at all (offline, DNS, server down,
       // etc). Distinct from an actual HTTP error response.
