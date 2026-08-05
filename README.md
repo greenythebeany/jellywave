@@ -109,6 +109,9 @@ Not yet started, roughly in the order they'll likely land:
 - Keyboard media key support on desktop (play/pause/skip from your keyboard, not just in-app)
 - Smart playlists (auto-generated "most played," "on repeat," genre mixes)
 - Swipe gestures on Android track lists (swipe to queue / remove)
+- Queue drag-to-reorder (long-press and drag a queue item to a new position)
+- Dynamic UI accent color pulled from the currently playing album art, Spotify-style
+- Personal listening stats page (top artists/tracks, total listening time), built from local play history
 - Spotify Connect-style device handoff, letting playback be started on one device and picked up or controlled from another — likely built on Jellyfin's own `/Sessions` remote-control API rather than a custom relay
 
 ## Acknowledgements
