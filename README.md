@@ -101,7 +101,15 @@ The Android project lives in `android/` and is a standard Capacitor project — 
 
 ## Roadmap
 
-**v1.0.1** is planned to add Spotify Connect-style device handoff, letting playback be started on one device and picked up or controlled from another. Not yet started.
+Not yet started, roughly in the order they'll likely land:
+
+- Fix session getting logged out on transient network/server errors instead of only on an actual expired token
+- Sleep timer (stop playback after N minutes, or at the end of the current track)
+- Recently played history view, separate from "recently added"
+- Keyboard media key support on desktop (play/pause/skip from your keyboard, not just in-app)
+- Smart playlists (auto-generated "most played," "on repeat," genre mixes)
+- Swipe gestures on Android track lists (swipe to queue / remove)
+- Spotify Connect-style device handoff, letting playback be started on one device and picked up or controlled from another — likely built on Jellyfin's own `/Sessions` remote-control API rather than a custom relay
 
 ## Acknowledgements
 
