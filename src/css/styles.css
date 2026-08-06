@@ -853,11 +853,11 @@ body.platform-mobile .titlebar { display: none; }
   .now-playing-summary { padding: 12px 24px 8px; }
   .now-playing-art-wrap { max-width: 100%; width: 100%; margin-bottom: 26px; }
   .now-playing-art { border-radius: var(--radius-lg); box-shadow: 0 24px 50px rgba(0,0,0,0.5); }
-  .now-playing-info-row { max-width: 100%; }
-  .now-playing-text { text-align: left; }
+  .now-playing-info-row { max-width: 100%; justify-content: center; position: relative; }
+  .now-playing-text { text-align: center; }
   .now-playing-title { font-size: 20px; }
   .now-playing-artist { font-size: 14.5px; }
-  .now-playing-like-btn { display: flex; }
+  .now-playing-like-btn { display: flex; position: absolute; right: 0; }
 
   .mobile-now-playing-controls {
     display: flex; flex-direction: column; gap: 10px;
