@@ -1044,6 +1044,10 @@ function updateRemoteBarUI(session) {
       playerArt.src = artUrl(track);
       playerTitle.textContent = track.Name;
       playerArtist.textContent = artistNames(track);
+      nowPlayingArt.src = artUrl(track, 'album', 800);
+      nowPlayingTitle.textContent = track.Name;
+      nowPlayingArtist.textContent = artistNames(track);
+      nowPlayingLikeBtn.classList.toggle('liked', !!track.UserData?.IsFavorite);
       const playing = !player.audio.paused;
       setHidden(iconPlay, playing);
       setHidden(iconPause, !playing);
@@ -1073,9 +1077,14 @@ function updateRemoteBarUI(session) {
   const item = session.NowPlayingItem;
   const playState = session.PlayState || {};
   if (item) {
-    playerArt.src = jellyfin.imageUrl(item) || placeholderArt('album');
+    const art = jellyfin.imageUrl(item) || placeholderArt('album');
+    playerArt.src = art;
     playerTitle.textContent = item.Name || '';
     playerArtist.textContent = artistNames(item);
+    nowPlayingArt.src = jellyfin.imageUrl(item, 'Primary', 800) || art;
+    nowPlayingTitle.textContent = item.Name || '';
+    nowPlayingArtist.textContent = artistNames(item);
+    nowPlayingLikeBtn.classList.toggle('liked', !!item.UserData?.IsFavorite);
     const posSeconds = (playState.PositionTicks || 0) / 10000000;
     const durSeconds = (item.RunTimeTicks || 0) / 10000000;
     const pct = durSeconds ? (posSeconds / durSeconds) * 100 : 0;

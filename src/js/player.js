@@ -99,6 +99,15 @@ export class Player {
       if (el !== this.audio) return;
       this._onEnded();
     });
+    // Setting currentTime directly (seekTo, previous()'s restart-to-0) fires
+    // no 'play'/'pause' — nothing else notices the position actually moved.
+    // Reuse 'playstate' since its listeners (Discord presence, Connect's
+    // session progress report) both need to react to a seek the same way
+    // they react to a pause: recompute from the current position.
+    el.addEventListener('seeked', () => {
+      if (el !== this.audio) return;
+      this._emit('playstate');
+    });
   }
 
   // ---------- ReplayGain / volume ----------
