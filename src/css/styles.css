@@ -909,9 +909,13 @@ body.platform-mobile .titlebar { display: none; }
   .bottom-nav {
     grid-area: nav;
     display: flex; justify-content: space-around; align-items: center;
-    height: 58px; flex-shrink: 0;
+    height: auto; min-height: 58px; flex-shrink: 0;
     background: var(--bg-elevated); border-top: 1px solid var(--border-subtle);
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    /* max() guarantees clearance from the gesture-nav pill even on WebView
+       versions where env(safe-area-inset-bottom) isn't actually supported
+       and just silently reports 0 — same fixed-height-vs-padding trap as
+       .main-header above (height had to become min-height too). */
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 14px);
   }
   .bottom-nav-item {
     display: flex; flex-direction: column; align-items: center; gap: 3px;
@@ -946,7 +950,20 @@ body.platform-mobile .titlebar { display: none; }
      next card as a scroll hint. */
   .card-row .card { flex: 0 0 calc((100% - 14px) / 2.15); min-width: 0; }
   .view-root { padding: 8px 16px 24px; }
-  .main-header { padding: 0 16px; }
+  /* The header is `position: sticky; top: 0` with no top inset, so on a
+     phone with a status bar (and viewport-fit=cover letting the WebView
+     draw edge-to-edge) it renders directly underneath the clock/battery
+     icons instead of below them. height must switch to min-height here,
+     or this padding just compresses the existing 68px instead of adding
+     space above it. max() guarantees clearance even where this WebView's
+     env(safe-area-inset-top) silently reports 0 (confirmed happening for
+     safe-area-inset-bottom on this same device — see .bottom-nav below). */
+  .main-header {
+    padding: 0 16px;
+    padding-top: max(env(safe-area-inset-top, 0px), 24px);
+    height: auto;
+    min-height: 68px;
+  }
 
   .track-table thead th:nth-child(3), .track-album-cell { display: none; }
 }
