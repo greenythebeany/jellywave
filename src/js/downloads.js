@@ -101,6 +101,37 @@ function entryMeta(track) {
   };
 }
 
+function extFromImageContentType(contentType) {
+  const type = (contentType || '').split(';')[0].trim();
+  const map = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' };
+  return map[type] || '.jpg';
+}
+
+// Best-effort — a missing/failed cover shouldn't fail the whole download,
+// it just means this offline track falls back to the placeholder art.
+async function downloadArtwork(track, jellyfin, headers) {
+  const imageUrl = jellyfin.imageUrl(track, 'Primary', 600);
+  if (!imageUrl) return null;
+  const artKey = `${track.Id}-art`;
+  try {
+    if (isDesktop) {
+      const result = await window.api.downloads.save(artKey, imageUrl, headers);
+      return result.ok ? result.path : null;
+    }
+    const fs = androidFilesystem();
+    if (!fs) return null;
+    const res = await fetch(imageUrl, { headers });
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    const fileName = `${artKey}${extFromImageContentType(res.headers.get('content-type'))}`;
+    const base64 = await blobToBase64(blob);
+    await fs.writeFile({ path: fileName, data: base64, directory: 'DATA' });
+    return fileName;
+  } catch (err) {
+    return null;
+  }
+}
+
 // Downloads at direct-play quality (no bitrate cap) — the point of an
 // offline copy is not re-transcoding it down every time you're not on wifi.
 export async function downloadTrack(track, jellyfin) {
@@ -111,7 +142,8 @@ export async function downloadTrack(track, jellyfin) {
   if (isDesktop) {
     const result = await window.api.downloads.save(track.Id, url, headers);
     if (!result.ok) throw new Error(result.error || 'Download failed');
-    index[track.Id] = { path: result.path, sizeBytes: result.sizeBytes || 0, ...entryMeta(track) };
+    const imagePath = await downloadArtwork(track, jellyfin, headers);
+    index[track.Id] = { path: result.path, imagePath, sizeBytes: result.sizeBytes || 0, ...entryMeta(track) };
     saveIndex();
     notify();
     return true;
@@ -126,7 +158,8 @@ export async function downloadTrack(track, jellyfin) {
   const fileName = `${track.Id}${extFromContentType(res.headers.get('content-type'))}`;
   const base64 = await blobToBase64(blob);
   await fs.writeFile({ path: fileName, data: base64, directory: 'DATA' });
-  index[track.Id] = { path: fileName, sizeBytes: blob.size, ...entryMeta(track) };
+  const imagePath = await downloadArtwork(track, jellyfin, headers);
+  index[track.Id] = { path: fileName, imagePath, sizeBytes: blob.size, ...entryMeta(track) };
   saveIndex();
   notify();
   return true;
@@ -138,15 +171,40 @@ export async function deleteDownload(trackId) {
   try {
     if (isDesktop) {
       await window.api.downloads.delete(trackId);
+      if (entry.imagePath) await window.api.downloads.delete(`${trackId}-art`);
     } else if (isMobile) {
       const fs = androidFilesystem();
-      if (fs) await fs.deleteFile({ path: entry.path, directory: 'DATA' }).catch(() => {});
+      if (fs) {
+        await fs.deleteFile({ path: entry.path, directory: 'DATA' }).catch(() => {});
+        if (entry.imagePath) await fs.deleteFile({ path: entry.imagePath, directory: 'DATA' }).catch(() => {});
+      }
     }
   } finally {
     delete index[trackId];
     saveIndex();
     notify();
   }
+}
+
+// A URI the <img> element can actually load from, or null if this track has
+// no downloaded cover (not downloaded at all, or its download predates this
+// feature, or the art fetch failed at download time) — callers should fall
+// back to the usual placeholder art in that case.
+export async function getLocalImageUri(trackId) {
+  const entry = index[trackId];
+  if (!entry || !entry.imagePath) return null;
+  if (isDesktop) return windowsPathToFileUrl(entry.imagePath);
+  if (isMobile) {
+    const fs = androidFilesystem();
+    if (!fs) return null;
+    try {
+      const result = await fs.getUri({ directory: 'DATA', path: entry.imagePath });
+      return result.uri;
+    } catch (err) {
+      return null;
+    }
+  }
+  return null;
 }
 
 // A URI the <audio> element can actually play from, or null if this track

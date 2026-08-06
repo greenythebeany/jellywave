@@ -37,7 +37,8 @@
     "createPlaylist": "Crea playlist",
     "back": "Indietro",
     "forward": "Avanti",
-    "stats": "Statistiche"
+    "stats": "Statistiche",
+    "downloads": "Download"
   },
   "header": {
     "searchPlaceholder": "Cosa vuoi ascoltare?"
@@ -84,7 +85,9 @@
     "empty": "Nessun artista trovato.",
     "empty2": "Nessun risultato trovato per questo artista.",
     "songsSection": "Brani",
-    "albumsSection": "Album"
+    "albumsSection": "Album",
+    "searchPlaceholder": "Cerca artisti",
+    "noMatches": "Nessun artista corrisponde alla ricerca."
   },
   "playlist": {
     "empty": "Questa playlist è vuota.",
@@ -240,5 +243,9 @@
     "electronic": "Elettronica",
     "classical": "Classica",
     "custom": "Personalizzato"
+  },
+  "downloads": {
+    "title": "Download",
+    "empty": "Nessuna canzone scaricata ancora."
   }
 }

@@ -37,7 +37,8 @@
     "createPlaylist": "Luo soittolista",
     "back": "Takaisin",
     "forward": "Eteenpäin",
-    "stats": "Tilastot"
+    "stats": "Tilastot",
+    "downloads": "Lataukset"
   },
   "header": {
     "searchPlaceholder": "Mitä haluat kuunnella?"
@@ -84,7 +85,9 @@
     "empty": "Artisteja ei löytynyt.",
     "empty2": "Tälle artistille ei löytynyt mitään.",
     "songsSection": "Kappaleet",
-    "albumsSection": "Albumit"
+    "albumsSection": "Albumit",
+    "searchPlaceholder": "Hae artisteja",
+    "noMatches": "Hakuasi vastaavia artisteja ei löytynyt."
   },
   "playlist": {
     "empty": "Tämä soittolista on tyhjä.",
@@ -240,5 +243,9 @@
     "electronic": "Elektroninen",
     "classical": "Klassinen",
     "custom": "Mukautettu"
+  },
+  "downloads": {
+    "title": "Lataukset",
+    "empty": "Ei vielä ladattuja kappaleita."
   }
 }

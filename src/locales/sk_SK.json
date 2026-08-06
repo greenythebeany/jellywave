@@ -37,7 +37,8 @@
     "createPlaylist": "Vytvoriť playlist",
     "back": "Späť",
     "forward": "Dopredu",
-    "stats": "Štatistiky"
+    "stats": "Štatistiky",
+    "downloads": "Stiahnuté"
   },
   "header": {
     "searchPlaceholder": "Čo si chcete vypočuť?"
@@ -84,7 +85,9 @@
     "empty": "Nenašli sa žiadni interpreti.",
     "empty2": "Pre tohto interpreta sa nič nenašlo.",
     "songsSection": "Skladby",
-    "albumsSection": "Albumy"
+    "albumsSection": "Albumy",
+    "searchPlaceholder": "Hľadať interpretov",
+    "noMatches": "Žiadny interpret nezodpovedá hľadaniu."
   },
   "playlist": {
     "empty": "Tento playlist je prázdny.",
@@ -240,5 +243,9 @@
     "electronic": "Elektronická",
     "classical": "Klasika",
     "custom": "Vlastné"
+  },
+  "downloads": {
+    "title": "Stiahnuté",
+    "empty": "Zatiaľ žiadne stiahnuté skladby."
   }
 }

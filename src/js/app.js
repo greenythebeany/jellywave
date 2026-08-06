@@ -5,7 +5,7 @@ import { getSettings, updateSettings, applySettings, currentBitrateKbps, PALETTE
 import { LOCALES, loadLocale, applyTranslations, t } from './i18n.js';
 import { platform, isDesktop, isMobile, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
 import { createConnect } from './connect.js';
-import { isSupported as downloadsSupported, isDownloaded, downloadTrack, deleteDownload, onDownloadsChange } from './downloads.js';
+import { isSupported as downloadsSupported, isDownloaded, downloadTrack, deleteDownload, onDownloadsChange, getDownloadedTracks, getLocalImageUri } from './downloads.js';
 
 // ---------- DOM refs ----------
 const loginScreen = document.getElementById('login-screen');
@@ -215,6 +215,20 @@ function placeholderArt(kind) {
 
 function artUrl(item, kind = 'album', maxSize) {
   return jellyfin.imageUrl(item, 'Primary', maxSize) || placeholderArt(kind);
+}
+
+// Server art requests fail outright when offline — for a downloaded track,
+// fall back to the copy of the cover saved alongside its audio at download
+// time instead of leaving a broken image. Only kicks in on actual load
+// failure, so the normal online path (server art) is untouched.
+function withOfflineArtFallback(imgEl, track) {
+  if (!track?.Id || !isDownloaded(track.Id)) return;
+  imgEl.onerror = () => {
+    imgEl.onerror = null;
+    getLocalImageUri(track.Id).then((uri) => {
+      if (uri) imgEl.src = uri;
+    });
+  };
 }
 
 function el(tag, className, html) {
@@ -1070,9 +1084,11 @@ function updateRemoteBarUI(session) {
     const track = player.currentTrack;
     if (track) {
       playerArt.src = artUrl(track);
+      withOfflineArtFallback(playerArt, track);
       playerTitle.textContent = track.Name;
       playerArtist.textContent = artistNames(track);
       nowPlayingArt.src = artUrl(track, 'album', 800);
+      withOfflineArtFallback(nowPlayingArt, track);
       nowPlayingTitle.textContent = track.Name;
       nowPlayingArtist.textContent = artistNames(track);
       nowPlayingLikeBtn.classList.toggle('liked', !!track.UserData?.IsFavorite);
@@ -1319,6 +1335,7 @@ async function renderView(state) {
       case 'search': await renderSearch(); break;
       case 'songs': await renderAllSongs(); break;
       case 'liked': await renderLikedSongs(); break;
+      case 'downloads': await renderDownloads(); break;
       case 'library': renderLibrary(); break;
       case 'genres': await renderGenres(); break;
       case 'genre': await renderGenreDetail(state.id, state.name); break;
@@ -1360,6 +1377,40 @@ async function ensureAllSongsCache() {
 function individualArtistNames(track) {
   if (track.Artists && track.Artists.length) return track.Artists.map(formatDisplayName);
   if (track.AlbumArtist) return [formatDisplayName(track.AlbumArtist)];
+  return [];
+}
+
+// Some libraries tag collabs as one joined string ("Avantasia, Tobias
+// Sammet", "OmenXIII/Palaye Royale") rather than splitting it into separate
+// artist credits, so Jellyfin's own ArtistIds filter never associates that
+// track with the real artist entity and it only turns up under its own
+// one-song pseudo-artist — and the real artist isn't always listed first.
+// Split on the common join patterns and check every part, not just a
+// startsWith prefix. Punctuation separators (,;&+/) don't need surrounding
+// whitespace, since tags join tightly ("Palaye Royale/Kellin Quinn") as
+// often as with spaces — but word separators (feat/ft/with/vs) require
+// actual whitespace around them, or "with" would split a real single-artist
+// name like "Withers" in half.
+function splitCreditParts(creditName) {
+  return (creditName || '')
+    .trim()
+    .toLowerCase()
+    .split(/\s*[,;&+/]\s*|\s+(?:feat\.?|ft\.?|with|vs\.?)\s+/i)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function creditIncludesArtist(creditName, targetName) {
+  if (!creditName || !targetName) return false;
+  const c = creditName.trim().toLowerCase();
+  const t = targetName.trim().toLowerCase();
+  if (c === t) return true;
+  return splitCreditParts(c).includes(t);
+}
+
+function trackCredits(track) {
+  if (track.Artists && track.Artists.length) return track.Artists;
+  if (track.AlbumArtist) return [track.AlbumArtist];
   return [];
 }
 
@@ -1597,6 +1648,42 @@ async function renderLikedSongs() {
   viewRoot.appendChild(buildTrackTable(liked, liked, { isLikedView: true }));
 }
 
+// A downloaded track's own metadata (name/album/artist/art tag) is enough to
+// list it even if it's no longer reachable from the live library — e.g. it
+// was removed from the server, or the cache just hasn't loaded it yet — but
+// prefer the real cached item when we have one so it behaves identically to
+// every other track row (accurate UserData, art, etc.).
+function downloadedEntryToTrack(entry) {
+  return {
+    Id: entry.id,
+    Name: entry.name,
+    Album: entry.album,
+    Artists: entry.artist ? [entry.artist] : [],
+    AlbumArtist: entry.artist,
+    AlbumId: entry.albumId,
+    ImageTags: entry.imageTag ? { Primary: entry.imageTag } : {},
+    RunTimeTicks: entry.runTimeTicks
+  };
+}
+
+async function renderDownloads() {
+  const entries = getDownloadedTracks().sort((a, b) => (b.downloadedAt || 0) - (a.downloadedAt || 0));
+  viewRoot.innerHTML = '';
+  viewRoot.appendChild(el('div', 'view-title', t('downloads.title')));
+  if (!entries.length) {
+    viewRoot.appendChild(el('div', 'empty-state', t('downloads.empty')));
+    return;
+  }
+  // Best-effort only — this view's whole point is working while offline, so
+  // a failed/slow server fetch here must never block it. Falls back to each
+  // download's own saved metadata (name/album/artist/art) when the cache
+  // isn't available, which is enough to list and play the track either way.
+  await ensureAllSongsCache().catch(() => {});
+  const cacheById = new Map((allSongsCache || []).map((tr) => [tr.Id, tr]));
+  const tracks = entries.map((entry) => cacheById.get(entry.id) || downloadedEntryToTrack(entry));
+  viewRoot.appendChild(buildTrackTable(tracks, tracks));
+}
+
 async function renderStats() {
   await ensureAllSongsCache();
   const stats = accountStats();
@@ -1657,15 +1744,63 @@ async function renderAlbums() {
   viewRoot.appendChild(buildCardGrid(albums, 'album'));
 }
 
+// Drop artist entities that are really just a joined collab credit for an
+// artist that already has its own real entry ("Avantasia, Alice Cooper" when
+// "Avantasia" itself exists) — those tracks are folded into the real
+// artist's page (see creditIncludesArtist / renderArtistDetail), so the
+// compound entity is pure duplicate noise in the browse grid.
+function dropCompoundDuplicateArtists(artists) {
+  const nameSet = new Set(artists.map((a) => (a.Name || '').trim().toLowerCase()));
+  return artists.filter((a) => {
+    const parts = splitCreditParts(a.Name || '');
+    // The real artist isn't always listed first ("Huddy/Palaye Royale",
+    // "OmenXIII/Palaye Royale" both put the well-known name second), so hide
+    // this as a redundant joined credit if ANY of its joined names also has
+    // its own standalone card to fold into (renderArtistDetail's merge logic
+    // already pulls it into every matching part's page). A joined name with
+    // no standalone match anywhere (like "Dame, Smart" before "Dame" existed
+    // as its own artist) stays visible, since hiding it would leave nowhere
+    // to find it at all — adding the missing name as a real artist on the
+    // server is what makes it start counting here too.
+    if (parts.length < 2) return true;
+    return !parts.some((p) => nameSet.has(p));
+  });
+}
+
 async function renderArtists() {
-  const artists = await jellyfin.getArtists(musicLibraryId);
+  const rawArtists = await jellyfin.getArtists(musicLibraryId);
+  const artists = dropCompoundDuplicateArtists(rawArtists);
   viewRoot.innerHTML = '';
   viewRoot.appendChild(el('div', 'view-title', t('artists.title')));
   if (!artists.length) {
     viewRoot.appendChild(el('div', 'empty-state', t('artists.empty')));
     return;
   }
-  viewRoot.appendChild(buildCardGrid(artists, 'artist'));
+
+  const searchWrap = el('div', 'inline-search');
+  const searchInput = document.createElement('input');
+  searchInput.type = 'text';
+  searchInput.placeholder = t('artists.searchPlaceholder');
+  searchWrap.appendChild(searchInput);
+  viewRoot.appendChild(searchWrap);
+
+  const gridWrap = el('div');
+  viewRoot.appendChild(gridWrap);
+
+  const renderGrid = (list) => {
+    gridWrap.innerHTML = '';
+    if (!list.length) {
+      gridWrap.appendChild(el('div', 'empty-state', t('artists.noMatches')));
+      return;
+    }
+    gridWrap.appendChild(buildCardGrid(list, 'artist'));
+  };
+  renderGrid(artists);
+
+  searchInput.addEventListener('input', () => {
+    const term = searchInput.value.trim().toLowerCase();
+    renderGrid(term ? artists.filter((a) => (a.Name || '').toLowerCase().includes(term)) : artists);
+  });
 }
 
 // Phone-layout only: the sidebar's categories collapsed into one tappable list.
@@ -1676,6 +1811,7 @@ function renderLibrary() {
   const entries = [
     { view: 'songs', icon: 'fi-br-list-music', label: t('nav.songs') },
     { view: 'liked', icon: 'fi-br-heart', label: t('nav.liked') },
+    { view: 'downloads', icon: 'fi-br-download', label: t('nav.downloads') },
     { view: 'genres', icon: 'fi-br-guitars', label: t('nav.genres') },
     { view: 'albums', icon: 'fi-br-album', label: t('nav.albums') },
     { view: 'artists', icon: 'fi-br-user', label: t('nav.artists') },
@@ -1773,7 +1909,8 @@ async function renderAlbumDetail(id) {
     art: first ? artUrl(first) : placeholderArt('album'),
     round: false,
     onPlayAll: tracks.length ? () => player.setQueue(tracks, 0, id) : undefined,
-    trackIds: tracks.map((t) => t.Id)
+    trackIds: tracks.map((t) => t.Id),
+    downloadTracks: tracks
   }));
   if (!tracks.length) {
     viewRoot.appendChild(el('div', 'empty-state', t('album.empty')));
@@ -1783,11 +1920,28 @@ async function renderAlbumDetail(id) {
 }
 
 async function renderArtistDetail(id, name) {
-  const [artistItem, albums, songs] = await Promise.all([
+  const [artistItem, albums, serverSongs, allSongs] = await Promise.all([
     jellyfin.getItem(id),
     jellyfin.getAlbumsByArtist(id),
-    jellyfin.getSongsByArtist(id)
+    jellyfin.getSongsByArtist(id),
+    ensureAllSongsCache()
   ]);
+  const targetName = name || artistItem.Name;
+  const knownIds = new Set(serverSongs.map((tr) => tr.Id));
+  const extraSongs = allSongs.filter((tr) => !knownIds.has(tr.Id) && trackCredits(tr).some((c) => creditIncludesArtist(c, targetName)));
+  const songs = extraSongs.length ? [...serverSongs, ...extraSongs] : serverSongs;
+
+  // Same reasoning as the songs merge above: an album entirely credited to
+  // a joined name ("Avantasia, Michael Kiske, ...") never turns up via the
+  // server's ArtistIds filter, so pull in whichever albums the merged extra
+  // songs belong to that aren't already in the list.
+  const knownAlbumIds = new Set(albums.map((al) => al.Id));
+  const extraAlbumIds = [...new Set(extraSongs.map((tr) => tr.AlbumId).filter((aid) => aid && !knownAlbumIds.has(aid)))];
+  const extraAlbums = extraAlbumIds.length
+    ? (await Promise.all(extraAlbumIds.map((aid) => jellyfin.getItem(aid).catch(() => null)))).filter(Boolean)
+    : [];
+  if (extraAlbums.length) albums.push(...extraAlbums);
+
   viewRoot.innerHTML = '';
   viewRoot.appendChild(buildDetailHeader({
     kind: t('kind.artist'),
@@ -1918,7 +2072,7 @@ async function playCollection(item, kind) {
   }
 }
 
-function buildDetailHeader({ kind, title, sub, art, round, onPlayAll, trackIds, onChangeArt }) {
+function buildDetailHeader({ kind, title, sub, art, round, onPlayAll, trackIds, onChangeArt, downloadTracks }) {
   const wrap = el('div', '');
   const header = el('div', 'detail-header');
   const artWrap = el('div', 'detail-art-wrap');
@@ -1965,6 +2119,14 @@ function buildDetailHeader({ kind, title, sub, art, round, onPlayAll, trackIds, 
       }
     });
     actions.appendChild(playBtn);
+
+    if (downloadTracks && downloadTracks.length && downloadsSupported()) {
+      const dlBtn = el('button', 'detail-download-btn');
+      dlBtn.type = 'button';
+      wireAlbumDownloadButton(dlBtn, downloadTracks);
+      actions.appendChild(dlBtn);
+    }
+
     wrap.appendChild(actions);
 
     playAllBtn = playBtn;
@@ -2014,6 +2176,38 @@ function wireDownloadButton(btn, track, row) {
   });
 }
 
+function albumDownloadState(tracks) {
+  const downloaded = tracks.filter((tr) => isDownloaded(tr.Id)).length;
+  if (downloaded === tracks.length) return 'downloaded';
+  return 'idle';
+}
+
+function wireAlbumDownloadButton(btn, tracks) {
+  const refresh = () => setDownloadButtonState(btn, albumDownloadState(tracks));
+  refresh();
+  btn.addEventListener('click', async (evt) => {
+    evt.stopPropagation();
+    if (albumDownloadState(tracks) === 'downloaded') {
+      setDownloadButtonState(btn, 'downloading');
+      await Promise.all(tracks.map((tr) => (isDownloaded(tr.Id) ? deleteDownload(tr.Id) : Promise.resolve())));
+      refresh();
+      return;
+    }
+    setDownloadButtonState(btn, 'downloading');
+    for (const track of tracks) {
+      if (isDownloaded(track.Id)) continue;
+      try {
+        await downloadTrack(track, jellyfin);
+      } catch (err) {
+        refresh();
+        alert(err.message || t('errors.couldNotDownload'));
+        return;
+      }
+    }
+    refresh();
+  });
+}
+
 // Offline Mode (a Settings toggle, not literal network detection) restricts
 // playback to already-downloaded tracks — everything else is visibly
 // disabled rather than clickable-but-guaranteed-to-fail.
@@ -2041,6 +2235,7 @@ function buildTrackTable(tracks, queueRef, opts = {}) {
     if (!opts.hideArt) {
       const img = document.createElement('img');
       img.src = artUrl(track);
+      withOfflineArtFallback(img, track);
       titleWrap.appendChild(img);
     }
     const textWrap = el('div', 'track-title-text');
@@ -2327,6 +2522,7 @@ function wirePlayer() {
     appRoot.classList.add('has-track');
     const art = artUrl(track);
     playerArt.src = art;
+    withOfflineArtFallback(playerArt, track);
     playerTitle.textContent = track.Name;
     playerArtist.textContent = artistNames(track);
     timeTotal.textContent = formatTime(ticksToSeconds(track.RunTimeTicks));
@@ -2337,6 +2533,7 @@ function wirePlayer() {
     highlightPlayingRow(track.Id);
 
     nowPlayingArt.src = artUrl(track, 'album', 800);
+    withOfflineArtFallback(nowPlayingArt, track);
     nowPlayingTitle.textContent = track.Name;
     nowPlayingArtist.textContent = artistNames(track);
     nowPlayingLikeBtn.classList.toggle('liked', !!track.UserData?.IsFavorite);
@@ -2371,6 +2568,11 @@ function wirePlayer() {
         cached.UserData = { ...(cached.UserData || {}), PlayCount: (cached.UserData?.PlayCount || 0) + 1, LastPlayedDate: new Date().toISOString() };
       }
     }).catch(() => {});
+  });
+
+  onDownloadsChange(() => {
+    const current = viewHistory[viewHistory.length - 1];
+    if (current?.view === 'downloads') renderView(current);
   });
 
   player.on('playstate', () => {

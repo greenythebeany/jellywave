@@ -310,6 +310,14 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 }
 .header-search input:focus { outline: none; border-color: var(--accent); }
 
+.inline-search { max-width: 360px; margin: 4px 0 18px; }
+.inline-search input {
+  width: 100%; padding: 10px 16px; border-radius: 999px;
+  background: var(--bg-highlight); border: 1px solid transparent; font-size: 14px;
+  color: var(--text-primary);
+}
+.inline-search input:focus { outline: none; border-color: var(--accent); }
+
 .header-user { margin-left: auto; position: relative; }
 .user-badge {
   display: flex; align-items: center; gap: 8px;
@@ -517,6 +525,16 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 }
 .play-all-btn:hover { transform: scale(1.05); }
 .play-all-btn svg { width: 24px; height: 24px; }
+
+.detail-download-btn {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--bg-highlight); color: var(--text-secondary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; position: relative;
+}
+.detail-download-btn:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+.detail-download-btn.downloaded { color: var(--accent); }
+.detail-download-btn .fi { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 
 .empty-state { color: var(--text-tertiary); padding: 60px 0; text-align: center; font-size: 14px; }
 

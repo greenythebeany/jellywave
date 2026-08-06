@@ -37,7 +37,8 @@
     "createPlaylist": "Playlist erstellen",
     "back": "Zurück",
     "forward": "Vorwärts",
-    "stats": "Statistik"
+    "stats": "Statistik",
+    "downloads": "Downloads"
   },
   "header": {
     "searchPlaceholder": "Was möchtest du hören?"
@@ -84,7 +85,9 @@
     "empty": "Keine Künstler gefunden.",
     "empty2": "Nichts für diesen Künstler gefunden.",
     "songsSection": "Songs",
-    "albumsSection": "Alben"
+    "albumsSection": "Alben",
+    "searchPlaceholder": "Künstler suchen",
+    "noMatches": "Keine Künstler entsprechen deiner Suche."
   },
   "playlist": {
     "empty": "Diese Playlist ist leer.",
@@ -240,5 +243,9 @@
     "electronic": "Elektronisch",
     "classical": "Klassik",
     "custom": "Benutzerdefiniert"
+  },
+  "downloads": {
+    "title": "Downloads",
+    "empty": "Noch keine heruntergeladenen Songs."
   }
 }

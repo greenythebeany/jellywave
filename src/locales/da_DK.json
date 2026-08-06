@@ -37,7 +37,8 @@
     "createPlaylist": "Opret playliste",
     "back": "Tilbage",
     "forward": "Frem",
-    "stats": "Statistik"
+    "stats": "Statistik",
+    "downloads": "Downloads"
   },
   "header": {
     "searchPlaceholder": "Hvad vil du høre?"
@@ -84,7 +85,9 @@
     "empty": "Ingen kunstnere fundet.",
     "empty2": "Intet fundet for denne kunstner.",
     "songsSection": "Sange",
-    "albumsSection": "Albums"
+    "albumsSection": "Albums",
+    "searchPlaceholder": "Søg efter kunstnere",
+    "noMatches": "Ingen kunstnere matcher din søgning."
   },
   "playlist": {
     "empty": "Denne playliste er tom.",
@@ -240,5 +243,9 @@
     "electronic": "Elektronisk",
     "classical": "Klassisk",
     "custom": "Brugerdefineret"
+  },
+  "downloads": {
+    "title": "Downloads",
+    "empty": "Ingen downloadede sange endnu."
   }
 }

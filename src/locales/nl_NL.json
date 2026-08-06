@@ -37,7 +37,8 @@
     "createPlaylist": "Afspeellijst maken",
     "back": "Terug",
     "forward": "Vooruit",
-    "stats": "Statistieken"
+    "stats": "Statistieken",
+    "downloads": "Downloads"
   },
   "header": {
     "searchPlaceholder": "Wat wil je afspelen?"
@@ -84,7 +85,9 @@
     "empty": "Geen artiesten gevonden.",
     "empty2": "Niets gevonden voor deze artiest.",
     "songsSection": "Nummers",
-    "albumsSection": "Albums"
+    "albumsSection": "Albums",
+    "searchPlaceholder": "Artiesten zoeken",
+    "noMatches": "Geen artiesten komen overeen met je zoekopdracht."
   },
   "playlist": {
     "empty": "Deze afspeellijst is leeg.",
@@ -240,5 +243,9 @@
     "electronic": "Elektronisch",
     "classical": "Klassiek",
     "custom": "Aangepast"
+  },
+  "downloads": {
+    "title": "Downloads",
+    "empty": "Nog geen gedownloade nummers."
   }
 }

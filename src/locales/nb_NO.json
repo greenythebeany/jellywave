@@ -37,7 +37,8 @@
     "createPlaylist": "Opprett spilleliste",
     "back": "Tilbake",
     "forward": "Fremover",
-    "stats": "Statistikk"
+    "stats": "Statistikk",
+    "downloads": "Nedlastinger"
   },
   "header": {
     "searchPlaceholder": "Hva vil du høre på?"
@@ -84,7 +85,9 @@
     "empty": "Ingen artister funnet.",
     "empty2": "Fant ingenting for denne artisten.",
     "songsSection": "Sanger",
-    "albumsSection": "Album"
+    "albumsSection": "Album",
+    "searchPlaceholder": "Søk etter artister",
+    "noMatches": "Ingen artister samsvarer med søket."
   },
   "playlist": {
     "empty": "Denne spillelisten er tom.",
@@ -240,5 +243,9 @@
     "electronic": "Elektronisk",
     "classical": "Klassisk",
     "custom": "Egendefinert"
+  },
+  "downloads": {
+    "title": "Nedlastinger",
+    "empty": "Ingen nedlastede sanger ennå."
   }
 }

@@ -37,7 +37,8 @@
     "createPlaylist": "Skapa spellista",
     "back": "Bakåt",
     "forward": "Framåt",
-    "stats": "Statistik"
+    "stats": "Statistik",
+    "downloads": "Nedladdningar"
   },
   "header": {
     "searchPlaceholder": "Vad vill du lyssna på?"
@@ -84,7 +85,9 @@
     "empty": "Inga artister hittades.",
     "empty2": "Inget hittades för denna artist.",
     "songsSection": "Låtar",
-    "albumsSection": "Album"
+    "albumsSection": "Album",
+    "searchPlaceholder": "Sök artister",
+    "noMatches": "Inga artister matchar din sökning."
   },
   "playlist": {
     "empty": "Den här spellistan är tom.",
@@ -240,5 +243,9 @@
     "electronic": "Elektronisk",
     "classical": "Klassisk",
     "custom": "Anpassad"
+  },
+  "downloads": {
+    "title": "Nedladdningar",
+    "empty": "Inga nedladdade låtar ännu."
   }
 }

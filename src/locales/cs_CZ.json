@@ -37,7 +37,8 @@
     "createPlaylist": "Vytvořit playlist",
     "back": "Zpět",
     "forward": "Vpřed",
-    "stats": "Statistiky"
+    "stats": "Statistiky",
+    "downloads": "Stažené"
   },
   "header": {
     "searchPlaceholder": "Co si chcete poslechnout?"
@@ -84,7 +85,9 @@
     "empty": "Nebyli nalezeni žádní interpreti.",
     "empty2": "Pro tohoto interpreta nebylo nic nalezeno.",
     "songsSection": "Skladby",
-    "albumsSection": "Alba"
+    "albumsSection": "Alba",
+    "searchPlaceholder": "Hledat interprety",
+    "noMatches": "Žádný interpret neodpovídá hledání."
   },
   "playlist": {
     "empty": "Tento playlist je prázdný.",
@@ -240,5 +243,9 @@
     "electronic": "Elektronická",
     "classical": "Klasika",
     "custom": "Vlastní"
+  },
+  "downloads": {
+    "title": "Stažené",
+    "empty": "Zatím žádné stažené skladby."
   }
 }

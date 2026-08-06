@@ -37,7 +37,8 @@
     "createPlaylist": "Utwórz playlistę",
     "back": "Wstecz",
     "forward": "Dalej",
-    "stats": "Statystyki"
+    "stats": "Statystyki",
+    "downloads": "Pobrane"
   },
   "header": {
     "searchPlaceholder": "Czego chcesz posłuchać?"
@@ -84,7 +85,9 @@
     "empty": "Nie znaleziono wykonawców.",
     "empty2": "Nic nie znaleziono dla tego wykonawcy.",
     "songsSection": "Utwory",
-    "albumsSection": "Albumy"
+    "albumsSection": "Albumy",
+    "searchPlaceholder": "Szukaj artystów",
+    "noMatches": "Żaden artysta nie pasuje do wyszukiwania."
   },
   "playlist": {
     "empty": "Ta playlista jest pusta.",
@@ -240,5 +243,9 @@
     "electronic": "Elektroniczna",
     "classical": "Klasyczna",
     "custom": "Niestandardowy"
+  },
+  "downloads": {
+    "title": "Pobrane",
+    "empty": "Brak pobranych utworów."
   }
 }
