@@ -107,7 +107,9 @@
     "time": "Тривалість",
     "addToPlaylist": "Додати до плейлиста",
     "like": "Подобається",
-    "changeCoverArt": "Змінити обкладинку"
+    "changeCoverArt": "Змінити обкладинку",
+    "download": "Завантажити",
+    "removeDownload": "Видалити завантаження"
   },
   "createPlaylist": {
     "title": "Створити плейлист",
@@ -171,7 +173,9 @@
     "advanced": "Додатково",
     "customCss": "Власний CSS",
     "customCssDesc": "Напишіть власний CSS, щоб додатково налаштувати вигляд застосунку. Застосовується одразу.",
-    "about": "Про застосунок"
+    "about": "Про застосунок",
+    "offlineMode": "Офлайн-режим",
+    "offlineModeDesc": "Показує та відтворює лише завантажені пісні — решта затемнена"
   },
   "audioQuality": {
     "auto": "Автоматично (найкраща доступна якість)",
@@ -191,7 +195,8 @@
     "couldNotRemoveFromPlaylist": "Не вдалося видалити пісню з плейлиста.",
     "couldNotUpdateLike": "Не вдалося оновити статус «подобається».",
     "couldNotUploadArt": "Не вдалося завантажити обкладинку.",
-    "couldNotCreatePlaylist": "Не вдалося створити плейлист."
+    "couldNotCreatePlaylist": "Не вдалося створити плейлист.",
+    "couldNotDownload": "Не вдалося завантажити пісню."
   },
   "update": {
     "available": "Доступна версія JellyWave {version}.",
@@ -223,5 +228,17 @@
     "errorSend": "Не вдалося надіслати відтворення на цей пристрій.",
     "connectedTo": "З'єднано з {device}",
     "disconnect": "Роз'єднати"
+  },
+  "eq": {
+    "flat": "Плаский",
+    "bassBoost": "Посилення басу",
+    "noBass": "Без басу",
+    "vocalBoost": "Посилення вокалу",
+    "rock": "Рок",
+    "pop": "Поп",
+    "jazz": "Джаз",
+    "electronic": "Електронна",
+    "classical": "Класика",
+    "custom": "Власна"
   }
 }

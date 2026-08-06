@@ -1,10 +1,11 @@
 import { JellyfinClient } from './jellyfin.js';
-import { Player, RepeatMode } from './player.js';
+import { Player, RepeatMode, EQ_PRESETS } from './player.js';
 import { fetchLyrics } from './lyrics.js';
 import { getSettings, updateSettings, applySettings, currentBitrateKbps, PALETTES, AUDIO_QUALITIES } from './settings.js';
 import { LOCALES, loadLocale, applyTranslations, t } from './i18n.js';
 import { platform, isDesktop, isMobile, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
 import { createConnect } from './connect.js';
+import { isSupported as downloadsSupported, isDownloaded, downloadTrack, deleteDownload, onDownloadsChange } from './downloads.js';
 
 // ---------- DOM refs ----------
 const loginScreen = document.getElementById('login-screen');
@@ -25,6 +26,7 @@ const queueBody = document.getElementById('queue-body');
 const tabLyrics = document.getElementById('tab-lyrics');
 const tabQueue = document.getElementById('tab-queue');
 const nowPlayingArt = document.getElementById('now-playing-art');
+const nowPlayingArtWrap = document.querySelector('.now-playing-art-wrap');
 const nowPlayingTitle = document.getElementById('now-playing-title');
 const nowPlayingArtist = document.getElementById('now-playing-artist');
 const nowPlayingBgArt = document.getElementById('now-playing-bg-art');
@@ -51,10 +53,12 @@ const toggleDynamicAccentColor = document.getElementById('toggle-dynamic-accent-
 const crossfadeSlider = document.getElementById('crossfade-slider');
 const crossfadeValue = document.getElementById('crossfade-value');
 const toggleReplayGain = document.getElementById('toggle-replaygain');
+const toggleOfflineMode = document.getElementById('toggle-offline-mode');
 const toggleEqualizer = document.getElementById('toggle-equalizer');
 const equalizerBandsRow = document.getElementById('equalizer-bands-row');
 const eqBandSliders = document.querySelectorAll('.eq-band-slider');
 const btnEqReset = document.getElementById('btn-eq-reset');
+const eqPresetSelect = document.getElementById('eq-preset-select');
 const toggleCatJam = document.getElementById('toggle-cat-jam');
 const catJamVideo = document.getElementById('cat-jam');
 const catJamScaleRow = document.getElementById('cat-jam-scale-row');
@@ -488,6 +492,13 @@ function wireSettingsUI() {
     updateSettings({ crossfadeSeconds: Number(crossfadeSlider.value) });
   });
 
+  toggleOfflineMode.addEventListener('change', () => {
+    updateSettings({ offlineMode: toggleOfflineMode.checked });
+    // Re-apply row availability across whatever's currently on screen —
+    // per-row state is only set when a row is first built otherwise.
+    if (viewHistory.length) renderView(viewHistory[viewHistory.length - 1]);
+  });
+
   toggleReplayGain.addEventListener('change', () => {
     updateSettings({ replayGainEnabled: toggleReplayGain.checked });
     player?.setReplayGainEnabled(toggleReplayGain.checked);
@@ -510,20 +521,24 @@ function wireSettingsUI() {
     slider.addEventListener('change', () => {
       const gains = getSettings().eqGains ? [...getSettings().eqGains] : [0, 0, 0, 0, 0];
       gains[band] = Number(slider.value);
-      updateSettings({ eqGains: gains });
+      // A manual tweak no longer matches whatever preset was selected.
+      eqPresetSelect.value = 'custom';
+      setHidden(eqPresetSelect.querySelector('option[value="custom"]'), false);
+      updateSettings({ eqGains: gains, eqPreset: 'custom' });
     });
   });
 
+  eqPresetSelect.addEventListener('change', () => {
+    const preset = eqPresetSelect.value;
+    const gains = EQ_PRESETS[preset] ? [...EQ_PRESETS[preset]] : [0, 0, 0, 0, 0];
+    applyEqGainsToUI(gains);
+    updateSettings({ eqGains: gains, eqPreset: preset });
+  });
+
   btnEqReset.addEventListener('click', () => {
-    const gains = [0, 0, 0, 0, 0];
-    eqBandSliders.forEach((slider) => {
-      const band = Number(slider.dataset.band);
-      slider.value = 0;
-      const valueEl = document.querySelector(`.eq-band-value[data-band-value="${band}"]`);
-      valueEl.textContent = '0';
-      player?.setEqualizerBand(band, 0);
-    });
-    updateSettings({ eqGains: gains });
+    eqPresetSelect.value = 'flat';
+    applyEqGainsToUI(EQ_PRESETS.flat);
+    updateSettings({ eqGains: [...EQ_PRESETS.flat], eqPreset: 'flat' });
   });
 
   toggleCatJam.addEventListener('change', () => {
@@ -964,14 +979,27 @@ function catJamTick() {
 }
 
 function syncCatJamVisibility() {
-  // Desktop-only: the cat is CSS-hidden under 820px anyway, and rerouting an
-  // <audio> element through Web Audio's createMediaElementSource is
-  // permanent for that element's lifetime — on Android's WebView this can
-  // silence real output entirely while playback state/timeupdate/the native
-  // media notification all keep reporting normally, since those don't
-  // depend on where the audio graph actually routes to.
-  const enabled = isDesktop && getSettings().catJam;
-  const shouldShow = enabled && !!player?.currentTrack;
+  const catJamOn = getSettings().catJam;
+  const shouldShow = catJamOn && !!player?.currentTrack;
+
+  if (isMobile) {
+    // Mobile: a plain looping overlay on the cover art, no beat-sync — beat
+    // detection needs Web Audio's createMediaElementSource, which reroutes
+    // the <audio> element permanently for its lifetime and can silence real
+    // output entirely on Android's WebView (playback state/timeupdate/the
+    // native media notification all keep reporting normally regardless,
+    // since none of those depend on where the audio graph routes to — see
+    // the desktop branch below, which never runs on Android).
+    if (catJamVideo.parentElement !== nowPlayingArtWrap) nowPlayingArtWrap.appendChild(catJamVideo);
+    setHidden(catJamVideo, !shouldShow);
+    if (shouldShow) {
+      catJamVideo.playbackRate = 1;
+      catJamVideo.play().catch(() => {});
+    }
+    return;
+  }
+
+  const enabled = isDesktop && catJamOn;
   setHidden(catJamVideo, !shouldShow);
   if (shouldShow) catJamVideo.play().catch(() => {});
   if (enabled && !catJamRAF) catJamTick();
@@ -1119,9 +1147,13 @@ function refreshSettingsUI() {
   crossfadeSlider.value = s.crossfadeSeconds || 0;
   crossfadeValue.textContent = s.crossfadeSeconds ? `${s.crossfadeSeconds}s` : 'Off';
   crossfadeSlider.style.setProperty('--pct', rangeFillPercent(((s.crossfadeSeconds || 0) / 12) * 100, crossfadeSlider, 13));
+  toggleOfflineMode.checked = !!s.offlineMode;
   toggleReplayGain.checked = !!s.replayGainEnabled;
   toggleEqualizer.checked = !!s.eqEnabled;
   setHidden(equalizerBandsRow, !s.eqEnabled);
+  const eqPreset = s.eqPreset || 'flat';
+  setHidden(eqPresetSelect.querySelector('option[value="custom"]'), eqPreset !== 'custom');
+  eqPresetSelect.value = eqPreset;
   const eqGains = s.eqGains || [0, 0, 0, 0, 0];
   eqBandSliders.forEach((slider) => {
     const band = Number(slider.dataset.band);
@@ -1945,9 +1977,54 @@ function buildDetailHeader({ kind, title, sub, art, round, onPlayAll, trackIds, 
   return wrap;
 }
 
+// ---------- Offline downloads ----------
+
+function downloadButtonIcon(state) {
+  if (state === 'downloading') return '<i class="fi fi-br-spinner track-download-spin"></i>';
+  if (state === 'downloaded') return '<i class="fi fi-br-check"></i>';
+  return '<i class="fi fi-br-download"></i>';
+}
+
+function setDownloadButtonState(btn, state) {
+  btn.innerHTML = downloadButtonIcon(state);
+  btn.classList.toggle('downloaded', state === 'downloaded');
+  btn.classList.toggle('downloading', state === 'downloading');
+  btn.title = state === 'downloaded' ? t('track.removeDownload') : t('track.download');
+}
+
+function wireDownloadButton(btn, track, row) {
+  setDownloadButtonState(btn, isDownloaded(track.Id) ? 'downloaded' : 'idle');
+  btn.addEventListener('click', async (evt) => {
+    evt.stopPropagation();
+    if (isDownloaded(track.Id)) {
+      await deleteDownload(track.Id);
+      setDownloadButtonState(btn, 'idle');
+      if (row) applyOfflineRowState(row, track);
+      return;
+    }
+    setDownloadButtonState(btn, 'downloading');
+    try {
+      await downloadTrack(track, jellyfin);
+      setDownloadButtonState(btn, 'downloaded');
+    } catch (err) {
+      setDownloadButtonState(btn, 'idle');
+      alert(err.message || t('errors.couldNotDownload'));
+    }
+    if (row) applyOfflineRowState(row, track);
+  });
+}
+
+// Offline Mode (a Settings toggle, not literal network detection) restricts
+// playback to already-downloaded tracks — everything else is visibly
+// disabled rather than clickable-but-guaranteed-to-fail.
+function applyOfflineRowState(row, track) {
+  const unavailable = !!getSettings().offlineMode && !isDownloaded(track.Id);
+  row.classList.toggle('offline-unavailable', unavailable);
+}
+
 function buildTrackTable(tracks, queueRef, opts = {}) {
   const table = el('table', 'track-table');
-  const thead = el('thead', '', `<tr><th style="width:36px">${t('track.index')}</th><th>${t('track.title')}</th><th style="width:26%">${t('track.album')}</th><th style="width:64px"></th><th style="width:60px;text-align:right">${t('track.time')}</th></tr>`);
+  const thead = el('thead', '', `<tr><th style="width:36px">${t('track.index')}</th><th>${t('track.title')}</th><th style="width:26%">${t('track.album')}</th><th style="width:92px"></th><th style="width:60px;text-align:right">${t('track.time')}</th></tr>`);
   table.appendChild(thead);
   const tbody = document.createElement('tbody');
 
@@ -2005,11 +2082,22 @@ function buildTrackTable(tracks, queueRef, opts = {}) {
       openAddToPlaylistMenu(track, addBtn);
     });
     addCellInner.appendChild(addBtn);
+
+    if (downloadsSupported()) {
+      const downloadBtn = el('button', 'track-add-btn track-download-btn');
+      downloadBtn.type = 'button';
+      wireDownloadButton(downloadBtn, track, row);
+      addCellInner.appendChild(downloadBtn);
+    }
+
     row.appendChild(addCell);
 
     row.appendChild(el('td', 'track-duration', formatTime(ticksToSeconds(track.RunTimeTicks))));
 
+    applyOfflineRowState(row, track);
+
     row.addEventListener('click', () => {
+      if (row.classList.contains('offline-unavailable')) return;
       const startIdx = queueRef.findIndex((t) => t.Id === track.Id);
       player.setQueue(queueRef, startIdx >= 0 ? startIdx : 0);
     });
@@ -2327,6 +2415,20 @@ function wirePlayer() {
 // Quadratic taper: a slider that moves linearly in perceived loudness needs
 // the underlying gain to grow with the square of the position, since human
 // hearing perceives loudness roughly logarithmically.
+// Pushes a full set of 5 band gains into the slider UI + the live player —
+// used by preset selection and the reset button, which both replace all
+// bands at once (unlike a single slider drag, handled inline where it's wired).
+function applyEqGainsToUI(gains) {
+  eqBandSliders.forEach((slider) => {
+    const band = Number(slider.dataset.band);
+    const gain = gains[band] || 0;
+    slider.value = gain;
+    const valueEl = document.querySelector(`.eq-band-value[data-band-value="${band}"]`);
+    if (valueEl) valueEl.textContent = gain > 0 ? `+${gain}` : `${gain}`;
+    player?.setEqualizerBand(band, gain);
+  });
+}
+
 function sliderToVolume(pos) {
   const t = Math.max(0, Math.min(100, pos)) / 100;
   return t * t;
@@ -2501,6 +2603,21 @@ function buildTrackContextMenuItems(track, queueCtx = {}) {
     icon: 'fi-br-add',
     onClick: (evt) => openAddToPlaylistMenu(track, queueCtx.anchorEl || document.body)
   });
+  if (downloadsSupported()) {
+    const downloaded = isDownloaded(track.Id);
+    items.push({
+      label: downloaded ? t('track.removeDownload') : t('track.download'),
+      icon: downloaded ? 'fi-br-trash' : 'fi-br-download',
+      onClick: async () => {
+        try {
+          if (downloaded) await deleteDownload(track.Id);
+          else await downloadTrack(track, jellyfin);
+        } catch (err) {
+          alert(err.message || t('errors.couldNotDownload'));
+        }
+      }
+    });
+  }
   items.push('separator');
   if (track.AlbumId) {
     items.push({ label: t('kind.album'), icon: 'fi-br-album', onClick: () => navigateTo({ view: 'album', id: track.AlbumId }) });

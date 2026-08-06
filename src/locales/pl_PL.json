@@ -107,7 +107,9 @@
     "time": "Czas",
     "addToPlaylist": "Dodaj do playlisty",
     "like": "Polub",
-    "changeCoverArt": "Zmień okładkę"
+    "changeCoverArt": "Zmień okładkę",
+    "download": "Pobierz",
+    "removeDownload": "Usuń pobrane"
   },
   "createPlaylist": {
     "title": "Utwórz playlistę",
@@ -171,7 +173,9 @@
     "advanced": "Zaawansowane",
     "customCss": "Niestandardowy CSS",
     "customCssDesc": "Napisz własny CSS, aby dodatkowo dostosować wygląd aplikacji. Stosowane na żywo.",
-    "about": "O aplikacji"
+    "about": "O aplikacji",
+    "offlineMode": "Tryb offline",
+    "offlineModeDesc": "Pokazuje i odtwarza tylko pobrane utwory — reszta jest wyszarzona"
   },
   "audioQuality": {
     "auto": "Automatycznie (najlepsza dostępna jakość)",
@@ -191,7 +195,8 @@
     "couldNotRemoveFromPlaylist": "Nie udało się usunąć utworu z playlisty.",
     "couldNotUpdateLike": "Nie udało się zaktualizować statusu polubienia.",
     "couldNotUploadArt": "Nie udało się przesłać okładki.",
-    "couldNotCreatePlaylist": "Nie udało się utworzyć playlisty."
+    "couldNotCreatePlaylist": "Nie udało się utworzyć playlisty.",
+    "couldNotDownload": "Nie udało się pobrać utworu."
   },
   "update": {
     "available": "Dostępny jest JellyWave {version}.",
@@ -223,5 +228,17 @@
     "errorSend": "Nie udało się wysłać odtwarzania na to urządzenie.",
     "connectedTo": "Połączono z {device}",
     "disconnect": "Rozłącz"
+  },
+  "eq": {
+    "flat": "Płaski",
+    "bassBoost": "Wzmocnienie basu",
+    "noBass": "Bez basu",
+    "vocalBoost": "Wzmocnienie wokalu",
+    "rock": "Rock",
+    "pop": "Pop",
+    "jazz": "Jazz",
+    "electronic": "Elektroniczna",
+    "classical": "Klasyczna",
+    "custom": "Niestandardowy"
   }
 }

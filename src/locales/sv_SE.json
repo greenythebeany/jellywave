@@ -107,7 +107,9 @@
     "time": "Tid",
     "addToPlaylist": "Lägg till i spellista",
     "like": "Gilla",
-    "changeCoverArt": "Byt omslagsbild"
+    "changeCoverArt": "Byt omslagsbild",
+    "download": "Ladda ner",
+    "removeDownload": "Ta bort nedladdning"
   },
   "createPlaylist": {
     "title": "Skapa spellista",
@@ -171,7 +173,9 @@
     "advanced": "Avancerat",
     "customCss": "Anpassad CSS",
     "customCssDesc": "Skriv din egen CSS för att finjustera appens utseende ytterligare. Tillämpas direkt.",
-    "about": "Om"
+    "about": "Om",
+    "offlineMode": "Offlineläge",
+    "offlineModeDesc": "Visar och spelar bara nedladdade låtar — resten är nedtonat"
   },
   "audioQuality": {
     "auto": "Automatisk (bästa tillgängliga kvalitet)",
@@ -191,7 +195,8 @@
     "couldNotRemoveFromPlaylist": "Det gick inte att ta bort låten från spellistan.",
     "couldNotUpdateLike": "Det gick inte att uppdatera gilla-status.",
     "couldNotUploadArt": "Det gick inte att ladda upp omslagsbilden.",
-    "couldNotCreatePlaylist": "Det gick inte att skapa spellistan."
+    "couldNotCreatePlaylist": "Det gick inte att skapa spellistan.",
+    "couldNotDownload": "Det gick inte att ladda ner låten."
   },
   "update": {
     "available": "JellyWave {version} är tillgänglig.",
@@ -223,5 +228,17 @@
     "errorSend": "Det gick inte att skicka uppspelning till den enheten.",
     "connectedTo": "Ansluten till {device}",
     "disconnect": "Koppla från"
+  },
+  "eq": {
+    "flat": "Platt",
+    "bassBoost": "Basförstärkning",
+    "noBass": "Ingen bas",
+    "vocalBoost": "Sångförstärkning",
+    "rock": "Rock",
+    "pop": "Pop",
+    "jazz": "Jazz",
+    "electronic": "Elektronisk",
+    "classical": "Klassisk",
+    "custom": "Anpassad"
   }
 }

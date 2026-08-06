@@ -95,6 +95,13 @@ export class JellyfinClient {
     };
   }
 
+  // Public wrapper for downloads.js — it needs to fetch a stream URL itself
+  // (in Electron's main process, or Android's WebView) without reaching
+  // into this client's internals.
+  getAuthHeaders() {
+    return this._headers();
+  }
+
   async _get(path, params = {}) {
     const url = new URL(`${this.serverUrl}${path}`);
     Object.entries(params).forEach(([k, v]) => {

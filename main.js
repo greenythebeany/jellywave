@@ -6,13 +6,14 @@ const { checkForUpdates } = require('./update-checker');
 
 const CONFIG_PATH = path.join(app.getPath('userData'), 'session.dat');
 const DISCORD_CLIENT_ID = '1534197353056174180';
+const DOWNLOADS_DIR = path.join(app.getPath('userData'), 'downloads');
 
 let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 800,
+    width: 1360,
+    height: 870,
     minWidth: 960,
     minHeight: 600,
     backgroundColor: '#0a0a0a',
@@ -232,4 +233,59 @@ ipcMain.handle('deezer:searchAlbumArt', async (_event, artist, album, trackName)
     (await deezerSearch(`${artist} ${album}`, 'track')) ||
     (await deezerSearch(album, 'album'))
   );
+});
+
+// --- Offline downloads ---
+// Fetched here (not the renderer) so a multi-MB audio file never has to
+// cross the IPC boundary as one big message — only the resulting file path
+// does.
+const EXT_BY_CONTENT_TYPE = {
+  'audio/mpeg': '.mp3',
+  'audio/flac': '.flac',
+  'audio/x-flac': '.flac',
+  'audio/ogg': '.ogg',
+  'audio/wav': '.wav',
+  'audio/x-wav': '.wav',
+  'audio/mp4': '.m4a',
+  'audio/aac': '.aac'
+};
+
+function downloadedFilePath(itemId) {
+  if (!fs.existsSync(DOWNLOADS_DIR)) return null;
+  const match = fs.readdirSync(DOWNLOADS_DIR).find((name) => name.startsWith(`${itemId}.`));
+  return match ? path.join(DOWNLOADS_DIR, match) : null;
+}
+
+ipcMain.handle('downloads:save', async (_event, itemId, url, headers) => {
+  try {
+    fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
+    const res = await fetch(url, { headers });
+    if (!res.ok) return { ok: false, error: `Server responded ${res.status}` };
+    const contentType = (res.headers.get('content-type') || '').split(';')[0].trim();
+    const ext = EXT_BY_CONTENT_TYPE[contentType] || '.mp3';
+    const filePath = path.join(DOWNLOADS_DIR, `${itemId}${ext}`);
+    const buffer = Buffer.from(await res.arrayBuffer());
+    fs.writeFileSync(filePath, buffer);
+    return { ok: true, path: filePath, sizeBytes: buffer.length };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
+});
+
+ipcMain.handle('downloads:delete', (_event, itemId) => {
+  try {
+    const existing = downloadedFilePath(itemId);
+    if (existing) fs.unlinkSync(existing);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
+});
+
+ipcMain.handle('downloads:getPath', (_event, itemId) => {
+  try {
+    return downloadedFilePath(itemId);
+  } catch (err) {
+    return null;
+  }
 });

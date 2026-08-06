@@ -107,7 +107,9 @@
     "time": "Time",
     "addToPlaylist": "Add to playlist",
     "like": "Like",
-    "changeCoverArt": "Change cover art"
+    "changeCoverArt": "Change cover art",
+    "download": "Download",
+    "removeDownload": "Remove download"
   },
   "createPlaylist": {
     "title": "Create Playlist",
@@ -171,7 +173,9 @@
     "advanced": "Advanced",
     "customCss": "Custom CSS",
     "customCssDesc": "Write your own CSS to further tweak the app's look. Applied live.",
-    "about": "About"
+    "about": "About",
+    "offlineMode": "Offline mode",
+    "offlineModeDesc": "Only show and play songs you've downloaded — everything else is grayed out"
   },
   "audioQuality": {
     "auto": "Automatic (best available)",
@@ -191,7 +195,8 @@
     "couldNotRemoveFromPlaylist": "Could not remove song from playlist.",
     "couldNotUpdateLike": "Could not update like status.",
     "couldNotUploadArt": "Could not upload cover art.",
-    "couldNotCreatePlaylist": "Could not create playlist."
+    "couldNotCreatePlaylist": "Could not create playlist.",
+    "couldNotDownload": "Could not download song."
   },
   "update": {
     "available": "JellyWave {version} is available.",
@@ -223,5 +228,17 @@
     "errorSend": "Could not send playback to that device.",
     "connectedTo": "Connected to {device}",
     "disconnect": "Disconnect"
+  },
+  "eq": {
+    "flat": "Flat",
+    "bassBoost": "Bass Boost",
+    "noBass": "No Bass",
+    "vocalBoost": "Vocal Boost",
+    "rock": "Rock",
+    "pop": "Pop",
+    "jazz": "Jazz",
+    "electronic": "Electronic",
+    "classical": "Classical",
+    "custom": "Custom"
   }
 }

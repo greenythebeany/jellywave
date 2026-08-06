@@ -107,7 +107,9 @@
     "time": "Délka",
     "addToPlaylist": "Přidat do playlistu",
     "like": "Líbí se mi",
-    "changeCoverArt": "Změnit obal"
+    "changeCoverArt": "Změnit obal",
+    "download": "Stáhnout",
+    "removeDownload": "Odebrat stažené"
   },
   "createPlaylist": {
     "title": "Vytvořit playlist",
@@ -171,7 +173,9 @@
     "advanced": "Pokročilé",
     "customCss": "Vlastní CSS",
     "customCssDesc": "Napište si vlastní CSS pro další úpravu vzhledu aplikace. Použije se okamžitě.",
-    "about": "O aplikaci"
+    "about": "O aplikaci",
+    "offlineMode": "Režim offline",
+    "offlineModeDesc": "Zobrazí a přehraje jen stažené skladby — ostatní jsou šedé"
   },
   "audioQuality": {
     "auto": "Automaticky (nejlepší dostupná kvalita)",
@@ -191,7 +195,8 @@
     "couldNotRemoveFromPlaylist": "Skladbu se nepodařilo odebrat z playlistu.",
     "couldNotUpdateLike": "Stav oblíbenosti se nepodařilo aktualizovat.",
     "couldNotUploadArt": "Obal se nepodařilo nahrát.",
-    "couldNotCreatePlaylist": "Playlist se nepodařilo vytvořit."
+    "couldNotCreatePlaylist": "Playlist se nepodařilo vytvořit.",
+    "couldNotDownload": "Skladbu se nepodařilo stáhnout."
   },
   "update": {
     "available": "JellyWave {version} je dostupný.",
@@ -223,5 +228,17 @@
     "errorSend": "Přehrávání se nepodařilo odeslat do tohoto zařízení.",
     "connectedTo": "Připojeno k {device}",
     "disconnect": "Odpojit"
+  },
+  "eq": {
+    "flat": "Neutrální",
+    "bassBoost": "Zvýraznění basů",
+    "noBass": "Bez basů",
+    "vocalBoost": "Zvýraznění hlasu",
+    "rock": "Rock",
+    "pop": "Pop",
+    "jazz": "Jazz",
+    "electronic": "Elektronická",
+    "classical": "Klasika",
+    "custom": "Vlastní"
   }
 }

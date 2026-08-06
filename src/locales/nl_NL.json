@@ -107,7 +107,9 @@
     "time": "Duur",
     "addToPlaylist": "Toevoegen aan afspeellijst",
     "like": "Leuk vinden",
-    "changeCoverArt": "Hoes wijzigen"
+    "changeCoverArt": "Hoes wijzigen",
+    "download": "Downloaden",
+    "removeDownload": "Download verwijderen"
   },
   "createPlaylist": {
     "title": "Afspeellijst maken",
@@ -171,7 +173,9 @@
     "advanced": "Geavanceerd",
     "customCss": "Aangepaste CSS",
     "customCssDesc": "Schrijf je eigen CSS om het uiterlijk van de app verder aan te passen. Wordt direct toegepast.",
-    "about": "Over"
+    "about": "Over",
+    "offlineMode": "Offlinemodus",
+    "offlineModeDesc": "Toont en speelt alleen gedownloade nummers — de rest is grijs"
   },
   "audioQuality": {
     "auto": "Automatisch (best beschikbare kwaliteit)",
@@ -191,7 +195,8 @@
     "couldNotRemoveFromPlaylist": "Kon nummer niet verwijderen uit afspeellijst.",
     "couldNotUpdateLike": "Kon de leuk-status niet bijwerken.",
     "couldNotUploadArt": "Kon de hoes niet uploaden.",
-    "couldNotCreatePlaylist": "Kon de afspeellijst niet maken."
+    "couldNotCreatePlaylist": "Kon de afspeellijst niet maken.",
+    "couldNotDownload": "Kon nummer niet downloaden."
   },
   "update": {
     "available": "JellyWave {version} is beschikbaar.",
@@ -223,5 +228,17 @@
     "errorSend": "Kon afspelen niet naar dat apparaat sturen.",
     "connectedTo": "Verbonden met {device}",
     "disconnect": "Verbinding verbreken"
+  },
+  "eq": {
+    "flat": "Vlak",
+    "bassBoost": "Bas versterken",
+    "noBass": "Geen bas",
+    "vocalBoost": "Zang versterken",
+    "rock": "Rock",
+    "pop": "Pop",
+    "jazz": "Jazz",
+    "electronic": "Elektronisch",
+    "classical": "Klassiek",
+    "custom": "Aangepast"
   }
 }

@@ -407,12 +407,18 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .card:hover { background: var(--bg-card-hover); }
 .card.playing { box-shadow: 0 0 0 2px var(--accent) inset; }
 .card.playing .card-title { color: var(--accent); }
+/* Reserves a square area via the classic padding-top:100% trick rather
+   than relying solely on the `aspect-ratio` property — some older Android
+   WebViews don't support it, silently falling back to each image's own
+   natural (non-square) proportions instead of a uniform card size. */
 .card-art-wrap { position: relative; margin-bottom: 12px; }
+.card-art-wrap::before { content: ''; display: block; padding-top: 100%; }
 
 .genre-card { display: flex; align-items: center; justify-content: center; aspect-ratio: 1/1; text-align: center; background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 55%, var(--bg-card)) 0%, var(--bg-card) 100%); }
 .genre-card-title { font-size: 16px; font-weight: 800; padding: 0 12px; }
 .card-art {
-  width: 100%; aspect-ratio: 1/1; object-fit: cover;
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
   border-radius: var(--radius-sm); background: var(--bg-highlight);
   box-shadow: 0 8px 24px rgba(0,0,0,0.35);
 }
@@ -453,7 +459,7 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .track-title-text .t-name { color: var(--text-primary); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .track-title-text .t-artist { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .track-album-cell { max-width: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.track-add-cell { width: 64px; }
+.track-add-cell { width: 92px; }
 .track-add-inner { display: flex; align-items: center; justify-content: center; gap: 2px; }
 .track-add-btn {
   width: 26px; height: 26px; border-radius: 50%;
@@ -466,6 +472,12 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .track-row:hover .track-add-btn { opacity: 1; }
 .track-add-btn:hover { background: var(--bg-card-hover); color: var(--text-primary); }
 .track-add-btn.liked { color: var(--accent); opacity: 1; }
+.track-download-btn.downloaded { color: var(--accent); opacity: 1; }
+.track-download-btn.downloading { opacity: 1; }
+.track-download-spin { animation: track-download-spin 1s linear infinite; }
+@keyframes track-download-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+.track-row.offline-unavailable { opacity: 0.4; filter: grayscale(0.7); }
+.track-row.offline-unavailable .track-title-cell, .track-row.offline-unavailable .track-index { cursor: default; }
 .track-duration { text-align: right; width: 60px; font-variant-numeric: tabular-nums; }
 
 .detail-header {
@@ -542,7 +554,17 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .lyrics-header-actions .btn-icon-plain { width: 29px; height: 29px; display: flex; align-items: center; justify-content: center; }
 
 .now-playing-summary { padding: 22px 22px 8px; flex-shrink: 0; position: relative; z-index: 1; }
-.now-playing-art { display: block; width: 100%; aspect-ratio: 1/1; max-width: 220px; margin: 0 auto 16px; border-radius: var(--radius-md); object-fit: cover; box-shadow: 0 16px 34px rgba(0,0,0,0.4); background: var(--bg-card); }
+.now-playing-art-wrap { position: relative; max-width: 220px; margin: 0 auto 16px; }
+.now-playing-art { display: block; width: 100%; aspect-ratio: 1/1; border-radius: var(--radius-md); object-fit: cover; box-shadow: 0 16px 34px rgba(0,0,0,0.4); background: var(--bg-card); }
+/* Mobile-only: app.js moves #cat-jam in here so it overlays the cover art
+   instead of sitting fixed near the player bar (no room for that on phones,
+   and beat-sync there would re-route audio through Web Audio, which is
+   unsafe on Android's WebView — see syncCatJamVisibility). */
+.now-playing-art-wrap .cat-jam {
+  position: absolute; left: auto; right: -6px; bottom: -6px; z-index: 3;
+  width: 40%; height: 40%; max-width: 130px; max-height: 130px;
+  transform-origin: bottom right;
+}
 .now-playing-info-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 220px; margin: 0 auto; }
 .now-playing-text { min-width: 0; text-align: center; }
 .now-playing-title { font-size: 17px; font-weight: 800; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -627,11 +649,14 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 
 input[type="range"] { -webkit-appearance: none; appearance: none; height: 6px; margin: 0; display: block; border-radius: 3px; background: var(--border-subtle); flex: 1; cursor: pointer; }
 input[type="range"]::-webkit-slider-thumb {
+  /* Always visible rather than hover-revealed — hover doesn't exist as a
+     persistent state on touch, so a hover-only thumb was simply invisible
+     on mobile (the EQ sliders especially, since they're rarely mid-drag
+     when you first look at them). */
   -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
-  background: var(--text-primary); opacity: 0; transition: opacity 0.1s ease;
+  background: var(--text-primary); opacity: 1;
   box-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
-input[type="range"]:hover::-webkit-slider-thumb { opacity: 1; }
 input[type="range"].seek-bar, input[type="range"].volume-bar {
   background-image: linear-gradient(to right, var(--seek-start) 0%, var(--seek-end) var(--pct,0%), transparent var(--pct,0%));
   background-color: var(--border-subtle);
@@ -777,6 +802,7 @@ select.settings-select {
   color: var(--text-primary); padding: 8px 10px; border-radius: var(--radius-sm);
   font-size: 13px; font-weight: 600;
 }
+.eq-preset-select { width: 100%; margin-bottom: 8px; }
 
 [hidden] { display: none !important; }
 
@@ -799,7 +825,6 @@ body.platform-mobile .titlebar { display: none; }
     grid-template-areas: "main" "player" "nav";
   }
   .sidebar { display: none; }
-  .cat-jam { display: none; }
 
   .lyrics-panel {
     grid-area: unset;
@@ -811,7 +836,8 @@ body.platform-mobile .titlebar { display: none; }
   .np-collapse-btn { font-size: 22px; }
 
   .now-playing-summary { padding: 12px 24px 8px; }
-  .now-playing-art { max-width: 100%; width: 100%; border-radius: var(--radius-lg); box-shadow: 0 24px 50px rgba(0,0,0,0.5); margin-bottom: 26px; }
+  .now-playing-art-wrap { max-width: 100%; width: 100%; margin-bottom: 26px; }
+  .now-playing-art { border-radius: var(--radius-lg); box-shadow: 0 24px 50px rgba(0,0,0,0.5); }
   .now-playing-info-row { max-width: 100%; }
   .now-playing-text { text-align: left; }
   .now-playing-title { font-size: 20px; }

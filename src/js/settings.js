@@ -27,7 +27,9 @@ const DEFAULTS = {
   catJam: false,
   catJamScale: 1, // 0.5-3, multiplier on the cat's base 110px size
   eqEnabled: false,
-  eqGains: [0, 0, 0, 0, 0] // dB, one per EQ_BANDS entry in player.js, -12 to 12
+  eqGains: [0, 0, 0, 0, 0], // dB, one per EQ_BANDS entry in player.js, -12 to 12
+  eqPreset: 'flat',
+  offlineMode: false // when on, only downloaded tracks are playable/clickable
 };
 
 function load() {

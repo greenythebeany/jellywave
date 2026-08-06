@@ -107,7 +107,9 @@
     "time": "Varighet",
     "addToPlaylist": "Legg til i spilleliste",
     "like": "Lik",
-    "changeCoverArt": "Endre coverbilde"
+    "changeCoverArt": "Endre coverbilde",
+    "download": "Last ned",
+    "removeDownload": "Fjern nedlasting"
   },
   "createPlaylist": {
     "title": "Opprett spilleliste",
@@ -171,7 +173,9 @@
     "advanced": "Avansert",
     "customCss": "Egendefinert CSS",
     "customCssDesc": "Skriv din egen CSS for å finjustere utseendet til appen ytterligere. Brukes umiddelbart.",
-    "about": "Om"
+    "about": "Om",
+    "offlineMode": "Offline-modus",
+    "offlineModeDesc": "Viser og spiller kun nedlastede sanger — resten er nedtonet"
   },
   "audioQuality": {
     "auto": "Automatisk (best tilgjengelige kvalitet)",
@@ -191,7 +195,8 @@
     "couldNotRemoveFromPlaylist": "Kunne ikke fjerne sangen fra spillelisten.",
     "couldNotUpdateLike": "Kunne ikke oppdatere lik-status.",
     "couldNotUploadArt": "Kunne ikke laste opp coverbilde.",
-    "couldNotCreatePlaylist": "Kunne ikke opprette spilleliste."
+    "couldNotCreatePlaylist": "Kunne ikke opprette spilleliste.",
+    "couldNotDownload": "Kunne ikke laste ned sangen."
   },
   "update": {
     "available": "JellyWave {version} er tilgjengelig.",
@@ -223,5 +228,17 @@
     "errorSend": "Kunne ikke sende avspilling til den enheten.",
     "connectedTo": "Koblet til {device}",
     "disconnect": "Koble fra"
+  },
+  "eq": {
+    "flat": "Flat",
+    "bassBoost": "Bassforsterkning",
+    "noBass": "Ingen bass",
+    "vocalBoost": "Vokalforsterkning",
+    "rock": "Rock",
+    "pop": "Pop",
+    "jazz": "Jazz",
+    "electronic": "Elektronisk",
+    "classical": "Klassisk",
+    "custom": "Egendefinert"
   }
 }

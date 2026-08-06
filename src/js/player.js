@@ -1,4 +1,5 @@
 import { isDesktop } from './platform.js';
+import { isDownloaded, getLocalUri } from './downloads.js';
 
 export const RepeatMode = {
   OFF: 'off',
@@ -9,6 +10,20 @@ export const RepeatMode = {
 // Center frequencies (Hz) for the built-in graphic equalizer's peaking
 // filters — a standard 5-band spread from sub-bass to presence/air.
 export const EQ_BANDS = [60, 250, 1000, 4000, 12000];
+
+// dB gain per band, matching EQ_BANDS' order — hand-tuned starting points,
+// not measured curves.
+export const EQ_PRESETS = {
+  flat: [0, 0, 0, 0, 0],
+  bassBoost: [7, 4, 0, -1, -1],
+  noBass: [-8, -5, 0, 1, 1],
+  vocalBoost: [-3, -2, 4, 4, 1],
+  rock: [5, 3, -2, 3, 4],
+  pop: [-1, 2, 4, 2, -1],
+  jazz: [3, 2, -1, 2, 3],
+  electronic: [5, 3, 0, 2, 5],
+  classical: [3, 2, 0, -2, 2]
+};
 
 // How soon before a track's natural end we start pre-buffering the next one
 // (gapless) — needs to be enough time for the network fetch to get ahead of
@@ -395,9 +410,23 @@ export class Player {
     const track = this.currentTrack;
     if (!track) return;
     const el = this.audio;
-    el.src = this.jellyfin.streamUrl(track, this.getBitrateKbps());
-    this._applyVolume(el, track);
-    if (autoplay) el.play().catch(() => {});
+
+    if (isDownloaded(track.Id)) {
+      // Resolving a local URI is async even on desktop (kept consistent
+      // with Android's native filesystem bridge) — metadata/trackchange
+      // still fire immediately below so the UI updates without waiting.
+      getLocalUri(track.Id).then((uri) => {
+        if (this.currentTrack?.Id !== track.Id || el !== this.audio) return; // stale by the time this resolved
+        el.src = uri || this.jellyfin.streamUrl(track, this.getBitrateKbps());
+        this._applyVolume(el, track);
+        if (autoplay) el.play().catch(() => {});
+      });
+    } else {
+      el.src = this.jellyfin.streamUrl(track, this.getBitrateKbps());
+      this._applyVolume(el, track);
+      if (autoplay) el.play().catch(() => {});
+    }
+
     this._updateMediaSessionMetadata();
     this._setMediaSessionPlaybackState();
     this._emit('trackchange');

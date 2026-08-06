@@ -107,7 +107,9 @@
     "time": "Kesto",
     "addToPlaylist": "Lisää soittolistaan",
     "like": "Tykkää",
-    "changeCoverArt": "Vaihda kansikuva"
+    "changeCoverArt": "Vaihda kansikuva",
+    "download": "Lataa",
+    "removeDownload": "Poista lataus"
   },
   "createPlaylist": {
     "title": "Luo soittolista",
@@ -171,7 +173,9 @@
     "advanced": "Lisäasetukset",
     "customCss": "Mukautettu CSS",
     "customCssDesc": "Kirjoita oma CSS hienosäätääksesi sovelluksen ulkoasua. Otetaan käyttöön heti.",
-    "about": "Tietoja"
+    "about": "Tietoja",
+    "offlineMode": "Offline-tila",
+    "offlineModeDesc": "Näyttää ja toistaa vain ladatut kappaleet — muut on himmennetty"
   },
   "audioQuality": {
     "auto": "Automaattinen (paras saatavilla oleva laatu)",
@@ -191,7 +195,8 @@
     "couldNotRemoveFromPlaylist": "Kappaletta ei voitu poistaa soittolistalta.",
     "couldNotUpdateLike": "Tykkäystilaa ei voitu päivittää.",
     "couldNotUploadArt": "Kansikuvaa ei voitu ladata.",
-    "couldNotCreatePlaylist": "Soittolistaa ei voitu luoda."
+    "couldNotCreatePlaylist": "Soittolistaa ei voitu luoda.",
+    "couldNotDownload": "Kappaletta ei voitu ladata."
   },
   "update": {
     "available": "JellyWave {version} on saatavilla.",
@@ -223,5 +228,17 @@
     "errorSend": "Toistoa ei voitu lähettää kyseiselle laitteelle.",
     "connectedTo": "Yhdistetty laitteeseen {device}",
     "disconnect": "Katkaise yhteys"
+  },
+  "eq": {
+    "flat": "Tasainen",
+    "bassBoost": "Bassotehostus",
+    "noBass": "Ei bassoa",
+    "vocalBoost": "Lauluäänen tehostus",
+    "rock": "Rock",
+    "pop": "Pop",
+    "jazz": "Jazz",
+    "electronic": "Elektroninen",
+    "classical": "Klassinen",
+    "custom": "Mukautettu"
   }
 }

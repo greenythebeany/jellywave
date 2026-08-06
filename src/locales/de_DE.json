@@ -107,7 +107,9 @@
     "time": "Dauer",
     "addToPlaylist": "Zur Playlist hinzufügen",
     "like": "Gefällt mir",
-    "changeCoverArt": "Cover ändern"
+    "changeCoverArt": "Cover ändern",
+    "download": "Herunterladen",
+    "removeDownload": "Download entfernen"
   },
   "createPlaylist": {
     "title": "Playlist erstellen",
@@ -171,7 +173,9 @@
     "advanced": "Erweitert",
     "customCss": "Benutzerdefiniertes CSS",
     "customCssDesc": "Schreibe eigenes CSS, um das Aussehen der App weiter anzupassen. Wird sofort angewendet.",
-    "about": "Über"
+    "about": "Über",
+    "offlineMode": "Offline-Modus",
+    "offlineModeDesc": "Zeigt und spielt nur heruntergeladene Songs — der Rest ist ausgegraut"
   },
   "audioQuality": {
     "auto": "Automatisch (beste verfügbare Qualität)",
@@ -191,7 +195,8 @@
     "couldNotRemoveFromPlaylist": "Song konnte nicht aus der Playlist entfernt werden.",
     "couldNotUpdateLike": "Like-Status konnte nicht aktualisiert werden.",
     "couldNotUploadArt": "Cover konnte nicht hochgeladen werden.",
-    "couldNotCreatePlaylist": "Playlist konnte nicht erstellt werden."
+    "couldNotCreatePlaylist": "Playlist konnte nicht erstellt werden.",
+    "couldNotDownload": "Song konnte nicht heruntergeladen werden."
   },
   "update": {
     "available": "JellyWave {version} ist verfügbar.",
@@ -223,5 +228,17 @@
     "errorSend": "Wiedergabe konnte nicht an dieses Gerät gesendet werden.",
     "connectedTo": "Verbunden mit {device}",
     "disconnect": "Trennen"
+  },
+  "eq": {
+    "flat": "Neutral",
+    "bassBoost": "Bassverstärkung",
+    "noBass": "Kein Bass",
+    "vocalBoost": "Gesangsverstärkung",
+    "rock": "Rock",
+    "pop": "Pop",
+    "jazz": "Jazz",
+    "electronic": "Elektronisch",
+    "classical": "Klassik",
+    "custom": "Benutzerdefiniert"
   }
 }

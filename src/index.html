@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' http: https: data:; media-src 'self' http: https:; connect-src 'self' http: https: ws: wss:; style-src 'self' 'unsafe-inline' https:; script-src 'self';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' http: https: data:; media-src 'self' http: https: file: content: blob:; connect-src 'self' http: https: ws: wss:; style-src 'self' 'unsafe-inline' https:; script-src 'self';" />
   <title>JellyWave</title>
   <link rel="stylesheet" href="vendor/poppins/latin-400.css" />
   <link rel="stylesheet" href="vendor/poppins/latin-500.css" />
@@ -160,7 +160,9 @@
         </div>
       </div>
       <div class="now-playing-summary">
-        <img id="now-playing-art" class="now-playing-art" alt="" />
+        <div class="now-playing-art-wrap">
+          <img id="now-playing-art" class="now-playing-art" alt="" />
+        </div>
         <div class="now-playing-info-row">
           <div class="now-playing-text">
             <div id="now-playing-title" class="now-playing-title">—</div>
@@ -372,6 +374,16 @@
           </div>
           <div class="settings-row">
             <div>
+              <div class="settings-row-label" data-i18n="settings.offlineMode">Offline mode</div>
+              <div class="settings-row-desc" data-i18n="settings.offlineModeDesc">Only show and play songs you've downloaded — everything else is grayed out</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-offline-mode" />
+              <span class="switch-track"></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div>
               <div class="settings-row-label" data-i18n="settings.crossfade">Crossfade</div>
               <div class="settings-row-desc" data-i18n="settings.crossfadeDesc">Blend the end of one song into the start of the next</div>
             </div>
@@ -401,6 +413,18 @@
             </label>
           </div>
           <div class="settings-row settings-row-stack" id="equalizer-bands-row" hidden>
+            <select id="eq-preset-select" class="settings-select eq-preset-select">
+              <option value="flat" data-i18n="eq.flat">Flat</option>
+              <option value="bassBoost" data-i18n="eq.bassBoost">Bass Boost</option>
+              <option value="noBass" data-i18n="eq.noBass">No Bass</option>
+              <option value="vocalBoost" data-i18n="eq.vocalBoost">Vocal Boost</option>
+              <option value="rock" data-i18n="eq.rock">Rock</option>
+              <option value="pop" data-i18n="eq.pop">Pop</option>
+              <option value="jazz" data-i18n="eq.jazz">Jazz</option>
+              <option value="electronic" data-i18n="eq.electronic">Electronic</option>
+              <option value="classical" data-i18n="eq.classical">Classical</option>
+              <option value="custom" data-i18n="eq.custom" hidden>Custom</option>
+            </select>
             <div class="eq-bands">
               <div class="eq-band">
                 <span class="eq-band-value" data-band-value="0">0</span>

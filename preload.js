@@ -31,5 +31,10 @@ contextBridge.exposeInMainWorld('api', {
     onKey: (callback) => {
       ipcRenderer.on('media-key', (_event, key) => callback(key));
     }
+  },
+  downloads: {
+    save: (itemId, url, headers) => ipcRenderer.invoke('downloads:save', itemId, url, headers),
+    delete: (itemId) => ipcRenderer.invoke('downloads:delete', itemId),
+    getPath: (itemId) => ipcRenderer.invoke('downloads:getPath', itemId)
   }
 });

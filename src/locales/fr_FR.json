@@ -107,7 +107,9 @@
     "time": "Durée",
     "addToPlaylist": "Ajouter à une playlist",
     "like": "Aimer",
-    "changeCoverArt": "Changer la pochette"
+    "changeCoverArt": "Changer la pochette",
+    "download": "Télécharger",
+    "removeDownload": "Supprimer le téléchargement"
   },
   "createPlaylist": {
     "title": "Créer une playlist",
@@ -171,7 +173,9 @@
     "advanced": "Avancé",
     "customCss": "CSS personnalisé",
     "customCssDesc": "Écrivez votre propre CSS pour personnaliser davantage l'apparence de l'application. Appliqué en direct.",
-    "about": "À propos"
+    "about": "À propos",
+    "offlineMode": "Mode hors ligne",
+    "offlineModeDesc": "Affiche et lit uniquement les chansons téléchargées — le reste est grisé"
   },
   "audioQuality": {
     "auto": "Automatique (meilleure qualité disponible)",
@@ -191,7 +195,8 @@
     "couldNotRemoveFromPlaylist": "Impossible de retirer le titre de la playlist.",
     "couldNotUpdateLike": "Impossible de mettre à jour le statut « aimé ».",
     "couldNotUploadArt": "Impossible de téléverser la pochette.",
-    "couldNotCreatePlaylist": "Impossible de créer la playlist."
+    "couldNotCreatePlaylist": "Impossible de créer la playlist.",
+    "couldNotDownload": "Impossible de télécharger la chanson."
   },
   "update": {
     "available": "JellyWave {version} est disponible.",
@@ -223,5 +228,17 @@
     "errorSend": "Impossible d'envoyer la lecture vers cet appareil.",
     "connectedTo": "Connecté à {device}",
     "disconnect": "Déconnecter"
+  },
+  "eq": {
+    "flat": "Plat",
+    "bassBoost": "Basses renforcées",
+    "noBass": "Sans basses",
+    "vocalBoost": "Voix renforcée",
+    "rock": "Rock",
+    "pop": "Pop",
+    "jazz": "Jazz",
+    "electronic": "Électronique",
+    "classical": "Classique",
+    "custom": "Personnalisé"
   }
 }

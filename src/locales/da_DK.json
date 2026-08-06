@@ -107,7 +107,9 @@
     "time": "Varighed",
     "addToPlaylist": "Føj til playliste",
     "like": "Synes godt om",
-    "changeCoverArt": "Skift coverbillede"
+    "changeCoverArt": "Skift coverbillede",
+    "download": "Download",
+    "removeDownload": "Fjern download"
   },
   "createPlaylist": {
     "title": "Opret playliste",
@@ -171,7 +173,9 @@
     "advanced": "Avanceret",
     "customCss": "Brugerdefineret CSS",
     "customCssDesc": "Skriv din egen CSS for at finjustere appens udseende yderligere. Anvendes med det samme.",
-    "about": "Om"
+    "about": "Om",
+    "offlineMode": "Offline-tilstand",
+    "offlineModeDesc": "Viser og afspiller kun downloadede sange — resten er nedtonet"
   },
   "audioQuality": {
     "auto": "Automatisk (bedste tilgængelige kvalitet)",
@@ -191,7 +195,8 @@
     "couldNotRemoveFromPlaylist": "Kunne ikke fjerne sangen fra playlisten.",
     "couldNotUpdateLike": "Kunne ikke opdatere synes godt om-status.",
     "couldNotUploadArt": "Kunne ikke uploade coverbillede.",
-    "couldNotCreatePlaylist": "Kunne ikke oprette playliste."
+    "couldNotCreatePlaylist": "Kunne ikke oprette playliste.",
+    "couldNotDownload": "Kunne ikke downloade sangen."
   },
   "update": {
     "available": "JellyWave {version} er tilgængelig.",
@@ -223,5 +228,17 @@
     "errorSend": "Kunne ikke sende afspilning til den enhed.",
     "connectedTo": "Forbundet til {device}",
     "disconnect": "Afbryd"
+  },
+  "eq": {
+    "flat": "Flad",
+    "bassBoost": "Basforstærkning",
+    "noBass": "Ingen bas",
+    "vocalBoost": "Vokalforstærkning",
+    "rock": "Rock",
+    "pop": "Pop",
+    "jazz": "Jazz",
+    "electronic": "Elektronisk",
+    "classical": "Klassisk",
+    "custom": "Brugerdefineret"
   }
 }
