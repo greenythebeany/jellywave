@@ -380,7 +380,16 @@ svg { fill: currentColor; width: 100%; height: 100%; }
   scroll-snap-type: x proximity;
   scrollbar-width: none; /* Firefox */
 }
-.card-row .card { flex: 0 0 170px; scroll-snap-align: start; }
+.card-row .card {
+  flex: 0 0 170px;
+  /* Flex items refuse to shrink below their content's natural width by
+     default (min-width: auto) — a long title's white-space: nowrap (needed
+     for its own ellipsis truncation) counts as that content, so without
+     this every card quietly grows to fit its own title text instead of
+     staying a uniform 170px. */
+  min-width: 0;
+  scroll-snap-align: start;
+}
 .card-row::-webkit-scrollbar { display: none; } /* Chromium / Android WebView */
 
 .card-row-wrap { position: relative; }
@@ -917,7 +926,7 @@ body.platform-mobile .titlebar { display: none; }
      instead of a fixed px value, so cards in a row and cards in a grid look the same
      size next to each other — a bit under half the row width leaves a peek of the
      next card as a scroll hint. */
-  .card-row .card { flex: 0 0 calc((100% - 14px) / 2.15); }
+  .card-row .card { flex: 0 0 calc((100% - 14px) / 2.15); min-width: 0; }
   .view-root { padding: 8px 16px 24px; }
   .main-header { padding: 0 16px; }
 
