@@ -1,0 +1,64 @@
+name: iOS Unsigned Device Build
+
+# No Apple Developer account, so this can't sign the build itself — Apple
+# requires a paid account + certificate for real signing, and no CI setup
+# can substitute for that. Instead this builds completely unsigned for a
+# real iPhone (not the Simulator — a different target entirely), producing
+# a plain .ipa you sign yourself on your end via Sideloadly (or AltStore),
+# using your own free Apple ID. That's also why this is Release, not Debug
+# — it's meant to actually be installed and used, not just smoke-tested.
+#
+# Apple's free-account signing expires after 7 days regardless of how it's
+# signed — that's a platform restriction, not something this workflow (or
+# Sideloadly) can avoid. Sideloadly can automate the periodic re-sign if
+# you leave it running.
+#
+# Run manually from the Actions tab ("Run workflow") — not on every push,
+# since a macOS runner is slower and there's no need to build iOS on every
+# desktop/Android-only change.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-unsigned-ipa:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync Capacitor iOS project
+        run: npx cap sync ios
+
+      - name: Build for a real iPhone (unsigned)
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -sdk iphoneos \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+
+      - name: Package as an .ipa
+        run: |
+          cd build/Build/Products/Release-iphoneos
+          mkdir Payload
+          cp -r App.app Payload/
+          zip -r JellyWave-unsigned.ipa Payload
+
+      - name: Upload unsigned .ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: JellyWave-unsigned-ipa
+          path: build/Build/Products/Release-iphoneos/JellyWave-unsigned.ipa
+          retention-days: 14
