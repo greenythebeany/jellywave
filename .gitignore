@@ -1,5 +1,9 @@
 node_modules/
 dist/
+
+# Build artifacts — these get attached to GitHub releases, not committed.
+*.ipa
+*.apk
 __pycache__/
 *.pyc
 yt_to_mp3.py
