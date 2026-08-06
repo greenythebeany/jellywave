@@ -494,19 +494,29 @@ export class Player {
     // If gapless pre-buffering already has the next track loaded and ready
     // in the inactive element, swap to it instantly instead of doing a
     // fresh network fetch — that's the whole point of gapless playback.
-    if (this._preloaded && this.crossfadeSeconds === 0) {
+    // _preloaded only means "we started a preload," not "it definitely
+    // succeeded" (a transient network hiccup during the ~4s preload window
+    // is entirely possible) — check for a real load error before trusting
+    // it, and treat this as best-effort rather than break its own promise.
+    if (this._preloaded && this.crossfadeSeconds === 0 && !this._inactiveAudio.error) {
       this._advanceIndexForNext();
       this._activeIsA = !this._activeIsA;
       this._preloaded = false;
       const el = this.audio;
       el.currentTime = 0;
       this._applyVolume(el);
-      el.play().catch(() => {});
+      el.play().catch(() => {
+        // The "preloaded" element turned out not to actually be playable.
+        // currentIndex is already correctly advanced — just retry loading
+        // this same track fresh instead of leaving playback stopped dead.
+        this._loadCurrent(true);
+      });
       this._updateMediaSessionMetadata();
       this._setMediaSessionPlaybackState();
       this._emit('trackchange');
       return;
     }
+    this._preloaded = false;
     this.next(false);
   }
 
@@ -562,6 +572,12 @@ export class Player {
     inactive.src = this.jellyfin.streamUrl(nextTrack, this.getBitrateKbps());
     this._applyVolume(inactive, nextTrack);
     inactive.load();
+    // Clear the optimistic flag the moment we know the preload actually
+    // failed (network hiccup, etc.), rather than only discovering it later
+    // in _onEnded() when it's time to use it.
+    inactive.addEventListener('error', () => {
+      if (inactive.src === this.jellyfin.streamUrl(nextTrack, this.getBitrateKbps())) this._preloaded = false;
+    }, { once: true });
   }
 
   _beginCrossfade() {
@@ -593,6 +609,7 @@ export class Player {
       outgoing.pause();
       outgoing.currentTime = 0;
       this._emit('trackended', outgoingTrack);
+      const incomingFailed = !!incoming.error;
       this._advanceIndexForNext();
       this._activeIsA = !this._activeIsA;
       this._transitioning = false;
@@ -601,6 +618,11 @@ export class Player {
       this._updateMediaSessionMetadata();
       this._setMediaSessionPlaybackState();
       this._emit('trackchange');
+      // The fade completes on a timer regardless of whether `incoming`
+      // actually loaded/played — if it silently failed, currentIndex is
+      // already correctly advanced, so just retry loading that track fresh
+      // instead of leaving playback stuck on a broken element.
+      if (incomingFailed) this._loadCurrent(true);
     };
     this._fadeRAF = requestAnimationFrame(step);
   }
