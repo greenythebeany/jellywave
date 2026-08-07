@@ -1,4 +1,4 @@
-import { isDesktop } from './platform.js';
+import { isDesktop, isAndroid } from './platform.js';
 import { isDownloaded, getLocalUri } from './downloads.js';
 
 export const RepeatMode = {
@@ -24,6 +24,23 @@ export const EQ_PRESETS = {
   electronic: [5, 3, 0, 2, 5],
   classical: [3, 2, 0, -2, 2]
 };
+
+// Resamples a gain curve defined at `freqs` points onto an arbitrary target
+// frequency, log-interpolating between the two nearest points (frequency
+// perception is logarithmic, so linear interpolation would skew the curve
+// toward the high end). Used to map this app's fixed 5-band EQ_BANDS curve
+// onto whatever bands a device's native Android equalizer actually has.
+function interpolateGainAtFreq(freqs, gains, targetFreq) {
+  if (targetFreq <= freqs[0]) return gains[0];
+  if (targetFreq >= freqs[freqs.length - 1]) return gains[gains.length - 1];
+  for (let i = 0; i < freqs.length - 1; i++) {
+    if (targetFreq >= freqs[i] && targetFreq <= freqs[i + 1]) {
+      const t = (Math.log(targetFreq) - Math.log(freqs[i])) / (Math.log(freqs[i + 1]) - Math.log(freqs[i]));
+      return gains[i] + t * (gains[i + 1] - gains[i]);
+    }
+  }
+  return 0;
+}
 
 // How soon before a track's natural end we start pre-buffering the next one
 // (gapless) — needs to be enough time for the network fetch to get ahead of
@@ -64,6 +81,12 @@ export class Player {
     this._audioGraphs = new WeakMap();
     this.eqEnabled = false;
     this.eqGains = new Array(EQ_BANDS.length).fill(0);
+
+    // Android's equalizer instead runs natively (see EqualizerPlugin.java) —
+    // this just caches whatever bands the device actually reports, fetched
+    // once on first use since it never changes at runtime.
+    this._nativeEq = isAndroid ? window.Capacitor?.Plugins?.JellyWaveEqualizer : null;
+    this._nativeEqBands = null;
 
     this.queue = [];
     this.originalQueue = [];
@@ -198,12 +221,17 @@ export class Player {
       this._ensureAudioGraph(this._audioB);
     }
     this._applyEqGains();
+    if (this._nativeEq) {
+      this._nativeEq.setEnabled({ enabled: this.eqEnabled }).catch(() => {});
+      this._syncNativeEqualizer();
+    }
   }
 
   setEqualizerBand(index, gainDb) {
     if (index < 0 || index >= this.eqGains.length) return;
     this.eqGains[index] = Math.min(12, Math.max(-12, gainDb));
     if (this.eqEnabled) this._applyEqGains();
+    if (this._nativeEq && this.eqEnabled) this._syncNativeEqualizer();
   }
 
   _applyEqGains() {
@@ -214,6 +242,35 @@ export class Player {
         filter.gain.value = this.eqEnabled ? this.eqGains[i] : 0;
       });
     }
+  }
+
+  // ---------- Native Android equalizer (see EqualizerPlugin.java) ----------
+  // The device's real Equalizer effect rarely has the same band count/
+  // frequencies as this app's own 5-band UI, so this resamples eqGains'
+  // curve (log-frequency interpolated between EQ_BANDS points) onto
+  // whatever bands the device actually reports, rather than assuming a
+  // direct index match.
+  async _ensureNativeEqBands() {
+    if (this._nativeEqBands) return this._nativeEqBands;
+    try {
+      const result = await this._nativeEq.getBands();
+      this._nativeEqBands = result;
+      return result;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async _syncNativeEqualizer() {
+    if (!this._nativeEq) return;
+    const info = await this._ensureNativeEqBands();
+    if (!info?.bands?.length) return;
+    const levels = info.bands.map(({ index, frequencyHz }) => {
+      const gainDb = this.eqEnabled ? interpolateGainAtFreq(EQ_BANDS, this.eqGains, frequencyHz) : 0;
+      const millibels = Math.round(Math.min(info.maxLevel, Math.max(info.minLevel, gainDb * 100)));
+      return { band: index, level: millibels };
+    });
+    this._nativeEq.setBandLevels({ levels }).catch(() => {});
   }
 
   // ---------- MediaSession (lock-screen / notification controls) ----------

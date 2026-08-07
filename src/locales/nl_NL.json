@@ -165,7 +165,7 @@
     "replayGain": "Volumenormalisatie",
     "replayGainDesc": "Vereffent volumeverschillen tussen nummers (vereist ReplayGain-gegevens op de server)",
     "equalizer": "Equalizer",
-    "equalizerDesc": "Pas het geluid aan met een 5-bands grafische equalizer (alleen desktop)",
+    "equalizerDesc": "Pas het geluid aan met een 5-bands grafische equalizer (alleen desktop en Android)",
     "equalizerReset": "Resetten",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Toont wat je luistert op je Discord-profiel (alleen desktop)",

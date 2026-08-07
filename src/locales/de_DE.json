@@ -165,7 +165,7 @@
     "replayGain": "Lautstärkenormalisierung",
     "replayGainDesc": "Gleicht Lautstärkeunterschiede zwischen Titeln aus (benötigt ReplayGain-Daten auf dem Server)",
     "equalizer": "Equalizer",
-    "equalizerDesc": "Klang mit einem 5-Band-Grafik-Equalizer formen (nur Desktop)",
+    "equalizerDesc": "Klang mit einem 5-Band-Grafik-Equalizer formen (nur Desktop und Android)",
     "equalizerReset": "Zurücksetzen",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Zeigt auf deinem Discord-Profil, was du gerade hörst (nur Desktop)",

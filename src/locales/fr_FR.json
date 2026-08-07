@@ -165,7 +165,7 @@
     "replayGain": "Normalisation du volume",
     "replayGainDesc": "Uniformise les différences de volume entre les morceaux (nécessite des données ReplayGain sur le serveur)",
     "equalizer": "Égaliseur",
-    "equalizerDesc": "Ajustez le son avec un égaliseur graphique à 5 bandes (bureau uniquement)",
+    "equalizerDesc": "Ajustez le son avec un égaliseur graphique à 5 bandes (bureau et Android uniquement)",
     "equalizerReset": "Réinitialiser",
     "discordPresence": "Statut enrichi Discord",
     "discordPresenceDesc": "Affiche ce que vous écoutez sur votre profil Discord (bureau uniquement)",

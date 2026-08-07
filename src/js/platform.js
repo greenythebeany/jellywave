@@ -15,6 +15,9 @@ const isCapacitorNative =
 export const platform = isElectron ? 'electron' : isCapacitorNative ? 'mobile' : 'web';
 export const isDesktop = platform === 'electron';
 export const isMobile = platform === 'mobile';
+// Distinct from isMobile — some features (native equalizer) only have an
+// Android implementation, not iOS, so callers need to tell the two apart.
+export const isAndroid = isCapacitorNative && window.Capacitor.getPlatform?.() === 'android';
 
 function preferences() {
   return window.Capacitor?.Plugins?.Preferences || null;

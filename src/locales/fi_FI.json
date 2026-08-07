@@ -165,7 +165,7 @@
     "replayGain": "Äänenvoimakkuuden normalisointi",
     "replayGainDesc": "Tasoittaa kappaleiden välisiä äänenvoimakkuuseroja (vaatii ReplayGain-tiedot palvelimella)",
     "equalizer": "Taajuuskorjain",
-    "equalizerDesc": "Muokkaa ääntä 5-kaistaisella graafisella taajuuskorjaimella (vain työpöytä)",
+    "equalizerDesc": "Muokkaa ääntä 5-kaistaisella graafisella taajuuskorjaimella (vain työpöytä ja Android)",
     "equalizerReset": "Palauta",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Näyttää mitä kuuntelet Discord-profiilissasi (vain työpöytä)",

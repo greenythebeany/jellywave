@@ -3,7 +3,7 @@ import { Player, RepeatMode, EQ_PRESETS } from './player.js';
 import { fetchLyrics } from './lyrics.js';
 import { getSettings, updateSettings, applySettings, currentBitrateKbps, PALETTES, AUDIO_QUALITIES } from './settings.js';
 import { LOCALES, loadLocale, applyTranslations, t } from './i18n.js';
-import { platform, isDesktop, isMobile, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
+import { platform, isDesktop, isMobile, isAndroid, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
 import { createConnect } from './connect.js';
 import { isSupported as downloadsSupported, isDownloaded, downloadTrack, deleteDownload, onDownloadsChange, getDownloadedTracks, getLocalImageUri } from './downloads.js';
 
@@ -55,6 +55,7 @@ const crossfadeValue = document.getElementById('crossfade-value');
 const toggleReplayGain = document.getElementById('toggle-replaygain');
 const toggleOfflineMode = document.getElementById('toggle-offline-mode');
 const toggleEqualizer = document.getElementById('toggle-equalizer');
+const equalizerToggleRow = document.getElementById('equalizer-toggle-row');
 const equalizerBandsRow = document.getElementById('equalizer-bands-row');
 const eqBandSliders = document.querySelectorAll('.eq-band-slider');
 const btnEqReset = document.getElementById('btn-eq-reset');
@@ -517,6 +518,14 @@ function wireSettingsUI() {
     updateSettings({ replayGainEnabled: toggleReplayGain.checked });
     player?.setReplayGainEnabled(toggleReplayGain.checked);
   });
+
+  // The equalizer only has a working implementation on desktop (Web Audio)
+  // and Android (native Equalizer effect, see EqualizerPlugin.java) — iOS
+  // has neither, so the whole section is pointless clutter there.
+  if (!isDesktop && !isAndroid) {
+    setHidden(equalizerToggleRow, true);
+    setHidden(equalizerBandsRow, true);
+  }
 
   toggleEqualizer.addEventListener('change', () => {
     updateSettings({ eqEnabled: toggleEqualizer.checked });

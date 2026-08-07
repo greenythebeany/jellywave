@@ -165,7 +165,7 @@
     "replayGain": "Normalizacja głośności",
     "replayGainDesc": "Wyrównuje różnice głośności między utworami (wymaga danych ReplayGain na serwerze)",
     "equalizer": "Korektor",
-    "equalizerDesc": "Dostosuj dźwięk za pomocą 5-pasmowego korektora graficznego (tylko na komputerze)",
+    "equalizerDesc": "Dostosuj dźwięk za pomocą 5-pasmowego korektora graficznego (tylko komputer i Android)",
     "equalizerReset": "Resetuj",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Pokazuje na Twoim profilu Discord to, czego słuchasz (tylko desktop)",

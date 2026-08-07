@@ -165,7 +165,7 @@
     "replayGain": "Volymnormalisering",
     "replayGainDesc": "Jämnar ut volymskillnader mellan låtar (kräver ReplayGain-data på servern)",
     "equalizer": "Equalizer",
-    "equalizerDesc": "Forma ljudet med en 5-bands grafisk equalizer (endast dator)",
+    "equalizerDesc": "Forma ljudet med en 5-bands grafisk equalizer (endast dator och Android)",
     "equalizerReset": "Återställ",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Visar vad du lyssnar på i din Discord-profil (endast dator)",

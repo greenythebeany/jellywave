@@ -165,7 +165,7 @@
     "replayGain": "Нормалізація гучності",
     "replayGainDesc": "Вирівнює різницю гучності між треками (потрібні дані ReplayGain на сервері)",
     "equalizer": "Еквалайзер",
-    "equalizerDesc": "Налаштуйте звук за допомогою 5-смугового графічного еквалайзера (лише на ПК)",
+    "equalizerDesc": "Налаштуйте звук за допомогою 5-смугового графічного еквалайзера (лише ПК та Android)",
     "equalizerReset": "Скинути",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Показує, що ви слухаєте, у вашому профілі Discord (лише на ПК)",

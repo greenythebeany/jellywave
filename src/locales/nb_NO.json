@@ -165,7 +165,7 @@
     "replayGain": "Volumnormalisering",
     "replayGainDesc": "Jevner ut volumforskjeller mellom sanger (krever ReplayGain-data på serveren)",
     "equalizer": "Lydjustering",
-    "equalizerDesc": "Form lyden med en 5-bånds grafisk lydjustering (kun stasjonær)",
+    "equalizerDesc": "Form lyden med en 5-bånds grafisk lydjustering (kun stasjonær og Android)",
     "equalizerReset": "Tilbakestill",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Viser hva du hører på i Discord-profilen din (kun stasjonær)",

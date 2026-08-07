@@ -165,7 +165,7 @@
     "replayGain": "Lydstyrkenormalisering",
     "replayGainDesc": "Udjævner lydstyrkeforskelle mellem numre (kræver ReplayGain-data på serveren)",
     "equalizer": "Equalizer",
-    "equalizerDesc": "Form lyden med en 5-bånds grafisk equalizer (kun desktop)",
+    "equalizerDesc": "Form lyden med en 5-bånds grafisk equalizer (kun desktop og Android)",
     "equalizerReset": "Nulstil",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Viser hvad du lytter til på din Discord-profil (kun desktop)",
