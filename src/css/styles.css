@@ -864,7 +864,10 @@ body.platform-mobile .titlebar { display: none; }
     position: fixed; inset: 0; z-index: 150;
     width: 100%; border-left: none;
   }
-  .lyrics-header { padding: 14px 16px 10px; }
+  /* Same status-bar overlap issue as .main-header (see the mobile-header
+     comment above) — this is a separate full-screen panel with its own
+     header, so it needed the same safe-area fix independently. */
+  .lyrics-header { padding: 14px 16px 10px; padding-top: max(env(safe-area-inset-top, 0px), 24px); }
   .lyrics-header-actions .btn-icon-plain { width: 33px; height: 33px; }
   .np-collapse-btn { font-size: 22px; }
 

@@ -186,6 +186,14 @@ export async function deleteDownload(trackId) {
   }
 }
 
+// The WebView is loaded from an https:// origin, not file:// — a raw
+// file:///.../content:// URI from the Filesystem plugin can't be loaded as
+// an <audio>/<img> src directly from there, it has to go through
+// Capacitor's own bridge scheme first.
+function toWebViewSrc(nativeUri) {
+  return window.Capacitor?.convertFileSrc ? window.Capacitor.convertFileSrc(nativeUri) : nativeUri;
+}
+
 // A URI the <img> element can actually load from, or null if this track has
 // no downloaded cover (not downloaded at all, or its download predates this
 // feature, or the art fetch failed at download time) — callers should fall
@@ -199,7 +207,7 @@ export async function getLocalImageUri(trackId) {
     if (!fs) return null;
     try {
       const result = await fs.getUri({ directory: 'DATA', path: entry.imagePath });
-      return result.uri;
+      return toWebViewSrc(result.uri);
     } catch (err) {
       return null;
     }
@@ -218,7 +226,7 @@ export async function getLocalUri(trackId) {
     if (!fs) return null;
     try {
       const result = await fs.getUri({ directory: 'DATA', path: entry.path });
-      return result.uri;
+      return toWebViewSrc(result.uri);
     } catch (err) {
       return null;
     }
