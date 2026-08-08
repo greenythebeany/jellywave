@@ -504,6 +504,40 @@ export class JellyfinClient {
     if (!res.ok) throw new Error(`Could not report playback stop (${res.status}).`);
   }
 
+  // Cross-device settings sync (theme, EQ, loudness boost, etc. — see
+  // settings.js) rides on Jellyfin's own DisplayPreferences API, the same
+  // mechanism real Jellyfin clients use to persist their own per-user UI
+  // state server-side — no custom backend needed, and it follows the
+  // account rather than the device. Scoped to a distinct id+client pair so
+  // this never collides with preferences any other Jellyfin client
+  // (including the official web client) might store under its own name.
+  async getSyncedSettings() {
+    try {
+      const data = await this._get(`/DisplayPreferences/JellyWaveSettings`, {
+        userId: this.userId,
+        client: 'JellyWave'
+      });
+      const raw = data?.CustomPrefs?.settings;
+      return raw ? JSON.parse(raw) : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async saveSyncedSettings(settings) {
+    const params = new URLSearchParams({ userId: this.userId, client: 'JellyWave' });
+    const res = await fetch(`${this.serverUrl}/DisplayPreferences/JellyWaveSettings?${params.toString()}`, {
+      method: 'POST',
+      headers: this._headers(),
+      body: JSON.stringify({
+        Id: 'JellyWaveSettings',
+        Client: 'JellyWave',
+        CustomPrefs: { settings: JSON.stringify(settings) }
+      })
+    });
+    if (!res.ok) throw new Error(`Could not sync settings (${res.status}).`);
+  }
+
   imageUrl(item, type = 'Primary', maxSize = 500) {
     const tag = item.ImageTags && item.ImageTags[type];
     const id = tag ? item.Id : item.AlbumId; // fall back to album art for tracks without their own art

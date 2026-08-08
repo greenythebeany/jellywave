@@ -30,7 +30,9 @@ const DEFAULTS = {
   eqGains: [0, 0, 0, 0, 0], // dB, one per EQ_BANDS entry in player.js, -12 to 12
   eqPreset: 'flat',
   loudnessBoostDb: 9, // Android-only native volume boost, 0-15, 0 = off
-  offlineMode: false // when on, only downloaded tracks are playable/clickable
+  offlineMode: false, // when on, only downloaded tracks are playable/clickable
+  updatedAt: 0 // bumped on every local change — lets initRemoteSync tell
+  // whether this device's settings or the server's saved copy is newer
 };
 
 function load() {
@@ -46,6 +48,12 @@ function load() {
 let current = load();
 const listeners = [];
 
+// Set once logged in (see initRemoteSync) — updateSettings() pushes to the
+// server through this from then on. Settings applied before login (or when
+// offline) just stay local until a sync is possible.
+let jellyfinClient = null;
+let pushTimer = null;
+
 export function getSettings() {
   return current;
 }
@@ -55,10 +63,57 @@ export function onSettingsChange(callback) {
 }
 
 export function updateSettings(patch) {
-  current = { ...current, ...patch };
+  current = { ...current, ...patch, updatedAt: Date.now() };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
   applySettings();
   listeners.forEach((cb) => cb(current));
+  schedulePush();
+}
+
+// Debounced so rapid successive changes (e.g. dragging then nudging a
+// slider a couple more times) collapse into one request instead of one per
+// change — best-effort throughout, a failed/offline push just means this
+// device's settings stay local until the next successful sync.
+function schedulePush() {
+  if (!jellyfinClient) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(() => {
+    jellyfinClient.saveSyncedSettings(current).catch(() => {});
+  }, 1500);
+}
+
+// Called once after login (see app.js's enterApp), which awaits this
+// before showing the app — a hung fetch on a slow/degraded connection
+// (as opposed to no connection at all, which fails fast) would otherwise
+// stall app entry indefinitely, so this gives up and falls back to local
+// settings after a few seconds rather than risk that.
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timed out')), ms))
+  ]);
+}
+
+// Whichever side — this device's local settings, or whatever's saved on
+// the server — has the newer updatedAt wins; the other side then adopts
+// it, so the same tuning (EQ, theme, loudness boost, etc.) follows the
+// account across devices instead of being stuck per-install.
+export async function initRemoteSync(client) {
+  jellyfinClient = client;
+  try {
+    const remote = await withTimeout(client.getSyncedSettings(), 4000);
+    if (remote && (remote.updatedAt || 0) > (current.updatedAt || 0)) {
+      current = { ...DEFAULTS, ...remote };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+      applySettings();
+      listeners.forEach((cb) => cb(current));
+    } else {
+      client.saveSyncedSettings(current).catch(() => {});
+    }
+  } catch (err) {
+    // Offline/unreachable at login — already-applied local settings are
+    // unaffected, this device just isn't synced for this session.
+  }
 }
 
 function resolvedThemeMode() {

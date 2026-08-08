@@ -1,7 +1,7 @@
 import { JellyfinClient } from './jellyfin.js';
 import { Player, RepeatMode, EQ_PRESETS } from './player.js';
 import { fetchLyrics } from './lyrics.js';
-import { getSettings, updateSettings, applySettings, currentBitrateKbps, PALETTES, AUDIO_QUALITIES } from './settings.js';
+import { getSettings, updateSettings, applySettings, currentBitrateKbps, initRemoteSync, PALETTES, AUDIO_QUALITIES } from './settings.js';
 import { LOCALES, loadLocale, applyTranslations, t } from './i18n.js';
 import { platform, isDesktop, isMobile, isAndroid, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
 import { createConnect } from './connect.js';
@@ -343,6 +343,14 @@ function showLogin() {
 }
 
 async function enterApp(username) {
+  // Reconciles this device's local settings against whatever's saved on
+  // the account server-side (newer one wins — see initRemoteSync) before
+  // the app becomes visible, so a synced EQ/theme/etc. takes effect from
+  // the first frame instead of flashing this device's old values first.
+  // Best-effort: offline/unreachable just leaves local settings as they
+  // were, same as any other view that degrades without a server.
+  await initRemoteSync(jellyfin);
+
   loginScreen.hidden = true;
   appRoot.hidden = false;
 
