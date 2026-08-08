@@ -29,7 +29,7 @@ const DEFAULTS = {
   eqEnabled: false,
   eqGains: [0, 0, 0, 0, 0], // dB, one per EQ_BANDS entry in player.js, -12 to 12
   eqPreset: 'flat',
-  loudnessBoostDb: 9, // Android-only native volume boost, 0-15, 0 = off
+  loudnessBoostPct: 25, // Android-only native volume boost, 0-50 (50 = 150% volume), 0 = off
   offlineMode: false, // when on, only downloaded tracks are playable/clickable
   updatedAt: 0 // bumped on every local change — lets initRemoteSync tell
   // whether this device's settings or the server's saved copy is newer

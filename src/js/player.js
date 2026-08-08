@@ -222,9 +222,22 @@ export class Player {
     }
     this._applyEqGains();
     if (this._nativeEq) {
-      this._nativeEq.setEnabled({ enabled: this.eqEnabled }).catch(() => {});
+      this._nativeEq.setEnabled({ enabled: this.eqEnabled }).catch((err) => this._reportNativeAudioError(err));
       this._syncNativeEqualizer();
     }
+  }
+
+  // TEMPORARY diagnostic — the native EQ/loudness plugin calls were failing
+  // completely silently (bare .catch(() => {})), so a real failure on a
+  // real device was indistinguishable from "does nothing". Surfaces the
+  // first actual error, once per session, since remote debugging isn't
+  // available to check the WebView console directly.
+  _reportNativeAudioError(err) {
+    if (this._nativeAudioErrorShown) return;
+    this._nativeAudioErrorShown = true;
+    const message = err?.message || String(err);
+    console.error('[native audio effect]', err);
+    alert(`Native audio effect error (debug): ${message}`);
   }
 
   setEqualizerBand(index, gainDb) {
@@ -257,6 +270,7 @@ export class Player {
       this._nativeEqBands = result;
       return result;
     } catch (err) {
+      this._reportNativeAudioError(err);
       return null;
     }
   }
@@ -270,18 +284,25 @@ export class Player {
       const millibels = Math.round(Math.min(info.maxLevel, Math.max(info.minLevel, gainDb * 100)));
       return { band: index, level: millibels };
     });
-    this._nativeEq.setBandLevels({ levels }).catch(() => {});
+    this._nativeEq.setBandLevels({ levels }).catch((err) => this._reportNativeAudioError(err));
   }
 
-  // gainDb <= 0 disables the boost. Same native effect approach as the
-  // equalizer above (session 0, never touches the WebView's own audio
-  // pipeline) — user-adjustable now rather than a fixed always-on value,
-  // since a blanket boost interfered with Bluetooth AVRCP volume sync on
-  // at least one car head unit.
-  setLoudnessBoost(gainDb) {
+  // pct is a plain volume-percentage boost (0 = no boost, 50 = 150% —
+  // i.e. 1.5x amplitude), which is what the Settings slider shows, but
+  // LoudnessEnhancer's native API is dB-based (amplitude ratio, not a
+  // linear percentage), so this converts: ratio = 1 + pct/100, then
+  // dB = 20*log10(ratio) is the standard amplitude-to-dB formula. pct <= 0
+  // disables the boost. Same native effect approach as the equalizer above
+  // (session 0, never touches the WebView's own audio pipeline) —
+  // user-adjustable now rather than a fixed always-on value, since a
+  // blanket boost interfered with Bluetooth AVRCP volume sync on at least
+  // one car head unit.
+  setLoudnessBoost(pct) {
     if (!this._nativeEq) return;
-    const millibels = Math.round(Math.max(0, gainDb) * 100);
-    this._nativeEq.setLoudnessGain({ gainMillibels: millibels }).catch(() => {});
+    const clamped = Math.max(0, pct);
+    const gainDb = clamped > 0 ? 20 * Math.log10(1 + clamped / 100) : 0;
+    const millibels = Math.round(gainDb * 100);
+    this._nativeEq.setLoudnessGain({ gainMillibels: millibels }).catch((err) => this._reportNativeAudioError(err));
   }
 
   // ---------- MediaSession (lock-screen / notification controls) ----------

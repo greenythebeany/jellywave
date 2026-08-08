@@ -4,5 +4,8 @@
   "webDir": "src",
   "server": {
     "androidScheme": "http"
+  },
+  "android": {
+    "webContentsDebuggingEnabled": true
   }
 }
