@@ -1454,7 +1454,15 @@ function creditIncludesArtist(creditName, targetName) {
   const c = creditName.trim().toLowerCase();
   const t = targetName.trim().toLowerCase();
   if (c === t) return true;
-  return splitCreditParts(c).includes(t);
+  // targetName can itself be a real multi-word group ("Dame, SMART"), not
+  // just a single name — match if every name it's made of is present among
+  // the credit's own split names, so a further-joined credit like
+  // "Dame, Separ, SMART" still folds into the duo's page rather than just
+  // the individual members'.
+  const targetParts = splitCreditParts(t);
+  if (!targetParts.length) return false;
+  const creditParts = splitCreditParts(c);
+  return targetParts.every((p) => creditParts.includes(p));
 }
 
 function trackCredits(track) {
@@ -1812,6 +1820,15 @@ function dropCompoundDuplicateArtists(artists) {
     // to find it at all — adding the missing name as a real artist on the
     // server is what makes it start counting here too.
     if (parts.length < 2) return true;
+    // A compound entity with its own real art (not the placeholder) is
+    // itself a genuine, distinct thing — e.g. "Dame, SMART" as a duo with
+    // their own EP — not noise from one track crediting several people.
+    // Jellyfin only assigns an artist its own image deliberately, so this
+    // stops a real 2-name group from being folded away just because one of
+    // its members (e.g. "Dame" alone) also happens to be a real solo
+    // artist; only bare, art-less joins like "Dame, Separ, SMART" get
+    // hidden and merged into it.
+    if (a.ImageTags?.Primary) return true;
     return !parts.some((p) => nameSet.has(p));
   });
 }
