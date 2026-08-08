@@ -178,7 +178,10 @@
     "customCssDesc": "Write your own CSS to further tweak the app's look. Applied live.",
     "about": "About",
     "offlineMode": "Offline mode",
-    "offlineModeDesc": "Only show and play songs you've downloaded — everything else is grayed out"
+    "offlineModeDesc": "Only show and play songs you've downloaded — everything else is grayed out",
+    "loudnessBoost": "Volume boost",
+    "loudnessBoostDesc": "Extra native volume boost for quiet devices (Android only). High values may cause distortion.",
+    "loudnessBoostOff": "Off"
   },
   "audioQuality": {
     "auto": "Automatic (best available)",

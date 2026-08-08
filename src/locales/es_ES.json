@@ -178,7 +178,10 @@
     "customCssDesc": "Escribe tu propio CSS para personalizar aún más el aspecto de la app. Se aplica en vivo.",
     "about": "Acerca de",
     "offlineMode": "Modo sin conexión",
-    "offlineModeDesc": "Solo muestra y reproduce canciones descargadas — el resto aparece en gris"
+    "offlineModeDesc": "Solo muestra y reproduce canciones descargadas — el resto aparece en gris",
+    "loudnessBoost": "Refuerzo de volumen",
+    "loudnessBoostDesc": "Refuerzo de volumen nativo adicional para dispositivos silenciosos (solo Android). Valores altos pueden causar distorsión.",
+    "loudnessBoostOff": "Apagado"
   },
   "audioQuality": {
     "auto": "Automática (mejor calidad disponible)",

@@ -60,6 +60,9 @@ const equalizerBandsRow = document.getElementById('equalizer-bands-row');
 const eqBandSliders = document.querySelectorAll('.eq-band-slider');
 const btnEqReset = document.getElementById('btn-eq-reset');
 const eqPresetSelect = document.getElementById('eq-preset-select');
+const loudnessBoostRow = document.getElementById('loudness-boost-row');
+const loudnessBoostSlider = document.getElementById('loudness-boost-slider');
+const loudnessBoostValue = document.getElementById('loudness-boost-value');
 const toggleCatJam = document.getElementById('toggle-cat-jam');
 const catJamVideo = document.getElementById('cat-jam');
 const catJamScaleRow = document.getElementById('cat-jam-scale-row');
@@ -342,6 +345,7 @@ async function enterApp(username) {
   player.setReplayGainEnabled(!!savedSettings.replayGainEnabled);
   (savedSettings.eqGains || []).forEach((gain, i) => player.setEqualizerBand(i, gain));
   player.setEqualizerEnabled(!!savedSettings.eqEnabled);
+  player.setLoudnessBoost(savedSettings.loudnessBoostDb ?? 9);
   connect = createConnect(jellyfin, player);
   connect.start();
   connect.onRemoteStateChange(updateRemoteBarUI);
@@ -531,6 +535,22 @@ function wireSettingsUI() {
     updateSettings({ eqEnabled: toggleEqualizer.checked });
     player?.setEqualizerEnabled(toggleEqualizer.checked);
     setHidden(equalizerBandsRow, !toggleEqualizer.checked);
+  });
+
+  // Native volume boost — Android only (see EqualizerPlugin.java). Not
+  // relevant on desktop (audio already plays at full unboosted level there)
+  // or iOS (no native effect implemented).
+  if (!isAndroid) {
+    setHidden(loudnessBoostRow, true);
+  }
+  loudnessBoostSlider.addEventListener('input', () => {
+    const db = Number(loudnessBoostSlider.value);
+    loudnessBoostValue.textContent = db === 0 ? t('settings.loudnessBoostOff') : `${db} dB`;
+    loudnessBoostSlider.style.setProperty('--pct', rangeFillPercent((db / 15) * 100, loudnessBoostSlider, 13));
+    player?.setLoudnessBoost(db);
+  });
+  loudnessBoostSlider.addEventListener('change', () => {
+    updateSettings({ loudnessBoostDb: Number(loudnessBoostSlider.value) });
   });
 
   eqBandSliders.forEach((slider) => {
@@ -1187,6 +1207,10 @@ function refreshSettingsUI() {
     const valueEl = document.querySelector(`.eq-band-value[data-band-value="${band}"]`);
     valueEl.textContent = gain > 0 ? `+${gain}` : `${gain}`;
   });
+  const loudnessBoostDb = s.loudnessBoostDb ?? 9;
+  loudnessBoostSlider.value = loudnessBoostDb;
+  loudnessBoostValue.textContent = loudnessBoostDb === 0 ? t('settings.loudnessBoostOff') : `${loudnessBoostDb} dB`;
+  loudnessBoostSlider.style.setProperty('--pct', rangeFillPercent((loudnessBoostDb / 15) * 100, loudnessBoostSlider, 13));
   toggleCatJam.checked = !!s.catJam;
   setHidden(catJamScaleRow, !s.catJam);
   const catScale = s.catJamScale || 1;

@@ -178,7 +178,10 @@
     "customCssDesc": "Schrijf je eigen CSS om het uiterlijk van de app verder aan te passen. Wordt direct toegepast.",
     "about": "Over",
     "offlineMode": "Offlinemodus",
-    "offlineModeDesc": "Toont en speelt alleen gedownloade nummers — de rest is grijs"
+    "offlineModeDesc": "Toont en speelt alleen gedownloade nummers — de rest is grijs",
+    "loudnessBoost": "Volumeversterking",
+    "loudnessBoostDesc": "Extra native volumeversterking voor stille apparaten (alleen Android). Hoge waarden kunnen vervorming veroorzaken.",
+    "loudnessBoostOff": "Uit"
   },
   "audioQuality": {
     "auto": "Automatisch (best beschikbare kwaliteit)",

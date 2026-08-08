@@ -178,7 +178,10 @@
     "customCssDesc": "Skriv din egen CSS for at finjustere appens udseende yderligere. Anvendes med det samme.",
     "about": "Om",
     "offlineMode": "Offline-tilstand",
-    "offlineModeDesc": "Viser og afspiller kun downloadede sange — resten er nedtonet"
+    "offlineModeDesc": "Viser og afspiller kun downloadede sange — resten er nedtonet",
+    "loudnessBoost": "Lydstyrkeforstærkning",
+    "loudnessBoostDesc": "Ekstra nativ lydstyrkeforstærkning til stille enheder (kun Android). Høje værdier kan give forvrængning.",
+    "loudnessBoostOff": "Fra"
   },
   "audioQuality": {
     "auto": "Automatisk (bedste tilgængelige kvalitet)",

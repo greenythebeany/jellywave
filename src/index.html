@@ -459,6 +459,16 @@
             </div>
             <button type="button" id="btn-eq-reset" class="attribution-link" data-i18n="settings.equalizerReset">Reset</button>
           </div>
+          <div class="settings-row" id="loudness-boost-row">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.loudnessBoost">Volume boost</div>
+              <div class="settings-row-desc" data-i18n="settings.loudnessBoostDesc">Extra native volume boost for quiet devices (Android only). High values may cause distortion.</div>
+            </div>
+            <div class="crossfade-control">
+              <input type="range" id="loudness-boost-slider" class="seek-bar" min="0" max="15" step="1" value="9" />
+              <span id="loudness-boost-value" class="crossfade-value">9 dB</span>
+            </div>
+          </div>
           <div class="settings-row">
             <div>
               <div class="settings-row-label" data-i18n="settings.discordPresence">Discord Rich Presence</div>

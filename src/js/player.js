@@ -273,6 +273,17 @@ export class Player {
     this._nativeEq.setBandLevels({ levels }).catch(() => {});
   }
 
+  // gainDb <= 0 disables the boost. Same native effect approach as the
+  // equalizer above (session 0, never touches the WebView's own audio
+  // pipeline) — user-adjustable now rather than a fixed always-on value,
+  // since a blanket boost interfered with Bluetooth AVRCP volume sync on
+  // at least one car head unit.
+  setLoudnessBoost(gainDb) {
+    if (!this._nativeEq) return;
+    const millibels = Math.round(Math.max(0, gainDb) * 100);
+    this._nativeEq.setLoudnessGain({ gainMillibels: millibels }).catch(() => {});
+  }
+
   // ---------- MediaSession (lock-screen / notification controls) ----------
   //
   // Two backends: the plain Web MediaSession API (Electron desktop, browsers)

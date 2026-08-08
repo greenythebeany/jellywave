@@ -178,7 +178,10 @@
     "customCssDesc": "Napíšte si vlastné CSS na ďalšiu úpravu vzhľadu aplikácie. Aplikuje sa okamžite.",
     "about": "O aplikácii",
     "offlineMode": "Režim offline",
-    "offlineModeDesc": "Zobrazí a prehrá iba stiahnuté skladby — ostatné sú sivé"
+    "offlineModeDesc": "Zobrazí a prehrá iba stiahnuté skladby — ostatné sú sivé",
+    "loudnessBoost": "Zosilnenie hlasitosti",
+    "loudnessBoostDesc": "Ďalšie natívne zosilnenie hlasitosti pre tiché zariadenia (iba Android). Vysoké hodnoty môžu spôsobiť skreslenie.",
+    "loudnessBoostOff": "Vypnuté"
   },
   "audioQuality": {
     "auto": "Automaticky (najlepšia dostupná kvalita)",

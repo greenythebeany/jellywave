@@ -178,7 +178,10 @@
     "customCssDesc": "Schreibe eigenes CSS, um das Aussehen der App weiter anzupassen. Wird sofort angewendet.",
     "about": "Über",
     "offlineMode": "Offline-Modus",
-    "offlineModeDesc": "Zeigt und spielt nur heruntergeladene Songs — der Rest ist ausgegraut"
+    "offlineModeDesc": "Zeigt und spielt nur heruntergeladene Songs — der Rest ist ausgegraut",
+    "loudnessBoost": "Lautstärkeverstärkung",
+    "loudnessBoostDesc": "Zusätzliche native Lautstärkeverstärkung für leise Geräte (nur Android). Hohe Werte können Verzerrungen verursachen.",
+    "loudnessBoostOff": "Aus"
   },
   "audioQuality": {
     "auto": "Automatisch (beste verfügbare Qualität)",

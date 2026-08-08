@@ -1,6 +1,7 @@
 package com.jellywave.app;
 
 import android.media.audiofx.Equalizer;
+import android.media.audiofx.LoudnessEnhancer;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -11,27 +12,55 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 
 import org.json.JSONObject;
 
-// A native equalizer for the WebView's <audio> playback. The Web Audio API
-// (used for this on desktop) is deliberately not an option on Android — it
-// was already tried and disabled elsewhere in this app for causing a
-// confirmed silent-audio bug. android.media.audiofx.Equalizer works
-// entirely at the OS level instead, attached to session 0 (the process's
-// global output mix) exactly like MainActivity's LoudnessEnhancer, so it
-// never touches the WebView's own audio pipeline.
+// A native equalizer (and loudness boost) for the WebView's <audio>
+// playback. The Web Audio API (used for the equalizer on desktop) is
+// deliberately not an option on Android — it was already tried and
+// disabled elsewhere in this app for causing a confirmed silent-audio bug.
+// android.media.audiofx effects work entirely at the OS level instead,
+// attached to session 0 (the process's global output mix), so they never
+// touch the WebView's own audio pipeline.
 //
 // Devices don't all expose the same band count/frequencies as this app's
-// own 5-band UI (EQ_BANDS in player.js), so getBands() reports whatever the
-// device actually has and the JS side resamples its gain curve onto that —
-// see Player._syncNativeEqualizer.
+// own 5-band EQ UI (EQ_BANDS in player.js), so getBands() reports whatever
+// the device actually has and the JS side resamples its gain curve onto
+// that — see Player._syncNativeEqualizer.
 @CapacitorPlugin(name = "JellyWaveEqualizer")
 public class EqualizerPlugin extends Plugin {
     private Equalizer equalizer;
+    private LoudnessEnhancer loudnessEnhancer;
 
     private Equalizer getEqualizer() {
         if (equalizer == null) {
             equalizer = new Equalizer(0, 0);
         }
         return equalizer;
+    }
+
+    private LoudnessEnhancer getLoudnessEnhancer() {
+        if (loudnessEnhancer == null) {
+            loudnessEnhancer = new LoudnessEnhancer(0);
+        }
+        return loudnessEnhancer;
+    }
+
+    // gainMillibels <= 0 just disables the effect rather than setting a
+    // literal zero/negative gain — LoudnessEnhancer is meant for boosting,
+    // not attenuating.
+    @PluginMethod
+    public void setLoudnessGain(PluginCall call) {
+        try {
+            Integer gainMillibels = call.getInt("gainMillibels", 0);
+            LoudnessEnhancer le = getLoudnessEnhancer();
+            if (gainMillibels == null || gainMillibels <= 0) {
+                le.setEnabled(false);
+            } else {
+                le.setTargetGain(gainMillibels);
+                le.setEnabled(true);
+            }
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Could not set loudness gain: " + e.getMessage());
+        }
     }
 
     @PluginMethod

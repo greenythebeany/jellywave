@@ -178,7 +178,10 @@
     "customCssDesc": "Scrivi il tuo CSS per personalizzare ulteriormente laspetto dellapp. Applicato in tempo reale.",
     "about": "Informazioni",
     "offlineMode": "Modalità offline",
-    "offlineModeDesc": "Mostra e riproduce solo i brani scaricati — il resto è in grigio"
+    "offlineModeDesc": "Mostra e riproduce solo i brani scaricati — il resto è in grigio",
+    "loudnessBoost": "Potenziamento volume",
+    "loudnessBoostDesc": "Potenziamento nativo aggiuntivo del volume per dispositivi silenziosi (solo Android). Valori elevati possono causare distorsione.",
+    "loudnessBoostOff": "Off"
   },
   "audioQuality": {
     "auto": "Automatica (migliore qualità disponibile)",

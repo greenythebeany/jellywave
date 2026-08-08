@@ -178,7 +178,10 @@
     "customCssDesc": "Napisz własny CSS, aby dodatkowo dostosować wygląd aplikacji. Stosowane na żywo.",
     "about": "O aplikacji",
     "offlineMode": "Tryb offline",
-    "offlineModeDesc": "Pokazuje i odtwarza tylko pobrane utwory — reszta jest wyszarzona"
+    "offlineModeDesc": "Pokazuje i odtwarza tylko pobrane utwory — reszta jest wyszarzona",
+    "loudnessBoost": "Wzmocnienie głośności",
+    "loudnessBoostDesc": "Dodatkowe natywne wzmocnienie głośności dla cichych urządzeń (tylko Android). Wysokie wartości mogą powodować zniekształcenia.",
+    "loudnessBoostOff": "Wyłączone"
   },
   "audioQuality": {
     "auto": "Automatycznie (najlepsza dostępna jakość)",

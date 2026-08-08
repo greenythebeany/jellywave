@@ -178,7 +178,10 @@
     "customCssDesc": "Kirjoita oma CSS hienosäätääksesi sovelluksen ulkoasua. Otetaan käyttöön heti.",
     "about": "Tietoja",
     "offlineMode": "Offline-tila",
-    "offlineModeDesc": "Näyttää ja toistaa vain ladatut kappaleet — muut on himmennetty"
+    "offlineModeDesc": "Näyttää ja toistaa vain ladatut kappaleet — muut on himmennetty",
+    "loudnessBoost": "Äänenvoimakkuuden tehostus",
+    "loudnessBoostDesc": "Ylimääräinen natiivi äänenvoimakkuuden tehostus hiljaisille laitteille (vain Android). Suuret arvot voivat aiheuttaa särön.",
+    "loudnessBoostOff": "Pois"
   },
   "audioQuality": {
     "auto": "Automaattinen (paras saatavilla oleva laatu)",
