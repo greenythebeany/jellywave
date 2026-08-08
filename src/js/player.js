@@ -87,6 +87,7 @@ export class Player {
     // once on first use since it never changes at runtime.
     this._nativeEq = isAndroid ? window.Capacitor?.Plugins?.JellyWaveEqualizer : null;
     this._nativeEqBands = null;
+    this._loudnessBoostPct = 0;
 
     this.queue = [];
     this.originalQueue = [];
@@ -298,11 +299,28 @@ export class Player {
   // blanket boost interfered with Bluetooth AVRCP volume sync on at least
   // one car head unit.
   setLoudnessBoost(pct) {
+    this._loudnessBoostPct = pct;
     if (!this._nativeEq) return;
     const clamped = Math.max(0, pct);
     const gainDb = clamped > 0 ? 20 * Math.log10(1 + clamped / 100) : 0;
     const millibels = Math.round(gainDb * 100);
     this._nativeEq.setLoudnessGain({ gainMillibels: millibels }).catch((err) => this._reportNativeAudioError(err));
+  }
+
+  // Confirmed on-device: creating a session-0 ("output mix") native effect
+  // can fail with ERROR_INVALID_OPERATION if there's no active audio output
+  // stream yet to attach it to — e.g. toggling the EQ from Settings with
+  // nothing playing. getEqualizer()/getLoudnessEnhancer() on the native side
+  // don't cache a broken instance on failure, so simply retrying once real
+  // playback has actually started (an output stream now genuinely exists)
+  // is enough to self-heal without any deeper native change.
+  _retryNativeAudioEffects() {
+    if (!this._nativeEq) return;
+    if (this.eqEnabled) {
+      this._nativeEq.setEnabled({ enabled: true }).catch((err) => this._reportNativeAudioError(err));
+      this._syncNativeEqualizer();
+    }
+    if (this._loudnessBoostPct > 0) this.setLoudnessBoost(this._loudnessBoostPct);
   }
 
   // ---------- MediaSession (lock-screen / notification controls) ----------
@@ -508,12 +526,12 @@ export class Player {
         if (this.currentTrack?.Id !== track.Id || el !== this.audio) return; // stale by the time this resolved
         el.src = uri || this.jellyfin.streamUrl(track, this.getBitrateKbps());
         this._applyVolume(el, track);
-        if (autoplay) el.play().catch(() => {});
+        if (autoplay) el.play().then(() => this._retryNativeAudioEffects()).catch(() => {});
       });
     } else {
       el.src = this.jellyfin.streamUrl(track, this.getBitrateKbps());
       this._applyVolume(el, track);
-      if (autoplay) el.play().catch(() => {});
+      if (autoplay) el.play().then(() => this._retryNativeAudioEffects()).catch(() => {});
     }
 
     this._updateMediaSessionMetadata();
