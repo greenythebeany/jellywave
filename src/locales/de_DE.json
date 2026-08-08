@@ -22,7 +22,8 @@
     "errorServer": "Der Server hat mit {status} geantwortet.",
     "errorGeneric": "Anmeldung fehlgeschlagen. Überprüfe die Serveradresse und versuche es erneut.",
     "errorUnreachable": "Server nicht erreichbar, du bist aber weiterhin angemeldet — Verbindung prüfen und erneut versuchen.",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "offlineToast": "Server konnte nicht erreicht werden — es wird nur heruntergeladener Inhalt angezeigt."
   },
   "nav": {
     "home": "Start",

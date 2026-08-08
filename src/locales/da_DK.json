@@ -22,7 +22,8 @@
     "errorServer": "Serveren svarede med {status}.",
     "errorGeneric": "Kunne ikke logge ind. Tjek serveradressen, og prøv igen.",
     "errorUnreachable": "Kunne ikke nå din server, men du er stadig logget ind — tjek forbindelsen og prøv igen.",
-    "retry": "Prøv igen"
+    "retry": "Prøv igen",
+    "offlineToast": "Kunne ikke nå din server — viser kun downloadet indhold."
   },
   "nav": {
     "home": "Hjem",

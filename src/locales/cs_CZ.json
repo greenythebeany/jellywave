@@ -22,7 +22,8 @@
     "errorServer": "Server odpověděl s kódem {status}.",
     "errorGeneric": "Přihlášení se nezdařilo. Zkontrolujte adresu serveru a zkuste to znovu.",
     "errorUnreachable": "Nepodařilo se připojit k serveru, ale stále jsi přihlášen — zkontroluj připojení a zkus to znovu.",
-    "retry": "Zkusit znovu"
+    "retry": "Zkusit znovu",
+    "offlineToast": "Nepodařilo se spojit se serverem — zobrazuje se pouze stažený obsah."
   },
   "nav": {
     "home": "Domů",

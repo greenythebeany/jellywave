@@ -22,7 +22,8 @@
     "errorServer": "Servern svarade med {status}.",
     "errorGeneric": "Det gick inte att logga in. Kontrollera serveradressen och försök igen.",
     "errorUnreachable": "Kunde inte nå din server, men du är fortfarande inloggad — kontrollera anslutningen och försök igen.",
-    "retry": "Försök igen"
+    "retry": "Försök igen",
+    "offlineToast": "Kunde inte nå din server — visar endast nedladdat innehåll."
   },
   "nav": {
     "home": "Hem",

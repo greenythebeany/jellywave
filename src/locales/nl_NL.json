@@ -22,7 +22,8 @@
     "errorServer": "De server antwoordde met {status}.",
     "errorGeneric": "Inloggen mislukt. Controleer het serveradres en probeer het opnieuw.",
     "errorUnreachable": "Kon je server niet bereiken, maar je bent nog steeds ingelogd — controleer je verbinding en probeer opnieuw.",
-    "retry": "Opnieuw proberen"
+    "retry": "Opnieuw proberen",
+    "offlineToast": "Kon je server niet bereiken — alleen gedownloade inhoud wordt getoond."
   },
   "nav": {
     "home": "Start",

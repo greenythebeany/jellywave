@@ -22,7 +22,8 @@
     "errorServer": "Serwer odpowiedział kodem {status}.",
     "errorGeneric": "Nie udało się zalogować. Sprawdź adres serwera i spróbuj ponownie.",
     "errorUnreachable": "Nie udało się połączyć z serwerem, ale nadal jesteś zalogowany — sprawdź połączenie i spróbuj ponownie.",
-    "retry": "Spróbuj ponownie"
+    "retry": "Spróbuj ponownie",
+    "offlineToast": "Nie udało się połączyć z serwerem — pokazywane są tylko pobrane treści."
   },
   "nav": {
     "home": "Strona główna",

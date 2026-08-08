@@ -31,6 +31,7 @@ const nowPlayingTitle = document.getElementById('now-playing-title');
 const nowPlayingArtist = document.getElementById('now-playing-artist');
 const nowPlayingBgArt = document.getElementById('now-playing-bg-art');
 const nowPlayingLikeBtn = document.getElementById('now-playing-like-btn');
+const nowPlayingDownloadBtn = document.getElementById('now-playing-download-btn');
 
 // Account menu
 const btnAccount = document.getElementById('btn-account');
@@ -72,6 +73,9 @@ const updateToast = document.getElementById('update-toast');
 const updateToastText = document.getElementById('update-toast-text');
 const updateToastLink = document.getElementById('update-toast-link');
 const updateToastDismiss = document.getElementById('update-toast-dismiss');
+const offlineToast = document.getElementById('offline-toast');
+const offlineToastDismiss = document.getElementById('offline-toast-dismiss');
+offlineToastDismiss.addEventListener('click', () => { offlineToast.hidden = true; });
 const customCssInput = document.getElementById('custom-css-input');
 const customCssStyle = document.getElementById('custom-css-style');
 const mainBgArt = document.getElementById('main-bg-art');
@@ -290,10 +294,14 @@ async function init() {
 }
 
 // A stale/invalid token (401) genuinely needs a fresh login. Anything else —
-// a network blip, the server restarting, a slow response — shouldn't nuke a
-// perfectly good saved session and force re-entering credentials; retry a
-// couple of times first, and if it's still unreachable, offer a "Retry"
-// button that re-attempts with the same saved session rather than clearing it.
+// a network blip, the server restarting, no connectivity at all — shouldn't
+// lock the user out of the app entirely: downloaded tracks (and anything
+// else already cached) still need to work with zero network, which is the
+// whole point of having offline downloads. Retry a couple of times first in
+// case it's just transient, then enter the app anyway on a saved session
+// rather than stopping at the login screen — live/server-dependent views
+// degrade gracefully on their own (see renderDownloads()) and a dismissible
+// banner explains why things might look empty.
 async function tryRestoreSession() {
   const saved = await sessionStore.load();
   if (!saved || !saved.serverUrl || !saved.accessToken || !saved.userId) {
@@ -320,12 +328,11 @@ async function tryRestoreSession() {
         continue;
       }
       // Exhausted retries on a network/server error — keep the saved
-      // session intact and let the user retry manually instead of forcing
-      // them to log back in.
-      showLogin();
-      loginError.textContent = t('login.errorUnreachable');
-      loginError.hidden = false;
-      btnRetryConnection.hidden = false;
+      // session and let the user in anyway rather than stranding them on
+      // the login screen with no access to their downloads.
+      await enterApp(saved.username);
+      offlineToast.hidden = false;
+      return;
     }
   }
 }
@@ -1121,6 +1128,7 @@ function updateRemoteBarUI(session) {
       nowPlayingTitle.textContent = track.Name;
       nowPlayingArtist.textContent = artistNames(track);
       nowPlayingLikeBtn.classList.toggle('liked', !!track.UserData?.IsFavorite);
+      setDownloadButtonState(nowPlayingDownloadBtn, isDownloaded(track.Id) ? 'downloaded' : 'idle');
       const playing = !player.audio.paused;
       setHidden(iconPlay, playing);
       setHidden(iconPause, !playing);
@@ -2541,6 +2549,24 @@ function wirePlayer() {
     }
   });
 
+  nowPlayingDownloadBtn.addEventListener('click', async () => {
+    const track = player.currentTrack;
+    if (!track) return;
+    if (isDownloaded(track.Id)) {
+      await deleteDownload(track.Id);
+      setDownloadButtonState(nowPlayingDownloadBtn, 'idle');
+      return;
+    }
+    setDownloadButtonState(nowPlayingDownloadBtn, 'downloading');
+    try {
+      await downloadTrack(track, jellyfin);
+      setDownloadButtonState(nowPlayingDownloadBtn, 'downloaded');
+    } catch (err) {
+      setDownloadButtonState(nowPlayingDownloadBtn, 'idle');
+      alert(err.message || t('errors.couldNotDownload'));
+    }
+  });
+
   tabLyrics.addEventListener('click', () => showPanelTab('lyrics'));
   tabQueue.addEventListener('click', () => showPanelTab('queue'));
 
@@ -2570,6 +2596,7 @@ function wirePlayer() {
     nowPlayingTitle.textContent = track.Name;
     nowPlayingArtist.textContent = artistNames(track);
     nowPlayingLikeBtn.classList.toggle('liked', !!track.UserData?.IsFavorite);
+    setDownloadButtonState(nowPlayingDownloadBtn, isDownloaded(track.Id) ? 'downloaded' : 'idle');
     syncPlayAllButton();
     syncCardStates();
     updateBgArt();

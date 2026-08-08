@@ -22,7 +22,8 @@
     "errorServer": "El servidor respondió con {status}.",
     "errorGeneric": "No se pudo iniciar sesión. Comprueba la dirección del servidor e inténtalo de nuevo.",
     "errorUnreachable": "No se pudo conectar con tu servidor, pero sigues conectado — revisa tu conexión e inténtalo de nuevo.",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "offlineToast": "No se pudo conectar con tu servidor — mostrando solo el contenido descargado."
   },
   "nav": {
     "home": "Inicio",

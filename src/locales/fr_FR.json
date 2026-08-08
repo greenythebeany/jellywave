@@ -22,7 +22,8 @@
     "errorServer": "Le serveur a répondu avec {status}.",
     "errorGeneric": "Impossible de se connecter. Vérifiez l'adresse du serveur et réessayez.",
     "errorUnreachable": "Impossible de joindre votre serveur, mais vous êtes toujours connecté — vérifiez votre connexion et réessayez.",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "offlineToast": "Impossible de joindre votre serveur — affichage du contenu téléchargé uniquement."
   },
   "nav": {
     "home": "Accueil",

@@ -602,12 +602,15 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .now-playing-text { min-width: 0; text-align: center; }
 .now-playing-title { font-size: 17px; font-weight: 800; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .now-playing-artist { font-size: 13.5px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.now-playing-like-btn {
+.now-playing-like-btn, .now-playing-download-btn {
   display: none; flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
   align-items: center; justify-content: center; font-size: 17px; color: var(--text-secondary);
+  position: relative;
 }
-.now-playing-like-btn:hover { color: var(--text-primary); }
+.now-playing-like-btn:hover, .now-playing-download-btn:hover { color: var(--text-primary); }
 .now-playing-like-btn.liked { color: var(--accent); }
+.now-playing-download-btn.downloaded { color: var(--accent); }
+.now-playing-download-btn .fi { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 
 .lyrics-body {
   flex: 1; overflow-y: auto; padding: 12px 20px 24px;
@@ -879,6 +882,7 @@ body.platform-mobile .titlebar { display: none; }
   .now-playing-title { font-size: 20px; }
   .now-playing-artist { font-size: 14.5px; }
   .now-playing-like-btn { display: flex; position: absolute; right: 0; }
+  .now-playing-download-btn { display: flex; position: absolute; left: 0; }
 
   .mobile-now-playing-controls {
     display: flex; flex-direction: column; gap: 10px;

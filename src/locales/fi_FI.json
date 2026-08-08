@@ -22,7 +22,8 @@
     "errorServer": "Palvelin vastasi koodilla {status}.",
     "errorGeneric": "Kirjautuminen epäonnistui. Tarkista palvelimen osoite ja yritä uudelleen.",
     "errorUnreachable": "Palvelimeen ei saatu yhteyttä, mutta olet yhä kirjautuneena — tarkista yhteys ja yritä uudelleen.",
-    "retry": "Yritä uudelleen"
+    "retry": "Yritä uudelleen",
+    "offlineToast": "Palvelimeen ei saatu yhteyttä — näytetään vain ladattu sisältö."
   },
   "nav": {
     "home": "Koti",

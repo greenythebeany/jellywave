@@ -22,7 +22,8 @@
     "errorServer": "Server responded with {status}.",
     "errorGeneric": "Could not sign in. Check your server address and try again.",
     "errorUnreachable": "Could not reach your server, but you're still signed in — check your connection and retry.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "offlineToast": "Couldn't reach your server — showing downloaded content only."
   },
   "nav": {
     "home": "Home",

@@ -169,6 +169,7 @@
           <img id="now-playing-art" class="now-playing-art" alt="" />
         </div>
         <div class="now-playing-info-row">
+          <button id="now-playing-download-btn" class="now-playing-download-btn" type="button" data-i18n-title="track.download" title="Download"><i class="fi fi-br-download"></i></button>
           <div class="now-playing-text">
             <div id="now-playing-title" class="now-playing-title">—</div>
             <div id="now-playing-artist" class="now-playing-artist">—</div>
@@ -504,6 +505,11 @@
     <span id="update-toast-text" data-i18n="update.available">A new version is available.</span>
     <a id="update-toast-link" href="#" target="_blank" rel="noopener noreferrer" data-i18n="update.view">View</a>
     <button id="update-toast-dismiss" class="btn-icon-plain" type="button"><i class="fi fi-br-cross-small"></i></button>
+  </div>
+
+  <div id="offline-toast" class="update-toast" hidden>
+    <span data-i18n="login.offlineToast">Couldn't reach your server — showing downloaded content only.</span>
+    <button id="offline-toast-dismiss" class="btn-icon-plain" type="button"><i class="fi fi-br-cross-small"></i></button>
   </div>
 
   <div id="sleep-timer-menu" class="account-menu sleep-timer-menu" hidden>

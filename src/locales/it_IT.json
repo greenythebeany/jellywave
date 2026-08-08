@@ -22,7 +22,8 @@
     "errorServer": "Il server ha risposto con {status}.",
     "errorGeneric": "Impossibile accedere. Controlla l'indirizzo del server e riprova.",
     "errorUnreachable": "Impossibile raggiungere il server, ma hai ancora effettuato l'accesso — controlla la connessione e riprova.",
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "offlineToast": "Impossibile raggiungere il server — vengono mostrati solo i contenuti scaricati."
   },
   "nav": {
     "home": "Home",
