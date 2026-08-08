@@ -277,7 +277,7 @@ function syncCardStates() {
 // ---------- Session bootstrap ----------
 async function init() {
   if (isMobile) requestNotificationPermission();
-  if (isDesktop) wireUpdateToast();
+  wireUpdateToast();
   if (isDesktop) wireMediaKeys();
   wireSleepTimer();
   wireConnectMenu();
@@ -1063,14 +1063,54 @@ function syncCatJamVisibility() {
   if (enabled && !catJamRAF) catJamTick();
 }
 
+function parseSemver(str) {
+  const m = String(str || '').match(/(\d+)\.(\d+)\.(\d+)/);
+  return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
+}
+
+function isNewerVersion(a, b) {
+  for (let i = 0; i < 3; i++) {
+    if (a[i] > b[i]) return true;
+    if (a[i] < b[i]) return false;
+  }
+  return false;
+}
+
+function showUpdateToast(version, url) {
+  updateToastText.textContent = t('update.available', { version });
+  updateToastLink.href = url;
+  updateToast.hidden = false;
+}
+
+// Desktop has this via update-checker.js running in Electron's main
+// process, but that's a Node-only module — Android has no equivalent, so
+// this checks GitHub directly with a plain fetch() instead. App.getInfo()
+// reads the actual installed APK's versionName rather than a hardcoded JS
+// constant, so this can't drift the way CLIENT_VERSION already has once.
+async function checkForUpdatesOnMobile() {
+  try {
+    const appInfo = await window.Capacitor.Plugins.App.getInfo();
+    const current = parseSemver(appInfo.version);
+    const res = await fetch('https://api.github.com/repos/greenythebeany/jellywave/releases/latest', {
+      headers: { Accept: 'application/vnd.github+json' }
+    });
+    if (!res.ok) return;
+    const release = await res.json();
+    const latest = parseSemver(release.tag_name) || parseSemver(release.name);
+    if (!latest || !current || !isNewerVersion(latest, current)) return;
+    showUpdateToast(latest.join('.'), release.html_url);
+  } catch (err) {
+    // Best-effort — no update check this session, not fatal.
+  }
+}
+
 function wireUpdateToast() {
-  if (!window.api?.updates) return;
   updateToastDismiss.addEventListener('click', () => { updateToast.hidden = true; });
-  window.api.updates.onAvailable((result) => {
-    updateToastText.textContent = t('update.available', { version: result.version });
-    updateToastLink.href = result.url;
-    updateToast.hidden = false;
-  });
+  if (window.api?.updates) {
+    window.api.updates.onAvailable((result) => showUpdateToast(result.version, result.url));
+  } else if (isMobile) {
+    checkForUpdatesOnMobile();
+  }
 }
 
 function wireMediaKeys() {
