@@ -88,6 +88,12 @@ export class Player {
     this._nativeEq = isAndroid ? window.Capacitor?.Plugins?.JellyWaveEqualizer : null;
     this._nativeEqBands = null;
     this._loudnessBoostPct = 0;
+    // Stays false until real playback has actually started once — enterApp
+    // applies saved EQ/loudness settings immediately on launch, long before
+    // any track is loaded, and attempting the native call that early hits
+    // the same "no active audio stream" failure as toggling from Settings
+    // with nothing playing (confirmed on-device: ERROR_INVALID_OPERATION).
+    this._nativeAudioReady = false;
 
     this.queue = [];
     this.originalQueue = [];
@@ -222,7 +228,7 @@ export class Player {
       this._ensureAudioGraph(this._audioB);
     }
     this._applyEqGains();
-    if (this._nativeEq) {
+    if (this._nativeEq && this._nativeAudioReady) {
       this._nativeEq.setEnabled({ enabled: this.eqEnabled }).catch((err) => this._reportNativeAudioError(err));
       this._syncNativeEqualizer();
     }
@@ -245,7 +251,7 @@ export class Player {
     if (index < 0 || index >= this.eqGains.length) return;
     this.eqGains[index] = Math.min(12, Math.max(-12, gainDb));
     if (this.eqEnabled) this._applyEqGains();
-    if (this._nativeEq && this.eqEnabled) this._syncNativeEqualizer();
+    if (this._nativeEq && this._nativeAudioReady && this.eqEnabled) this._syncNativeEqualizer();
   }
 
   _applyEqGains() {
@@ -300,7 +306,7 @@ export class Player {
   // one car head unit.
   setLoudnessBoost(pct) {
     this._loudnessBoostPct = pct;
-    if (!this._nativeEq) return;
+    if (!this._nativeEq || !this._nativeAudioReady) return;
     const clamped = Math.max(0, pct);
     const gainDb = clamped > 0 ? 20 * Math.log10(1 + clamped / 100) : 0;
     const millibels = Math.round(gainDb * 100);
@@ -310,12 +316,15 @@ export class Player {
   // Confirmed on-device: creating a session-0 ("output mix") native effect
   // can fail with ERROR_INVALID_OPERATION if there's no active audio output
   // stream yet to attach it to — e.g. toggling the EQ from Settings with
-  // nothing playing. getEqualizer()/getLoudnessEnhancer() on the native side
-  // don't cache a broken instance on failure, so simply retrying once real
-  // playback has actually started (an output stream now genuinely exists)
-  // is enough to self-heal without any deeper native change.
+  // nothing playing, or applying saved settings at app launch before any
+  // track has loaded. getEqualizer()/getLoudnessEnhancer() on the native
+  // side don't cache a broken instance on failure, so every native call is
+  // gated behind _nativeAudioReady until real playback has actually
+  // started once — this is the only place that flips it true, at which
+  // point an output stream genuinely exists to attach to.
   _retryNativeAudioEffects() {
     if (!this._nativeEq) return;
+    this._nativeAudioReady = true;
     if (this.eqEnabled) {
       this._nativeEq.setEnabled({ enabled: true }).catch((err) => this._reportNativeAudioError(err));
       this._syncNativeEqualizer();
