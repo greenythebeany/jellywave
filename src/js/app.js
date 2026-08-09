@@ -2094,7 +2094,15 @@ function buildCard(item, kind) {
   const artWrap = el('div', 'card-art-wrap');
   const img = document.createElement('img');
   img.className = 'card-art';
+  const placeholder = placeholderArt(kind === 'artist' ? 'artist' : 'album');
   img.src = artUrl(item, kind === 'artist' ? 'artist' : 'album');
+  // The URL can be well-formed but still 404 — e.g. a stale/mismatched
+  // image tag on the item itself (seen in practice: an artist's albums
+  // grid showing a broken image for an album whose own detail page, which
+  // resolves art from its first track instead of the album item, loads
+  // the same cover just fine) — fall back to the placeholder rather than
+  // a broken-image icon.
+  img.addEventListener('error', () => { img.src = placeholder; }, { once: true });
   artWrap.appendChild(img);
 
   if (kind === 'album' || kind === 'playlist' || kind === 'song') {
@@ -2161,6 +2169,9 @@ function buildDetailHeader({ kind, title, sub, art, round, onPlayAll, trackIds, 
   const img = document.createElement('img');
   img.className = round ? 'detail-art round' : 'detail-art';
   img.src = art;
+  // Same reasoning as buildCard's fallback — a resolved URL can still 404
+  // on a stale/mismatched image tag.
+  img.addEventListener('error', () => { img.src = placeholderArt(round ? 'artist' : 'album'); }, { once: true });
   artWrap.appendChild(img);
 
   if (onChangeArt) {
