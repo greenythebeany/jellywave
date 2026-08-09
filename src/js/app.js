@@ -193,11 +193,17 @@ function formatDisplayName(name) {
   return (name || '').replace(/\s*;\s*/g, ', ');
 }
 
-function artistNames(item) {
+// fallback is for a track with genuinely empty Artists/AlbumArtist tags of
+// its own (seen in practice: one track in an otherwise normal album,
+// server-side data gap) — the surrounding context usually already knows
+// the real artist (the album/artist page it's being rendered on), so
+// callers can pass that through rather than showing the literal string
+// "Unknown Artist" when it isn't actually unknown.
+function artistNames(item, fallback) {
   let raw;
   if (item.Artists && item.Artists.length) raw = item.Artists.join(', ');
   else if (item.AlbumArtist) raw = item.AlbumArtist;
-  else raw = 'Unknown Artist';
+  else raw = fallback || 'Unknown Artist';
   return formatDisplayName(raw);
 }
 
@@ -1998,7 +2004,7 @@ async function renderAlbumDetail(id) {
     viewRoot.appendChild(el('div', 'empty-state', t('album.empty')));
     return;
   }
-  viewRoot.appendChild(buildTrackTable(tracks, tracks, { hideArt: true, sourceId: id }));
+  viewRoot.appendChild(buildTrackTable(tracks, tracks, { hideArt: true, sourceId: id, fallbackArtist: artistNames(first || {}) }));
 }
 
 async function renderArtistDetail(id, name) {
@@ -2042,7 +2048,7 @@ async function renderArtistDetail(id, name) {
 
   if (songs.length) {
     viewRoot.appendChild(el('div', 'section-title', t('artists.songsSection')));
-    viewRoot.appendChild(buildTrackTable(songs, songs, { sourceId: id }));
+    viewRoot.appendChild(buildTrackTable(songs, songs, { sourceId: id, fallbackArtist: targetName }));
   }
 
   if (albums.length) {
@@ -2332,7 +2338,7 @@ function buildTrackTable(tracks, queueRef, opts = {}) {
       titleWrap.appendChild(img);
     }
     const textWrap = el('div', 'track-title-text');
-    textWrap.innerHTML = `<span class="t-name">${escapeHtml(track.Name)}</span><span class="t-artist">${escapeHtml(artistNames(track))}</span>`;
+    textWrap.innerHTML = `<span class="t-name">${escapeHtml(track.Name)}</span><span class="t-artist">${escapeHtml(artistNames(track, opts.fallbackArtist))}</span>`;
     titleWrap.appendChild(textWrap);
     titleCell.appendChild(titleWrap);
     row.appendChild(titleCell);
