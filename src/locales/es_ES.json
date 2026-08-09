@@ -166,7 +166,7 @@
     "replayGain": "Normalización de volumen",
     "replayGainDesc": "Equilibra las diferencias de volumen entre canciones (requiere datos de ReplayGain en el servidor)",
     "equalizer": "Ecualizador",
-    "equalizerDesc": "Ajusta el sonido con un ecualizador gráfico de 5 bandas (solo escritorio y Android)",
+    "equalizerDesc": "Ajusta el sonido con un ecualizador gráfico de 5 bandas (solo escritorio)",
     "equalizerReset": "Restablecer",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Muestra lo que estás escuchando en tu perfil de Discord (solo escritorio)",
@@ -179,10 +179,7 @@
     "customCssDesc": "Escribe tu propio CSS para personalizar aún más el aspecto de la app. Se aplica en vivo.",
     "about": "Acerca de",
     "offlineMode": "Modo sin conexión",
-    "offlineModeDesc": "Solo muestra y reproduce canciones descargadas — el resto aparece en gris",
-    "loudnessBoost": "Refuerzo de volumen",
-    "loudnessBoostDesc": "Refuerzo de volumen nativo adicional para dispositivos silenciosos (solo Android). Valores altos pueden causar distorsión.",
-    "loudnessBoostOff": "Apagado"
+    "offlineModeDesc": "Solo muestra y reproduce canciones descargadas — el resto aparece en gris"
   },
   "audioQuality": {
     "auto": "Automática (mejor calidad disponible)",

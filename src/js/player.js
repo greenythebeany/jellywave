@@ -25,23 +25,6 @@ export const EQ_PRESETS = {
   classical: [3, 2, 0, -2, 2]
 };
 
-// Resamples a gain curve defined at `freqs` points onto an arbitrary target
-// frequency, log-interpolating between the two nearest points (frequency
-// perception is logarithmic, so linear interpolation would skew the curve
-// toward the high end). Used to map this app's fixed 5-band EQ_BANDS curve
-// onto whatever bands a device's native Android equalizer actually has.
-function interpolateGainAtFreq(freqs, gains, targetFreq) {
-  if (targetFreq <= freqs[0]) return gains[0];
-  if (targetFreq >= freqs[freqs.length - 1]) return gains[gains.length - 1];
-  for (let i = 0; i < freqs.length - 1; i++) {
-    if (targetFreq >= freqs[i] && targetFreq <= freqs[i + 1]) {
-      const t = (Math.log(targetFreq) - Math.log(freqs[i])) / (Math.log(freqs[i + 1]) - Math.log(freqs[i]));
-      return gains[i] + t * (gains[i + 1] - gains[i]);
-    }
-  }
-  return 0;
-}
-
 // How soon before a track's natural end we start pre-buffering the next one
 // (gapless) — needs to be enough time for the network fetch to get ahead of
 // playback, but short enough not to waste bandwidth on tracks that get
@@ -82,18 +65,19 @@ export class Player {
     this.eqEnabled = false;
     this.eqGains = new Array(EQ_BANDS.length).fill(0);
 
-    // Android's equalizer instead runs natively (see EqualizerPlugin.java) —
-    // this just caches whatever bands the device actually reports, fetched
-    // once on first use since it never changes at runtime.
-    this._nativeEq = isAndroid ? window.Capacitor?.Plugins?.JellyWaveEqualizer : null;
-    this._nativeEqBands = null;
-    this._loudnessBoostPct = 0;
-    // Stays false until real playback has actually started once — enterApp
-    // applies saved EQ/loudness settings immediately on launch, long before
-    // any track is loaded, and attempting the native call that early hits
-    // the same "no active audio stream" failure as toggling from Settings
-    // with nothing playing (confirmed on-device: ERROR_INVALID_OPERATION).
-    this._nativeAudioReady = false;
+    // A fixed, non-adjustable native volume boost on Android (see
+    // LoudnessPlugin.java) — there was previously a full native equalizer
+    // and a user-adjustable boost slider too, but on-device testing found
+    // android.media.audiofx effects (both Equalizer and LoudnessEnhancer)
+    // fail outright on at least one real device with
+    // ERROR_INVALID_OPERATION when attached to the global session, a HAL
+    // capability gap with no app-level fix. Not worth a whole settings UI
+    // for something that may silently no-op depending on the device — this
+    // just quietly tries a mild fixed boost once real playback starts, and
+    // quietly does nothing on devices (like the one this was tested on)
+    // where that isn't supported.
+    this._nativeLoudness = isAndroid ? window.Capacitor?.Plugins?.JellyWaveLoudness : null;
+    this._nativeAudioAttempted = false;
 
     this.queue = [];
     this.originalQueue = [];
@@ -219,6 +203,9 @@ export class Player {
     return this._ensureAudioGraph(el)?.analyser || null;
   }
 
+  // Desktop only — see the constructor's Web Audio graph comment for why
+  // Android instead gets a fixed native boost attempt (_tryNativeLoudnessBoost)
+  // rather than a real equalizer.
   setEqualizerEnabled(enabled) {
     this.eqEnabled = !!enabled;
     if (this.eqEnabled) {
@@ -228,30 +215,12 @@ export class Player {
       this._ensureAudioGraph(this._audioB);
     }
     this._applyEqGains();
-    if (this._nativeEq && this._nativeAudioReady) {
-      this._nativeEq.setEnabled({ enabled: this.eqEnabled }).catch((err) => this._reportNativeAudioError(err));
-      this._syncNativeEqualizer();
-    }
-  }
-
-  // TEMPORARY diagnostic — the native EQ/loudness plugin calls were failing
-  // completely silently (bare .catch(() => {})), so a real failure on a
-  // real device was indistinguishable from "does nothing". Surfaces the
-  // first actual error, once per session, since remote debugging isn't
-  // available to check the WebView console directly.
-  _reportNativeAudioError(err) {
-    if (this._nativeAudioErrorShown) return;
-    this._nativeAudioErrorShown = true;
-    const message = err?.message || String(err);
-    console.error('[native audio effect]', err);
-    alert(`Native audio effect error (debug): ${message}`);
   }
 
   setEqualizerBand(index, gainDb) {
     if (index < 0 || index >= this.eqGains.length) return;
     this.eqGains[index] = Math.min(12, Math.max(-12, gainDb));
     if (this.eqEnabled) this._applyEqGains();
-    if (this._nativeEq && this._nativeAudioReady && this.eqEnabled) this._syncNativeEqualizer();
   }
 
   _applyEqGains() {
@@ -264,72 +233,18 @@ export class Player {
     }
   }
 
-  // ---------- Native Android equalizer (see EqualizerPlugin.java) ----------
-  // The device's real Equalizer effect rarely has the same band count/
-  // frequencies as this app's own 5-band UI, so this resamples eqGains'
-  // curve (log-frequency interpolated between EQ_BANDS points) onto
-  // whatever bands the device actually reports, rather than assuming a
-  // direct index match.
-  async _ensureNativeEqBands() {
-    if (this._nativeEqBands) return this._nativeEqBands;
-    try {
-      const result = await this._nativeEq.getBands();
-      this._nativeEqBands = result;
-      return result;
-    } catch (err) {
-      this._reportNativeAudioError(err);
-      return null;
-    }
-  }
-
-  async _syncNativeEqualizer() {
-    if (!this._nativeEq) return;
-    const info = await this._ensureNativeEqBands();
-    if (!info?.bands?.length) return;
-    const levels = info.bands.map(({ index, frequencyHz }) => {
-      const gainDb = this.eqEnabled ? interpolateGainAtFreq(EQ_BANDS, this.eqGains, frequencyHz) : 0;
-      const millibels = Math.round(Math.min(info.maxLevel, Math.max(info.minLevel, gainDb * 100)));
-      return { band: index, level: millibels };
-    });
-    this._nativeEq.setBandLevels({ levels }).catch((err) => this._reportNativeAudioError(err));
-  }
-
-  // pct is a plain volume-percentage boost (0 = no boost, 50 = 150% —
-  // i.e. 1.5x amplitude), which is what the Settings slider shows, but
-  // LoudnessEnhancer's native API is dB-based (amplitude ratio, not a
-  // linear percentage), so this converts: ratio = 1 + pct/100, then
-  // dB = 20*log10(ratio) is the standard amplitude-to-dB formula. pct <= 0
-  // disables the boost. Same native effect approach as the equalizer above
-  // (session 0, never touches the WebView's own audio pipeline) —
-  // user-adjustable now rather than a fixed always-on value, since a
-  // blanket boost interfered with Bluetooth AVRCP volume sync on at least
-  // one car head unit.
-  setLoudnessBoost(pct) {
-    this._loudnessBoostPct = pct;
-    if (!this._nativeEq || !this._nativeAudioReady) return;
-    const clamped = Math.max(0, pct);
-    const gainDb = clamped > 0 ? 20 * Math.log10(1 + clamped / 100) : 0;
-    const millibels = Math.round(gainDb * 100);
-    this._nativeEq.setLoudnessGain({ gainMillibels: millibels }).catch((err) => this._reportNativeAudioError(err));
-  }
-
-  // Confirmed on-device: creating a session-0 ("output mix") native effect
-  // can fail with ERROR_INVALID_OPERATION if there's no active audio output
-  // stream yet to attach it to — e.g. toggling the EQ from Settings with
-  // nothing playing, or applying saved settings at app launch before any
-  // track has loaded. getEqualizer()/getLoudnessEnhancer() on the native
-  // side don't cache a broken instance on failure, so every native call is
-  // gated behind _nativeAudioReady until real playback has actually
-  // started once — this is the only place that flips it true, at which
-  // point an output stream genuinely exists to attach to.
-  _retryNativeAudioEffects() {
-    if (!this._nativeEq) return;
-    this._nativeAudioReady = true;
-    if (this.eqEnabled) {
-      this._nativeEq.setEnabled({ enabled: true }).catch((err) => this._reportNativeAudioError(err));
-      this._syncNativeEqualizer();
-    }
-    if (this._loudnessBoostPct > 0) this.setLoudnessBoost(this._loudnessBoostPct);
+  // A fixed +10dB attempt, once, the first time real playback starts (an
+  // output stream needs to genuinely exist for a session-0 native effect
+  // to attach to at all — confirmed on-device). No settings, no retries,
+  // no error surfacing: some devices' audio HAL simply doesn't support
+  // this at all (confirmed: ERROR_INVALID_OPERATION on a real device for
+  // both Equalizer and LoudnessEnhancer alike), and that's not something
+  // worth bothering the user about — it silently helps where it can and
+  // silently does nothing where it can't.
+  _tryNativeLoudnessBoost() {
+    if (!this._nativeLoudness || this._nativeAudioAttempted) return;
+    this._nativeAudioAttempted = true;
+    this._nativeLoudness.setLoudnessGain({ gainMillibels: 1000 }).catch(() => {});
   }
 
   // ---------- MediaSession (lock-screen / notification controls) ----------
@@ -535,12 +450,12 @@ export class Player {
         if (this.currentTrack?.Id !== track.Id || el !== this.audio) return; // stale by the time this resolved
         el.src = uri || this.jellyfin.streamUrl(track, this.getBitrateKbps());
         this._applyVolume(el, track);
-        if (autoplay) el.play().then(() => this._retryNativeAudioEffects()).catch(() => {});
+        if (autoplay) el.play().then(() => this._tryNativeLoudnessBoost()).catch(() => {});
       });
     } else {
       el.src = this.jellyfin.streamUrl(track, this.getBitrateKbps());
       this._applyVolume(el, track);
-      if (autoplay) el.play().then(() => this._retryNativeAudioEffects()).catch(() => {});
+      if (autoplay) el.play().then(() => this._tryNativeLoudnessBoost()).catch(() => {});
     }
 
     this._updateMediaSessionMetadata();

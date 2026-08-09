@@ -166,7 +166,7 @@
     "replayGain": "Lydstyrkenormalisering",
     "replayGainDesc": "Udjævner lydstyrkeforskelle mellem numre (kræver ReplayGain-data på serveren)",
     "equalizer": "Equalizer",
-    "equalizerDesc": "Form lyden med en 5-bånds grafisk equalizer (kun desktop og Android)",
+    "equalizerDesc": "Form lyden med en 5-bånds grafisk equalizer (kun desktop)",
     "equalizerReset": "Nulstil",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Viser hvad du lytter til på din Discord-profil (kun desktop)",
@@ -179,10 +179,7 @@
     "customCssDesc": "Skriv din egen CSS for at finjustere appens udseende yderligere. Anvendes med det samme.",
     "about": "Om",
     "offlineMode": "Offline-tilstand",
-    "offlineModeDesc": "Viser og afspiller kun downloadede sange — resten er nedtonet",
-    "loudnessBoost": "Lydstyrkeforstærkning",
-    "loudnessBoostDesc": "Ekstra nativ lydstyrkeforstærkning til stille enheder (kun Android). Høje værdier kan give forvrængning.",
-    "loudnessBoostOff": "Fra"
+    "offlineModeDesc": "Viser og afspiller kun downloadede sange — resten er nedtonet"
   },
   "audioQuality": {
     "auto": "Automatisk (bedste tilgængelige kvalitet)",

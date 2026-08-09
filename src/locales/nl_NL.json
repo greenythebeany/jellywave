@@ -166,7 +166,7 @@
     "replayGain": "Volumenormalisatie",
     "replayGainDesc": "Vereffent volumeverschillen tussen nummers (vereist ReplayGain-gegevens op de server)",
     "equalizer": "Equalizer",
-    "equalizerDesc": "Pas het geluid aan met een 5-bands grafische equalizer (alleen desktop en Android)",
+    "equalizerDesc": "Pas het geluid aan met een 5-bands grafische equalizer (alleen desktop)",
     "equalizerReset": "Resetten",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Toont wat je luistert op je Discord-profiel (alleen desktop)",
@@ -179,10 +179,7 @@
     "customCssDesc": "Schrijf je eigen CSS om het uiterlijk van de app verder aan te passen. Wordt direct toegepast.",
     "about": "Over",
     "offlineMode": "Offlinemodus",
-    "offlineModeDesc": "Toont en speelt alleen gedownloade nummers — de rest is grijs",
-    "loudnessBoost": "Volumeversterking",
-    "loudnessBoostDesc": "Extra native volumeversterking voor stille apparaten (alleen Android). Hoge waarden kunnen vervorming veroorzaken.",
-    "loudnessBoostOff": "Uit"
+    "offlineModeDesc": "Toont en speelt alleen gedownloade nummers — de rest is grijs"
   },
   "audioQuality": {
     "auto": "Automatisch (best beschikbare kwaliteit)",

@@ -166,7 +166,7 @@
     "replayGain": "Äänenvoimakkuuden normalisointi",
     "replayGainDesc": "Tasoittaa kappaleiden välisiä äänenvoimakkuuseroja (vaatii ReplayGain-tiedot palvelimella)",
     "equalizer": "Taajuuskorjain",
-    "equalizerDesc": "Muokkaa ääntä 5-kaistaisella graafisella taajuuskorjaimella (vain työpöytä ja Android)",
+    "equalizerDesc": "Muokkaa ääntä 5-kaistaisella graafisella taajuuskorjaimella (vain työpöytä)",
     "equalizerReset": "Palauta",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Näyttää mitä kuuntelet Discord-profiilissasi (vain työpöytä)",
@@ -179,10 +179,7 @@
     "customCssDesc": "Kirjoita oma CSS hienosäätääksesi sovelluksen ulkoasua. Otetaan käyttöön heti.",
     "about": "Tietoja",
     "offlineMode": "Offline-tila",
-    "offlineModeDesc": "Näyttää ja toistaa vain ladatut kappaleet — muut on himmennetty",
-    "loudnessBoost": "Äänenvoimakkuuden tehostus",
-    "loudnessBoostDesc": "Ylimääräinen natiivi äänenvoimakkuuden tehostus hiljaisille laitteille (vain Android). Suuret arvot voivat aiheuttaa särön.",
-    "loudnessBoostOff": "Pois"
+    "offlineModeDesc": "Näyttää ja toistaa vain ladatut kappaleet — muut on himmennetty"
   },
   "audioQuality": {
     "auto": "Automaattinen (paras saatavilla oleva laatu)",

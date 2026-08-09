@@ -9,7 +9,7 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        registerPlugin(EqualizerPlugin.class);
+        registerPlugin(LoudnessPlugin.class);
         super.onCreate(savedInstanceState);
 
         // The WebView's <audio> playback otherwise runs without ever
@@ -27,15 +27,10 @@ public class MainActivity extends BridgeActivity {
             );
         }
 
-        // A LoudnessEnhancer on session 0 used to run here for a general
-        // volume boost. Removed — over Bluetooth (car head units using
-        // AVRCP "absolute volume"), it threw off the phone-to-car volume
-        // negotiation: the boosted signal read as louder than the reported
-        // stream level, so the car under-drove actual playback while
-        // untouched system/notification sounds played at their normal
-        // level, making them blast by comparison. Not worth the tradeoff
-        // for a passive volume bump — the equalizer (EqualizerPlugin, user
-        // opt-in, per-band rather than a blanket signal boost) is the
-        // supported way to shape loudness now.
+        // Volume boosting is handled by LoudnessPlugin instead of here — an
+        // always-on LoudnessEnhancer used to live in this file, but it broke
+        // Bluetooth AVRCP volume sync on at least one car head unit, so it's
+        // now a single fixed-gain attempt tied to actual playback starting
+        // rather than something that runs unconditionally from launch.
     }
 }

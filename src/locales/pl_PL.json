@@ -166,7 +166,7 @@
     "replayGain": "Normalizacja głośności",
     "replayGainDesc": "Wyrównuje różnice głośności między utworami (wymaga danych ReplayGain na serwerze)",
     "equalizer": "Korektor",
-    "equalizerDesc": "Dostosuj dźwięk za pomocą 5-pasmowego korektora graficznego (tylko komputer i Android)",
+    "equalizerDesc": "Dostosuj dźwięk za pomocą 5-pasmowego korektora graficznego (tylko na komputerze)",
     "equalizerReset": "Resetuj",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Pokazuje na Twoim profilu Discord to, czego słuchasz (tylko desktop)",
@@ -179,10 +179,7 @@
     "customCssDesc": "Napisz własny CSS, aby dodatkowo dostosować wygląd aplikacji. Stosowane na żywo.",
     "about": "O aplikacji",
     "offlineMode": "Tryb offline",
-    "offlineModeDesc": "Pokazuje i odtwarza tylko pobrane utwory — reszta jest wyszarzona",
-    "loudnessBoost": "Wzmocnienie głośności",
-    "loudnessBoostDesc": "Dodatkowe natywne wzmocnienie głośności dla cichych urządzeń (tylko Android). Wysokie wartości mogą powodować zniekształcenia.",
-    "loudnessBoostOff": "Wyłączone"
+    "offlineModeDesc": "Pokazuje i odtwarza tylko pobrane utwory — reszta jest wyszarzona"
   },
   "audioQuality": {
     "auto": "Automatycznie (najlepsza dostępna jakość)",

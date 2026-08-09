@@ -166,7 +166,7 @@
     "replayGain": "Normalizácia hlasitosti",
     "replayGainDesc": "Vyrovnáva rozdiely v hlasitosti medzi skladbami (vyžaduje údaje ReplayGain na serveri)",
     "equalizer": "Ekvalizér",
-    "equalizerDesc": "Uprav zvuk pomocou 5-pásmového grafického ekvalizéra (iba počítač a Android)",
+    "equalizerDesc": "Uprav zvuk pomocou 5-pásmového grafického ekvalizéra (iba na počítači)",
     "equalizerReset": "Obnoviť",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Zobrazí na tvojom Discord profile, čo práve počúvaš (iba desktop)",
@@ -179,10 +179,7 @@
     "customCssDesc": "Napíšte si vlastné CSS na ďalšiu úpravu vzhľadu aplikácie. Aplikuje sa okamžite.",
     "about": "O aplikácii",
     "offlineMode": "Režim offline",
-    "offlineModeDesc": "Zobrazí a prehrá iba stiahnuté skladby — ostatné sú sivé",
-    "loudnessBoost": "Zosilnenie hlasitosti",
-    "loudnessBoostDesc": "Ďalšie natívne zosilnenie hlasitosti pre tiché zariadenia (iba Android). Vysoké hodnoty môžu spôsobiť skreslenie.",
-    "loudnessBoostOff": "Vypnuté"
+    "offlineModeDesc": "Zobrazí a prehrá iba stiahnuté skladby — ostatné sú sivé"
   },
   "audioQuality": {
     "auto": "Automaticky (najlepšia dostupná kvalita)",

@@ -166,7 +166,7 @@
     "replayGain": "Lautstärkenormalisierung",
     "replayGainDesc": "Gleicht Lautstärkeunterschiede zwischen Titeln aus (benötigt ReplayGain-Daten auf dem Server)",
     "equalizer": "Equalizer",
-    "equalizerDesc": "Klang mit einem 5-Band-Grafik-Equalizer formen (nur Desktop und Android)",
+    "equalizerDesc": "Klang mit einem 5-Band-Grafik-Equalizer formen (nur Desktop)",
     "equalizerReset": "Zurücksetzen",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Zeigt auf deinem Discord-Profil, was du gerade hörst (nur Desktop)",
@@ -179,10 +179,7 @@
     "customCssDesc": "Schreibe eigenes CSS, um das Aussehen der App weiter anzupassen. Wird sofort angewendet.",
     "about": "Über",
     "offlineMode": "Offline-Modus",
-    "offlineModeDesc": "Zeigt und spielt nur heruntergeladene Songs — der Rest ist ausgegraut",
-    "loudnessBoost": "Lautstärkeverstärkung",
-    "loudnessBoostDesc": "Zusätzliche native Lautstärkeverstärkung für leise Geräte (nur Android). Hohe Werte können Verzerrungen verursachen.",
-    "loudnessBoostOff": "Aus"
+    "offlineModeDesc": "Zeigt und spielt nur heruntergeladene Songs — der Rest ist ausgegraut"
   },
   "audioQuality": {
     "auto": "Automatisch (beste verfügbare Qualität)",

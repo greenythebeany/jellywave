@@ -3,7 +3,7 @@ import { Player, RepeatMode, EQ_PRESETS } from './player.js';
 import { fetchLyrics } from './lyrics.js';
 import { getSettings, updateSettings, applySettings, currentBitrateKbps, initRemoteSync, PALETTES, AUDIO_QUALITIES } from './settings.js';
 import { LOCALES, loadLocale, applyTranslations, t } from './i18n.js';
-import { platform, isDesktop, isMobile, isAndroid, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
+import { platform, isDesktop, isMobile, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
 import { createConnect } from './connect.js';
 import { isSupported as downloadsSupported, isDownloaded, downloadTrack, deleteDownload, onDownloadsChange, getDownloadedTracks, getLocalImageUri } from './downloads.js';
 
@@ -61,9 +61,6 @@ const equalizerBandsRow = document.getElementById('equalizer-bands-row');
 const eqBandSliders = document.querySelectorAll('.eq-band-slider');
 const btnEqReset = document.getElementById('btn-eq-reset');
 const eqPresetSelect = document.getElementById('eq-preset-select');
-const loudnessBoostRow = document.getElementById('loudness-boost-row');
-const loudnessBoostSlider = document.getElementById('loudness-boost-slider');
-const loudnessBoostValue = document.getElementById('loudness-boost-value');
 const toggleCatJam = document.getElementById('toggle-cat-jam');
 const catJamVideo = document.getElementById('cat-jam');
 const catJamScaleRow = document.getElementById('cat-jam-scale-row');
@@ -360,7 +357,6 @@ async function enterApp(username) {
   player.setReplayGainEnabled(!!savedSettings.replayGainEnabled);
   (savedSettings.eqGains || []).forEach((gain, i) => player.setEqualizerBand(i, gain));
   player.setEqualizerEnabled(!!savedSettings.eqEnabled);
-  player.setLoudnessBoost(savedSettings.loudnessBoostPct ?? 25);
   connect = createConnect(jellyfin, player);
   connect.start();
   connect.onRemoteStateChange(updateRemoteBarUI);
@@ -539,9 +535,9 @@ function wireSettingsUI() {
   });
 
   // The equalizer only has a working implementation on desktop (Web Audio)
-  // and Android (native Equalizer effect, see EqualizerPlugin.java) — iOS
-  // has neither, so the whole section is pointless clutter there.
-  if (!isDesktop && !isAndroid) {
+  // — mobile gets a fixed, non-adjustable native volume boost attempt
+  // instead (see Player._tryNativeLoudnessBoost), not a real equalizer.
+  if (!isDesktop) {
     setHidden(equalizerToggleRow, true);
     setHidden(equalizerBandsRow, true);
   }
@@ -550,22 +546,6 @@ function wireSettingsUI() {
     updateSettings({ eqEnabled: toggleEqualizer.checked });
     player?.setEqualizerEnabled(toggleEqualizer.checked);
     setHidden(equalizerBandsRow, !toggleEqualizer.checked);
-  });
-
-  // Native volume boost — Android only (see EqualizerPlugin.java). Not
-  // relevant on desktop (audio already plays at full unboosted level there)
-  // or iOS (no native effect implemented).
-  if (!isAndroid) {
-    setHidden(loudnessBoostRow, true);
-  }
-  loudnessBoostSlider.addEventListener('input', () => {
-    const pct = Number(loudnessBoostSlider.value);
-    loudnessBoostValue.textContent = pct === 0 ? t('settings.loudnessBoostOff') : `+${pct}%`;
-    loudnessBoostSlider.style.setProperty('--pct', rangeFillPercent((pct / 50) * 100, loudnessBoostSlider, 13));
-    player?.setLoudnessBoost(pct);
-  });
-  loudnessBoostSlider.addEventListener('change', () => {
-    updateSettings({ loudnessBoostPct: Number(loudnessBoostSlider.value) });
   });
 
   eqBandSliders.forEach((slider) => {
@@ -1263,10 +1243,6 @@ function refreshSettingsUI() {
     const valueEl = document.querySelector(`.eq-band-value[data-band-value="${band}"]`);
     valueEl.textContent = gain > 0 ? `+${gain}` : `${gain}`;
   });
-  const loudnessBoostPct = s.loudnessBoostPct ?? 25;
-  loudnessBoostSlider.value = loudnessBoostPct;
-  loudnessBoostValue.textContent = loudnessBoostPct === 0 ? t('settings.loudnessBoostOff') : `+${loudnessBoostPct}%`;
-  loudnessBoostSlider.style.setProperty('--pct', rangeFillPercent((loudnessBoostPct / 50) * 100, loudnessBoostSlider, 13));
   toggleCatJam.checked = !!s.catJam;
   setHidden(catJamScaleRow, !s.catJam);
   const catScale = s.catJamScale || 1;
