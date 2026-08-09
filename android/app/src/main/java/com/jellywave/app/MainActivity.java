@@ -20,12 +20,19 @@ public class MainActivity extends BridgeActivity {
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         if (audioManager != null) {
             setVolumeControlStream(AudioManager.STREAM_MUSIC);
-            audioManager.requestAudioFocus(
-                focusChange -> {},
-                AudioManager.STREAM_MUSIC,
-                AudioManager.AUDIOFOCUS_GAIN
-            );
         }
+
+        // The actual audio focus *request* — with a real listener, not a
+        // no-op — lives in LoudnessPlugin now instead of here, since it
+        // needs to notify the JS side (Player) when focus is lost/regained
+        // so playback can pause and auto-resume properly. A bare
+        // requestAudioFocus() with an empty callback used to live here:
+        // Chromium's own WebView audio pipeline still reacts to focus loss
+        // by pausing on its own, but with nothing listening for focus
+        // *regain*, playback stayed paused after any interruption (another
+        // app's notification sound, switching apps, etc.) until manually
+        // resumed — exactly the "stops when backgrounded" symptom this
+        // fixes.
 
         // Volume boosting is handled by LoudnessPlugin instead of here — an
         // always-on LoudnessEnhancer used to live in this file, but it broke

@@ -110,7 +110,14 @@ export function createConnect(jellyfin, player) {
 
   function handleGeneralCommand(data) {
     if (data.Name === 'SetVolume' && data.Arguments?.Volume != null) {
-      player.setVolume(Math.min(1, Math.max(0, Number(data.Arguments.Volume) / 100)));
+      // The local volume slider maps 0-100 through a quadratic taper
+      // (t*t, see sliderToVolume in app.js) so it feels linear to the ear —
+      // a remote SetVolume percent means the same slider position on the
+      // sending device, so it needs the identical taper here, not a raw
+      // linear divide, or the exact same "50%" would mean a different
+      // actual gain depending on which side set it.
+      const t = Math.min(1, Math.max(0, Number(data.Arguments.Volume) / 100));
+      player.setVolume(t * t);
     } else if (data.Name === 'Mute') {
       player.audio.muted = true;
     } else if (data.Name === 'Unmute') {

@@ -265,7 +265,10 @@ export class JellyfinClient {
     const res = await fetch(`${this.serverUrl}/Playlists`, {
       method: 'POST',
       headers: this._headers(),
-      body: JSON.stringify({ Name: name, UserId: this.userId, MediaType: 'Audio', Ids: [] })
+      // Public defaults to true server-side when omitted — playlists made
+      // here are personal by default, not shared with every other account
+      // on the server.
+      body: JSON.stringify({ Name: name, UserId: this.userId, MediaType: 'Audio', Ids: [], Public: false })
     });
     if (!res.ok) throw new Error(`Could not create playlist (${res.status}).`);
     return res.json();

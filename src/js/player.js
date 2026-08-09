@@ -79,6 +79,29 @@ export class Player {
     this._nativeLoudness = isAndroid ? window.Capacitor?.Plugins?.JellyWaveLoudness : null;
     this._nativeAudioAttempted = false;
 
+    // Chromium's own WebView audio pipeline pauses playback on its own the
+    // moment Android audio focus is lost (another app's notification
+    // sound, switching apps, a brief call ping) — that part isn't
+    // optional. Without something reacting to focus being *regained*,
+    // though, playback stayed paused indefinitely after any interruption,
+    // which is exactly the "stops when backgrounded" bug this fixes: only
+    // auto-resume if the pause was actually caused by a focus loss (never
+    // override a real, deliberate user pause).
+    if (this._nativeLoudness) {
+      this._focusAutoPaused = false;
+      this._nativeLoudness.requestAudioFocus().catch(() => {});
+      this._nativeLoudness.addListener('audioFocusChange', ({ state }) => {
+        if (state === 'gain') {
+          if (this._focusAutoPaused) {
+            this._focusAutoPaused = false;
+            this.audio.play().catch(() => {});
+          }
+        } else if (!this.audio.paused) {
+          this._focusAutoPaused = true;
+        }
+      });
+    }
+
     this.queue = [];
     this.originalQueue = [];
     this.currentIndex = -1;

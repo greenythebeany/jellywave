@@ -706,6 +706,21 @@ input[type="range"].volume-bar { width: 110px; flex: none; }
 .track-row.swipe-queue, .queue-row.swipe-queue { background: color-mix(in srgb, var(--accent) 25%, transparent) !important; }
 .track-row.swipe-remove, .queue-row.swipe-remove { background: color-mix(in srgb, var(--danger) 25%, transparent) !important; }
 
+/* Icons revealed mid-swipe so it's clear what letting go will do, before it
+   happens — appended directly onto the row (including <tr> — non-standard
+   but renders fine since position:absolute takes it out of table layout
+   flow entirely) rather than a true "reveal from underneath" background
+   layer, which a <tr>'s structure doesn't easily support. */
+.track-row, .queue-row { position: relative; }
+.swipe-icon {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  font-size: 17px; opacity: 0; transition: opacity 0.15s ease; pointer-events: none;
+}
+.swipe-icon-queue { left: 14px; color: var(--accent); }
+.swipe-icon-remove { right: 14px; color: var(--danger); }
+.track-row.swipe-queue .swipe-icon-queue, .queue-row.swipe-queue .swipe-icon-queue { opacity: 1; }
+.track-row.swipe-remove .swipe-icon-remove, .queue-row.swipe-remove .swipe-icon-remove { opacity: 1; }
+
 .sleep-timer-wrap { position: relative; }
 .btn-icon-plain.active { color: var(--accent); }
 .sleep-timer-badge {

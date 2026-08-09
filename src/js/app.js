@@ -2403,16 +2403,25 @@ function buildTrackTable(tracks, queueRef, opts = {}) {
         }
       };
     }
-    wireSwipeActions(row, { onSwipeRight: () => player.enqueue(track), onSwipeLeft });
+    const openTrackMenu = (x, y) => openContextMenu(syntheticPointerEvent(x, y), buildTrackContextMenuItems(track, {
+      queueRef,
+      anchorEl: row,
+      onRemove: onSwipeLeft
+    }));
+    wireSwipeActions(row, {
+      onSwipeRight: () => player.enqueue(track),
+      onSwipeLeft,
+      // Right-click opens this on desktop; there's no equivalent gesture on
+      // mobile otherwise, so "Add to playlist" (and everything else in this
+      // menu) was completely unreachable there.
+      onLongPress: isMobile ? (x, y) => openTrackMenu(x, y) : undefined
+    });
     wireTrackDragSource(row, track);
 
     if (isDesktop) {
       row.addEventListener('contextmenu', (evt) => {
-        openContextMenu(evt, buildTrackContextMenuItems(track, {
-          queueRef,
-          anchorEl: row,
-          onRemove: onSwipeLeft
-        }));
+        evt.preventDefault();
+        openTrackMenu(evt.clientX, evt.clientY);
       });
     }
 
@@ -2447,10 +2456,17 @@ function escapeHtml(str) {
 // there's nothing sensible to remove it from) and that direction just won't
 // drag. onSwipeLeft is expected to remove the row from the DOM itself (via
 // a re-render) once its own async work finishes — this only animates it.
-function wireSwipeActions(rowEl, { onSwipeRight, onSwipeLeft } = {}) {
-  if (!isMobile || (!onSwipeRight && !onSwipeLeft)) return;
+function wireSwipeActions(rowEl, { onSwipeRight, onSwipeLeft, onLongPress } = {}) {
+  if (!isMobile || (!onSwipeRight && !onSwipeLeft && !onLongPress)) return;
   const THRESHOLD = 70;
+  const LONG_PRESS_MS = 500;
   let startX = 0, startY = 0, dx = 0, dragging = false, decided = false, horizontal = false;
+  let longPressTimer = null;
+
+  // So it's clear what letting go will do, before it happens — see the
+  // .swipe-icon rules in styles.css for how these get revealed mid-swipe.
+  if (onSwipeRight) rowEl.appendChild(el('i', 'fi fi-br-list-music swipe-icon swipe-icon-queue'));
+  if (onSwipeLeft) rowEl.appendChild(el('i', 'fi fi-br-trash swipe-icon swipe-icon-remove'));
 
   rowEl.style.touchAction = 'pan-y';
 
@@ -2459,6 +2475,18 @@ function wireSwipeActions(rowEl, { onSwipeRight, onSwipeLeft } = {}) {
     startX = evt.touches[0].clientX;
     startY = evt.touches[0].clientY;
     dx = 0; dragging = true; decided = false; horizontal = false;
+    if (onLongPress) {
+      const pressX = startX, pressY = startY;
+      clearTimeout(longPressTimer);
+      longPressTimer = setTimeout(() => {
+        // Only fires if the touch is still down and never turned into a
+        // horizontal swipe — touchmove/touchend below cancel this timer
+        // the moment either of those becomes true.
+        dragging = false;
+        hapticImpact('medium');
+        onLongPress(pressX, pressY);
+      }, LONG_PRESS_MS);
+    }
   }, { passive: true });
 
   rowEl.addEventListener('touchmove', (evt) => {
@@ -2470,6 +2498,7 @@ function wireSwipeActions(rowEl, { onSwipeRight, onSwipeLeft } = {}) {
       if (Math.abs(rawDx) < 8 && Math.abs(y - startY) < 8) return;
       horizontal = Math.abs(rawDx) > Math.abs(y - startY);
       decided = true;
+      if (horizontal) clearTimeout(longPressTimer);
     }
     if (!horizontal) return;
     if ((rawDx > 0 && !onSwipeRight) || (rawDx < 0 && !onSwipeLeft)) return;
@@ -2481,6 +2510,7 @@ function wireSwipeActions(rowEl, { onSwipeRight, onSwipeLeft } = {}) {
   }, { passive: false });
 
   const finish = () => {
+    clearTimeout(longPressTimer);
     if (!dragging) return;
     dragging = false;
     rowEl.style.transition = 'transform 0.18s ease';
@@ -2828,7 +2858,14 @@ function wirePlaylistDropTarget(target, playlistId) {
   });
 }
 
-// ---------- Right-click context menus (desktop) ----------
+// ---------- Right-click context menus (desktop) / long-press (mobile) ----------
+// openContextMenu() only needs clientX/clientY plus no-op preventDefault/
+// stopPropagation (there's no real event to suppress for a synthesized
+// long-press) — this lets both input types share the exact same menu code.
+function syntheticPointerEvent(x, y) {
+  return { clientX: x, clientY: y, preventDefault() {}, stopPropagation() {} };
+}
+
 let activeContextMenu = null;
 
 function closeContextMenu() {
@@ -2957,13 +2994,20 @@ function buildQueueRow(track, idx, isPlaying) {
   row.appendChild(text);
   row.addEventListener('click', () => player.playAt(idx));
 
+  const openQueueRowMenu = (x, y) => openContextMenu(syntheticPointerEvent(x, y), buildTrackContextMenuItems(track, {
+    onPlay: () => player.playAt(idx),
+    anchorEl: row,
+    onRemove: isPlaying ? null : () => player.removeFromQueueAt(idx)
+  }));
+
   // Can't remove/reorder what's currently playing this way — only "Up Next" rows.
   if (!isPlaying) {
     wireSwipeActions(row, {
       // Delay the actual removal slightly so the slide-out animation has
       // time to play before renderQueue() (triggered by queuechange) wipes
       // and rebuilds the whole list out from under it.
-      onSwipeLeft: () => setTimeout(() => player.removeFromQueueAt(idx), 180)
+      onSwipeLeft: () => setTimeout(() => player.removeFromQueueAt(idx), 180),
+      onLongPress: isMobile ? openQueueRowMenu : undefined
     });
     const handle = el('div', 'queue-row-handle', '<i class="fi fi-br-grip-dots-vertical"></i>');
     handle.addEventListener('click', (evt) => evt.stopPropagation());
@@ -2973,11 +3017,8 @@ function buildQueueRow(track, idx, isPlaying) {
 
   if (isDesktop) {
     row.addEventListener('contextmenu', (evt) => {
-      openContextMenu(evt, buildTrackContextMenuItems(track, {
-        onPlay: () => player.playAt(idx),
-        anchorEl: row,
-        onRemove: isPlaying ? null : () => player.removeFromQueueAt(idx)
-      }));
+      evt.preventDefault();
+      openQueueRowMenu(evt.clientX, evt.clientY);
     });
   }
 
