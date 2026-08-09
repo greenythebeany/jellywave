@@ -320,8 +320,17 @@ export class Player {
   _updateMediaSessionMetadata() {
     const track = this.currentTrack;
     const artist = track ? ((track.Artists && track.Artists.length ? track.Artists.join(', ') : track.AlbumArtist) || '') : '';
-    const artUrl = track ? this.jellyfin.imageUrl(track) : null;
-    const artwork = artUrl ? [96, 192, 256, 384, 512].map((size) => ({ src: artUrl, sizes: `${size}x${size}`, type: 'image/jpeg' })) : [];
+    // Each declared size needs to actually BE that size — every entry
+    // pointed at the same fixed-resolution URL before, just relabeled, so
+    // an OS picking the "96x96" entry for a small icon (or "512x512" for a
+    // blurred background) actually got whatever the real image's fixed
+    // size was regardless. That mismatch is a plausible cause of the
+    // distorted-looking artwork seen on a phone's cross-device media
+    // controls for a desktop session. Jellyfin resizes server-side via its
+    // own maxSize param, so this asks for a real image at each size.
+    const artwork = track
+      ? [96, 192, 256, 384, 512].map((size) => ({ src: this.jellyfin.imageUrl(track, 'Primary', size), sizes: `${size}x${size}`, type: 'image/jpeg' })).filter((a) => a.src)
+      : [];
 
     const native = this._nativeMediaSession();
     if (native) {
