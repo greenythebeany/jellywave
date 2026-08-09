@@ -2106,9 +2106,19 @@ function buildCard(item, kind) {
   // image tag on the item itself (seen in practice: an artist's albums
   // grid showing a broken image for an album whose own detail page, which
   // resolves art from its first track instead of the album item, loads
-  // the same cover just fine) — fall back to the placeholder rather than
-  // a broken-image icon.
-  img.addEventListener('error', () => { img.src = placeholder; }, { once: true });
+  // the same cover just fine). Try that same trick here first — find any
+  // track from this album already in the in-memory cache and use its art
+  // — before giving up to the placeholder, rather than showing a broken
+  // image when the real cover is one click away from working.
+  let triedTrackFallback = false;
+  img.addEventListener('error', () => {
+    if (!triedTrackFallback) {
+      triedTrackFallback = true;
+      const trackArt = kind === 'album' && allSongsCache?.find((tr) => tr.AlbumId === item.Id);
+      if (trackArt) { img.src = artUrl(trackArt); return; }
+    }
+    img.src = placeholder;
+  });
   artWrap.appendChild(img);
 
   if (kind === 'album' || kind === 'playlist' || kind === 'song') {
