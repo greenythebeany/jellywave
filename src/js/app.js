@@ -2465,8 +2465,17 @@ function wireSwipeActions(rowEl, { onSwipeRight, onSwipeLeft, onLongPress } = {}
 
   // So it's clear what letting go will do, before it happens — see the
   // .swipe-icon rules in styles.css for how these get revealed mid-swipe.
-  if (onSwipeRight) rowEl.appendChild(el('i', 'fi fi-br-list-music swipe-icon swipe-icon-queue'));
-  if (onSwipeLeft) rowEl.appendChild(el('i', 'fi fi-br-trash swipe-icon swipe-icon-remove'));
+  // Table rows (<tr>) only accept <td>/<th> children — appending anything
+  // else directly makes the browser generate an anonymous table cell to
+  // wrap it, which silently adds an extra column and wrecks the row's
+  // layout (confirmed on-device). Appending into an existing <td> instead
+  // keeps the DOM valid; position:absolute still positions the icon
+  // relative to the row itself (the nearest *positioned* ancestor, per
+  // .track-row/.queue-row's position:relative), not that cell, so it still
+  // spans the row's full width correctly either way.
+  const iconHost = (rowEl.tagName === 'TR' ? rowEl.querySelector('td') : rowEl) || rowEl;
+  if (onSwipeRight) iconHost.appendChild(el('i', 'fi fi-br-list-music swipe-icon swipe-icon-queue'));
+  if (onSwipeLeft) iconHost.appendChild(el('i', 'fi fi-br-trash swipe-icon swipe-icon-remove'));
 
   rowEl.style.touchAction = 'pan-y';
 
