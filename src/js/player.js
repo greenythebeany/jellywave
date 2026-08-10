@@ -94,7 +94,7 @@ export class Player {
         if (state === 'gain') {
           if (this._focusAutoPaused) {
             this._focusAutoPaused = false;
-            this.audio.play().catch(() => {});
+            this.audio.play().catch((err) => this._logPlayError('focus regain', err));
           }
         } else if (!this.audio.paused) {
           this._focusAutoPaused = true;
@@ -120,6 +120,18 @@ export class Player {
     this._applyVolume(this._audioA);
     this._applyVolume(this._audioB);
     this._setupMediaSession();
+  }
+
+  // TEMPORARY diagnostic — reported symptom: playback doesn't advance to
+  // the next track when the current one ends naturally while the app is
+  // backgrounded, only resuming once refocused. Every play() call in this
+  // class silently swallows its rejection, so a real failure there (e.g.
+  // an autoplay-while-backgrounded restriction, network hiccup, etc.) is
+  // indistinguishable from any other cause of the same symptom without
+  // this. console.error only, not alert() — this can happen while the app
+  // isn't even visible, so a popup would be pointless at best.
+  _logPlayError(context, err) {
+    console.error(`[player] play() failed (${context}):`, err);
   }
 
   get audio() {
@@ -487,12 +499,12 @@ export class Player {
         if (this.currentTrack?.Id !== track.Id || el !== this.audio) return; // stale by the time this resolved
         el.src = uri || this.jellyfin.streamUrl(track, this.getBitrateKbps());
         this._applyVolume(el, track);
-        if (autoplay) el.play().then(() => this._tryNativeLoudnessBoost()).catch(() => {});
+        if (autoplay) el.play().then(() => this._tryNativeLoudnessBoost()).catch((err) => this._logPlayError('_loadCurrent (downloaded)', err));
       });
     } else {
       el.src = this.jellyfin.streamUrl(track, this.getBitrateKbps());
       this._applyVolume(el, track);
-      if (autoplay) el.play().then(() => this._tryNativeLoudnessBoost()).catch(() => {});
+      if (autoplay) el.play().then(() => this._tryNativeLoudnessBoost()).catch((err) => this._logPlayError('_loadCurrent (stream)', err));
     }
 
     this._updateMediaSessionMetadata();
@@ -509,7 +521,7 @@ export class Player {
 
   togglePlay() {
     if (!this.currentTrack) return;
-    if (this.audio.paused) this.audio.play().catch(() => {});
+    if (this.audio.paused) this.audio.play().catch((err) => this._logPlayError('togglePlay', err));
     else this.audio.pause();
   }
 
@@ -573,7 +585,8 @@ export class Player {
       const el = this.audio;
       el.currentTime = 0;
       this._applyVolume(el);
-      el.play().catch(() => {
+      el.play().catch((err) => {
+        this._logPlayError('_onEnded gapless swap', err);
         // The "preloaded" element turned out not to actually be playable.
         // currentIndex is already correctly advanced — just retry loading
         // this same track fresh instead of leaving playback stopped dead.
@@ -659,7 +672,7 @@ export class Player {
     incoming.src = this.jellyfin.streamUrl(nextTrack, this.getBitrateKbps());
     incoming.currentTime = 0;
     incoming.volume = 0;
-    incoming.play().catch(() => {});
+    incoming.play().catch((err) => this._logPlayError('_beginCrossfade', err));
 
     const fadeMs = this.crossfadeSeconds * 1000;
     const outgoingTarget = outgoing.volume;

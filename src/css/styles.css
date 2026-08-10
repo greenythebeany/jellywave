@@ -428,7 +428,12 @@ svg { fill: currentColor; width: 100%; height: 100%; }
    than relying solely on the `aspect-ratio` property — some older Android
    WebViews don't support it, silently falling back to each image's own
    natural (non-square) proportions instead of a uniform card size. */
-.card-art-wrap { position: relative; margin-bottom: 12px; }
+/* overflow:hidden + a matching radius here (not just on the <img> itself)
+   is what actually makes the zoom-crop below work — the wrapper defines
+   the real clip boundary, so the scaled-up image's own edges (and corner
+   radius) can extend past it without the rounding itself getting
+   distorted or the image spilling outside its allotted space. */
+.card-art-wrap { position: relative; margin-bottom: 12px; overflow: hidden; border-radius: var(--radius-sm); }
 .card-art-wrap::before { content: ''; display: block; padding-top: 100%; }
 
 .genre-card { display: flex; align-items: center; justify-content: center; aspect-ratio: 1/1; text-align: center; background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 55%, var(--bg-card)) 0%, var(--bg-card) 100%); }
@@ -436,9 +441,17 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .card-art {
   position: absolute; inset: 0;
   width: 100%; height: 100%; object-fit: cover;
+  /* Slight zoom-in: a lot of source art (especially auto-generated single
+     covers) has pillarbox/letterbox bars baked into the file itself, which
+     no amount of object-fit can crop since the bars are actual image
+     content. Scaling the image up past its wrapper's clipped bounds crops
+     them out; the tradeoff is a small, mostly-unnoticeable over-crop on
+     covers that were already perfectly square. */
+  transform: scale(1.15);
   border-radius: var(--radius-sm); background: var(--bg-highlight);
   box-shadow: 0 8px 24px rgba(0,0,0,0.35);
 }
+.card.artist-card .card-art-wrap { border-radius: 50%; }
 .card.artist-card .card-art { border-radius: 50%; }
 .card-play-btn {
   position: absolute; right: 8px; bottom: 8px;
@@ -501,8 +514,9 @@ svg { fill: currentColor; width: 100%; height: 100%; }
   display: flex; align-items: end; gap: 24px;
   padding: 32px 0 24px;
 }
-.detail-art-wrap { position: relative; flex-shrink: 0; }
-.detail-art { width: 200px; height: 200px; object-fit: cover; box-shadow: 0 16px 40px rgba(0,0,0,0.4); border-radius: var(--radius-sm); background: var(--bg-card); display: block; }
+.detail-art-wrap { position: relative; flex-shrink: 0; overflow: hidden; border-radius: var(--radius-sm); }
+.detail-art-wrap:has(.detail-art.round) { border-radius: 50%; }
+.detail-art { width: 200px; height: 200px; object-fit: cover; box-shadow: 0 16px 40px rgba(0,0,0,0.4); border-radius: var(--radius-sm); background: var(--bg-card); display: block; transform: scale(1.15); }
 .detail-art.round { border-radius: 50%; }
 .detail-art-edit {
   position: absolute; right: 8px; bottom: 8px;
@@ -581,8 +595,8 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .lyrics-header-actions .btn-icon-plain { width: 29px; height: 29px; display: flex; align-items: center; justify-content: center; }
 
 .now-playing-summary { padding: 22px 22px 8px; flex-shrink: 0; position: relative; z-index: 1; }
-.now-playing-art-wrap { position: relative; max-width: 220px; margin: 0 auto 16px; }
-.now-playing-art { display: block; width: 100%; aspect-ratio: 1/1; border-radius: var(--radius-md); object-fit: cover; box-shadow: 0 16px 34px rgba(0,0,0,0.4); background: var(--bg-card); }
+.now-playing-art-wrap { position: relative; max-width: 220px; margin: 0 auto 16px; overflow: hidden; border-radius: var(--radius-md); }
+.now-playing-art { display: block; width: 100%; aspect-ratio: 1/1; border-radius: var(--radius-md); object-fit: cover; box-shadow: 0 16px 34px rgba(0,0,0,0.4); background: var(--bg-card); transform: scale(1.15); }
 /* Mobile-only: app.js moves #cat-jam in here so it overlays the cover art
    instead of sitting fixed near the player bar (no room for that on phones,
    and beat-sync there would re-route audio through Web Audio, which is
@@ -908,7 +922,7 @@ body.platform-mobile .titlebar { display: none; }
   .np-collapse-btn { font-size: 22px; }
 
   .now-playing-summary { padding: 12px 24px 8px; }
-  .now-playing-art-wrap { max-width: 100%; width: 100%; margin-bottom: 26px; }
+  .now-playing-art-wrap { max-width: 100%; width: 100%; margin-bottom: 26px; border-radius: var(--radius-lg); }
   .now-playing-art { border-radius: var(--radius-lg); box-shadow: 0 24px 50px rgba(0,0,0,0.5); }
   .now-playing-info-row { max-width: 100%; justify-content: center; position: relative; }
   .now-playing-text { text-align: center; }
