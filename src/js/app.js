@@ -1823,6 +1823,31 @@ async function renderAlbums() {
   viewRoot.appendChild(buildCardGrid(albums, 'album'));
 }
 
+// Real-world artist name variants Jellyfin has no way to know are the same
+// act — it only groups by the exact literal name string found in file tags,
+// with no online identity lookup. Left (alias, lowercase) maps to right
+// (canonical name as it should appear). Add more pairs here as they turn up.
+const KNOWN_ARTIST_ALIASES = {
+  'ghost b.c.': 'ghost' // US trademark dispute forced this name 2012-2015; same Swedish band
+};
+
+function aliasNamesFor(canonicalName) {
+  const key = (canonicalName || '').trim().toLowerCase();
+  return Object.keys(KNOWN_ARTIST_ALIASES).filter((alias) => KNOWN_ARTIST_ALIASES[alias] === key);
+}
+
+// Drop artist entities that are just a known alias of another artist that
+// already has its own real entry — their albums/songs get folded into the
+// canonical artist's page instead (see renderArtistDetail), so the alias
+// entity is pure duplicate noise in the browse grid.
+function dropKnownAliasArtists(artists) {
+  const nameSet = new Set(artists.map((a) => (a.Name || '').trim().toLowerCase()));
+  return artists.filter((a) => {
+    const canonical = KNOWN_ARTIST_ALIASES[(a.Name || '').trim().toLowerCase()];
+    return !(canonical && nameSet.has(canonical));
+  });
+}
+
 // Drop artist entities that are really just a joined collab credit for an
 // artist that already has its own real entry ("Avantasia, Alice Cooper" when
 // "Avantasia" itself exists) — those tracks are folded into the real
@@ -1857,7 +1882,7 @@ function dropCompoundDuplicateArtists(artists) {
 
 async function renderArtists() {
   const rawArtists = await jellyfin.getArtists(musicLibraryId);
-  const artists = dropCompoundDuplicateArtists(rawArtists);
+  const artists = dropKnownAliasArtists(dropCompoundDuplicateArtists(rawArtists));
   viewRoot.innerHTML = '';
   viewRoot.appendChild(el('div', 'view-title', t('artists.title')));
   if (!artists.length) {
@@ -2018,7 +2043,7 @@ async function renderArtistDetail(id, name) {
   const targetName = name || artistItem.Name;
   const knownIds = new Set(serverSongs.map((tr) => tr.Id));
   const extraSongs = allSongs.filter((tr) => !knownIds.has(tr.Id) && trackCredits(tr).some((c) => creditIncludesArtist(c, targetName)));
-  const songs = extraSongs.length ? [...serverSongs, ...extraSongs] : serverSongs;
+  let songs = extraSongs.length ? [...serverSongs, ...extraSongs] : serverSongs;
 
   // Same reasoning as the songs merge above: an album entirely credited to
   // a joined name ("Avantasia, Michael Kiske, ...") never turns up via the
@@ -2030,6 +2055,44 @@ async function renderArtistDetail(id, name) {
     ? (await Promise.all(extraAlbumIds.map((aid) => jellyfin.getItem(aid).catch(() => null)))).filter(Boolean)
     : [];
   if (extraAlbums.length) albums.push(...extraAlbums);
+
+  // Known real-world alias entities (e.g. "Ghost B.C." for "Ghost") are a
+  // genuinely separate Artist entry on the server — its albums/songs live
+  // under its own artist ID, so the ArtistIds filter above never finds them
+  // no matter what this page's own ID is. Look each alias up by name and
+  // fold its catalog in the same way, so nothing found by dropKnownAliasArtists
+  // (which hides the alias's own card) goes missing from browsing entirely.
+  const aliasNames = aliasNamesFor(targetName);
+  if (aliasNames.length) {
+    const rawArtists = await jellyfin.getArtists(musicLibraryId);
+    const aliasArtists = rawArtists.filter((a) => aliasNames.includes((a.Name || '').trim().toLowerCase()));
+    if (aliasArtists.length) {
+      const [aliasAlbumLists, aliasSongLists] = await Promise.all([
+        Promise.all(aliasArtists.map((a) => jellyfin.getAlbumsByArtist(a.Id))),
+        Promise.all(aliasArtists.map((a) => jellyfin.getSongsByArtist(a.Id)))
+      ]);
+      const seenAlbumIds = new Set(albums.map((al) => al.Id));
+      for (const list of aliasAlbumLists) {
+        for (const al of list) {
+          if (!seenAlbumIds.has(al.Id)) {
+            seenAlbumIds.add(al.Id);
+            albums.push(al);
+          }
+        }
+      }
+      const seenSongIds = new Set(songs.map((tr) => tr.Id));
+      const aliasSongs = [];
+      for (const list of aliasSongLists) {
+        for (const tr of list) {
+          if (!seenSongIds.has(tr.Id)) {
+            seenSongIds.add(tr.Id);
+            aliasSongs.push(tr);
+          }
+        }
+      }
+      if (aliasSongs.length) songs = [...songs, ...aliasSongs];
+    }
+  }
 
   viewRoot.innerHTML = '';
   viewRoot.appendChild(buildDetailHeader({
