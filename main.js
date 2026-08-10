@@ -10,6 +10,23 @@ const DISCORD_CLIENT_ID = '1534197353056174180';
 const DOWNLOADS_DIR = path.join(app.getPath('userData'), 'downloads');
 const GRAB_CLI = path.join(__dirname, 'downloader', 'cli.py');
 
+// A GUI-launched Electron process doesn't reliably inherit the same PATH a
+// terminal session has (this is what caused "spawn python ENOENT" even
+// though `python` works fine from any shell) -- resolve a real interpreter
+// path up front rather than trusting PATH lookup at spawn time. Falls back
+// to bare "python" so this doesn't hard-fail on a machine where it's
+// actually on the GUI-process PATH.
+function resolvePythonExecutable() {
+  const candidates = [
+    'C:\\Python314\\python.exe',
+    path.join(app.getPath('home'), 'AppData', 'Local', 'Programs', 'Python', 'Python312', 'python.exe'),
+    path.join(app.getPath('home'), 'AppData', 'Local', 'Programs', 'Python', 'Python311', 'python.exe'),
+    path.join(app.getPath('home'), 'AppData', 'Local', 'Programs', 'Python', 'Python310', 'python.exe')
+  ];
+  return candidates.find((p) => fs.existsSync(p)) || 'python';
+}
+const PYTHON_EXE = resolvePythonExecutable();
+
 let mainWindow;
 
 function createWindow() {
@@ -312,7 +329,7 @@ ipcMain.on('grab:start', (event, { url, outputDir }) => {
     return;
   }
 
-  grabProcess = spawn('python', [GRAB_CLI, url, outputDir], { cwd: path.dirname(GRAB_CLI) });
+  grabProcess = spawn(PYTHON_EXE, [GRAB_CLI, url, outputDir], { cwd: path.dirname(GRAB_CLI) });
   let buffer = '';
 
   grabProcess.stdout.on('data', (chunk) => {

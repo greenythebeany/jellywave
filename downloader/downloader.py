@@ -9,6 +9,7 @@ yt-dlp is actively maintained specifically to track those changes.
 """
 import os
 import re
+import subprocess
 
 import yt_dlp
 
@@ -88,6 +89,107 @@ class _NormalizeArtistSeparatorPP(yt_dlp.postprocessor.PostProcessor):
         return [], info
 
 
+_CROPDETECT_LIMITS = (30, 35, 40, 45, 50, 55, 60)
+
+
+def _detect_pillarbox_crop(image_path: str, ffmpeg: str):
+    """Return (w, h, x, y) crop box if the image looks like a square
+    cover padded with solid-color bars into a wider frame, else None.
+
+    The padding color varies per upload (often a dark theme color, not
+    pure black) and its detected luma shifts with image codec/compression
+    (jpg vs webp versions of the "same" thumbnail need different
+    thresholds), so cropdetect's default limit (~24) is unreliable. Sweep
+    increasing thresholds and stop at the first that finds a plausible
+    crop -- the smallest threshold that detects anything is the most
+    conservative, least likely to eat into real artwork.
+    """
+    orig_w = orig_h = None
+    for limit in _CROPDETECT_LIMITS:
+        result = subprocess.run(
+            [ffmpeg, "-i", image_path, "-vf", f"cropdetect=limit={limit}:round=2:skip=0", "-f", "null", "-"],
+            capture_output=True, text=True, timeout=20,
+        )
+
+        if orig_w is None:
+            size_match = re.search(r"Video:.*?(\d+)x(\d+)", result.stderr)
+            if not size_match:
+                return None
+            orig_w, orig_h = int(size_match.group(1)), int(size_match.group(2))
+            if not orig_w or not orig_h:
+                return None
+
+        crop_match = re.search(r"crop=(\d+):(\d+):(\d+):(\d+)", result.stderr)
+        if not crop_match:
+            continue
+        crop_w, crop_h, crop_x, crop_y = (int(g) for g in crop_match.groups())
+        area_ratio = (crop_w * crop_h) / (orig_w * orig_h)
+        if 0.4 <= area_ratio < 0.95:
+            return crop_w, crop_h, crop_x, crop_y
+
+    return None
+
+
+class _CropPillarboxedThumbnailPP(yt_dlp.postprocessor.PostProcessor):
+    """Many "official" music uploads on YouTube pad a square album cover
+    with solid color bars to fill out a 16:9 thumbnail frame. Detect and
+    strip that padding before EmbedThumbnail runs, so the embedded art
+    is the clean square cover instead of a pillarboxed one.
+
+    Every step here is wrapped so a crop failure can only ever mean "skip
+    the crop, embed the original thumbnail" -- it must never be able to
+    break or block the rest of the download the way it did before (an
+    earlier version left thumbnails unembedded entirely on some tracks).
+
+    Takes `log` directly rather than using to_screen/self.to_screen: those
+    route through yt-dlp's own logger, which "quiet": True in _base_opts
+    silently swallows -- log is the callback that actually reaches the
+    Import page's UI."""
+
+    def __init__(self, log):
+        super().__init__()
+        self._log = log
+
+    def run(self, info):
+        for thumb in info.get("thumbnails", []):
+            filepath = thumb.get("filepath")
+            if not filepath or not os.path.exists(filepath):
+                continue
+            try:
+                self._crop(filepath)
+            except Exception as exc:
+                self._log(f"Skipping pillarbox crop ({exc})")
+        return [], info
+
+    def _crop(self, image_path: str) -> None:
+        ffmpeg = FFMPEG_LOCATION or "ffmpeg"
+        box = _detect_pillarbox_crop(image_path, ffmpeg)
+        if box is None:
+            return
+        w, h, x, y = box
+
+        # Keep the output in the same format as the input (ffmpeg infers
+        # format from the output extension) -- writing e.g. jpeg bytes into
+        # a ".webp"-named path desyncs the filename from its content, which
+        # broke yt-dlp's later webp->png conversion step for EmbedThumbnail.
+        ext = os.path.splitext(image_path)[1]
+        cropped_path = image_path + f".cropped{ext}"
+        try:
+            result = subprocess.run(
+                [ffmpeg, "-y", "-i", image_path, "-vf", f"crop={w}:{h}:{x}:{y}", cropped_path],
+                capture_output=True, timeout=20,
+            )
+            if result.returncode == 0 and os.path.getsize(cropped_path) > 0:
+                os.replace(cropped_path, image_path)
+                self._log("Cropped pillarboxed cover art to the actual square artwork")
+        finally:
+            if os.path.exists(cropped_path) and cropped_path != image_path:
+                try:
+                    os.remove(cropped_path)
+                except OSError:
+                    pass
+
+
 class _QuietLogger:
     def __init__(self, log):
         self._log = log
@@ -143,6 +245,7 @@ def download_and_convert(url: str, output_dir: str, log=print, title: str = None
     with yt_dlp.YoutubeDL(_base_opts(output_dir, log)) as ydl:
         ydl.add_post_processor(_PreferReleaseDatePP(), when="pre_process")
         ydl.add_post_processor(_NormalizeArtistSeparatorPP(), when="pre_process")
+        ydl.add_post_processor(_CropPillarboxedThumbnailPP(log), when="before_dl")
         if not title:
             preview = ydl.extract_info(normalized, download=False)
             title = preview.get("title", "audio")
