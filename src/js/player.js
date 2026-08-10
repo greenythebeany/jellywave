@@ -340,8 +340,15 @@ export class Player {
     // distorted-looking artwork seen on a phone's cross-device media
     // controls for a desktop session. Jellyfin resizes server-side via its
     // own maxSize param, so this asks for a real image at each size.
+    //
+    // Largest first: the standard Web MediaSession API picks by matching
+    // `sizes` to the actual display context regardless of array order, but
+    // the native Android plugin (@capgo/capacitor-media-session) doesn't
+    // parse `sizes` at all — it just uses artwork[0] unconditionally. With
+    // ascending order that was the 96x96 entry, stretched to fill the much
+    // larger notification/lock-screen art area — hence the pixelation.
     const artwork = track
-      ? [96, 192, 256, 384, 512].map((size) => ({ src: this.jellyfin.imageUrl(track, 'Primary', size), sizes: `${size}x${size}`, type: 'image/jpeg' })).filter((a) => a.src)
+      ? [512, 384, 256, 192, 96].map((size) => ({ src: this.jellyfin.imageUrl(track, 'Primary', size), sizes: `${size}x${size}`, type: 'image/jpeg' })).filter((a) => a.src)
       : [];
 
     const native = this._nativeMediaSession();
