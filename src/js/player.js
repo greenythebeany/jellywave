@@ -684,7 +684,16 @@ export class Player {
       outgoing.volume = outgoingTarget * (1 - t);
       incoming.volume = incomingTarget * t;
       if (t < 1) {
-        this._fadeRAF = requestAnimationFrame(step);
+        // setTimeout, not requestAnimationFrame: rAF callbacks simply never
+        // fire while the page/WebView is hidden (backgrounded app), so a
+        // crossfade started right before backgrounding would freeze here
+        // forever with _transitioning stuck true — which made _onEnded()
+        // ignore the outgoing track's real 'ended' event too, stalling
+        // playback dead until the app was refocused. setTimeout still runs
+        // in the background (just throttled to ~1/s by the browser), and
+        // since `t` is computed off real elapsed time rather than tick
+        // count, a chunkier background cadence still fades correctly.
+        this._fadeRAF = setTimeout(step, 16);
         return;
       }
       outgoing.pause();
@@ -705,11 +714,11 @@ export class Player {
       // instead of leaving playback stuck on a broken element.
       if (incomingFailed) this._loadCurrent(true);
     };
-    this._fadeRAF = requestAnimationFrame(step);
+    this._fadeRAF = setTimeout(step, 16);
   }
 
   _cancelTransition() {
-    if (this._fadeRAF) cancelAnimationFrame(this._fadeRAF);
+    if (this._fadeRAF) clearTimeout(this._fadeRAF);
     this._fadeRAF = null;
     if (this._transitioning) {
       // A manual skip mid-crossfade: stop whichever element was fading in
