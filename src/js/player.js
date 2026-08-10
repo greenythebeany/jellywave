@@ -65,19 +65,19 @@ export class Player {
     this.eqEnabled = false;
     this.eqGains = new Array(EQ_BANDS.length).fill(0);
 
-    // A fixed, non-adjustable native volume boost on Android (see
-    // LoudnessPlugin.java) — there was previously a full native equalizer
-    // and a user-adjustable boost slider too, but on-device testing found
-    // android.media.audiofx effects (both Equalizer and LoudnessEnhancer)
-    // fail outright on at least one real device with
-    // ERROR_INVALID_OPERATION when attached to the global session, a HAL
-    // capability gap with no app-level fix. Not worth a whole settings UI
-    // for something that may silently no-op depending on the device — this
-    // just quietly tries a mild fixed boost once real playback starts, and
-    // quietly does nothing on devices (like the one this was tested on)
-    // where that isn't supported.
+    // A user-adjustable native volume boost on Android (see
+    // LoudnessPlugin.java) — android.media.audiofx effects (LoudnessEnhancer
+    // here, previously also tried for a real Equalizer) attach to a real
+    // playback session, not a hardcoded default, and need
+    // MODIFY_AUDIO_SETTINGS declared in the manifest or they fail outright
+    // with ERROR_INVALID_OPERATION even with a real session (this app's own
+    // silent failure for a while, until that permission was added). No
+    // error surfacing here still: a device whose HAL genuinely doesn't
+    // support this at all should just quietly get no boost, not a confusing
+    // error the user can't act on.
     this._nativeLoudness = isAndroid ? window.Capacitor?.Plugins?.JellyWaveLoudness : null;
     this._nativeAudioAttempted = false;
+    this.loudnessBoostDb = 10; // matches the old hardcoded default, until setLoudnessBoostDb changes it
 
     // Chromium's own WebView audio pipeline pauses playback on its own the
     // moment Android audio focus is lost (another app's notification
@@ -268,18 +268,26 @@ export class Player {
     }
   }
 
-  // A fixed +10dB attempt, once, the first time real playback starts (an
-  // output stream needs to genuinely exist for a session-0 native effect
-  // to attach to at all — confirmed on-device). No settings, no retries,
-  // no error surfacing: some devices' audio HAL simply doesn't support
-  // this at all (confirmed: ERROR_INVALID_OPERATION on a real device for
-  // both Equalizer and LoudnessEnhancer alike), and that's not something
-  // worth bothering the user about — it silently helps where it can and
-  // silently does nothing where it can't.
+  // Attempted once, the first time real playback starts (an output stream
+  // needs to genuinely exist for a session-0 native effect to attach to at
+  // all). No error surfacing: a device whose HAL genuinely doesn't support
+  // this should just quietly get no boost, not a confusing error the user
+  // can't act on either way.
   _tryNativeLoudnessBoost() {
     if (!this._nativeLoudness || this._nativeAudioAttempted) return;
     this._nativeAudioAttempted = true;
-    this._nativeLoudness.setLoudnessGain({ gainMillibels: 1000 }).catch(() => {});
+    this._nativeLoudness.setLoudnessGain({ gainMillibels: Math.round(this.loudnessBoostDb * 100) }).catch(() => {});
+  }
+
+  // Android only. Takes effect immediately if a real playback session
+  // already exists to attach to (see _tryNativeLoudnessBoost above for why
+  // one might not yet); otherwise the new value just becomes what gets
+  // applied whenever that first attach happens.
+  setLoudnessBoostDb(db) {
+    this.loudnessBoostDb = Math.min(20, Math.max(0, db));
+    if (this._nativeAudioAttempted) {
+      this._nativeLoudness?.setLoudnessGain({ gainMillibels: Math.round(this.loudnessBoostDb * 100) }).catch(() => {});
+    }
   }
 
   // ---------- MediaSession (lock-screen / notification controls) ----------

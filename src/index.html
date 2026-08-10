@@ -468,6 +468,16 @@
             </div>
             <button type="button" id="btn-eq-reset" class="attribution-link" data-i18n="settings.equalizerReset">Reset</button>
           </div>
+          <div class="settings-row" id="loudness-boost-row">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.loudnessBoost">Volume booster</div>
+              <div class="settings-row-desc" data-i18n="settings.loudnessBoostDesc">Native volume boost, on top of the normal volume slider (Android only)</div>
+            </div>
+            <div class="crossfade-control">
+              <input type="range" id="loudness-boost-slider" class="seek-bar" min="0" max="20" step="1" value="10" />
+              <span id="loudness-boost-value" class="crossfade-value">10 dB</span>
+            </div>
+          </div>
           <div class="settings-row">
             <div>
               <div class="settings-row-label" data-i18n="settings.discordPresence">Discord Rich Presence</div>

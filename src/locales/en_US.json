@@ -172,6 +172,8 @@
     "equalizer": "Equalizer",
     "equalizerDesc": "Shape the sound with a 5-band graphic equalizer (desktop only)",
     "equalizerReset": "Reset",
+    "loudnessBoost": "Volume booster",
+    "loudnessBoostDesc": "Native volume boost, on top of the normal volume slider (Android only)",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Shows what you're listening to on your Discord profile (desktop only)",
     "discordConnect": "Connect",

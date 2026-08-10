@@ -172,6 +172,8 @@
     "equalizer": "Ekvalizér",
     "equalizerDesc": "Uprav zvuk pomocou 5-pásmového grafického ekvalizéra (iba na počítači)",
     "equalizerReset": "Obnoviť",
+    "loudnessBoost": "Zosilňovač hlasitosti",
+    "loudnessBoostDesc": "Natívne zosilnenie hlasitosti navyše k bežnému posuvníku hlasitosti (iba Android)",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Zobrazí na tvojom Discord profile, čo práve počúvaš (iba desktop)",
     "discordConnect": "Pripojiť",

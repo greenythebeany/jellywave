@@ -29,6 +29,7 @@ const DEFAULTS = {
   eqEnabled: false,
   eqGains: [0, 0, 0, 0, 0], // dB, one per EQ_BANDS entry in player.js, -12 to 12
   eqPreset: 'flat',
+  loudnessBoostDb: 10, // Android only, 0-20 -- native android.media.audiofx.LoudnessEnhancer gain, see LoudnessPlugin.java
   offlineMode: false, // when on, only downloaded tracks are playable/clickable
   updatedAt: 0 // bumped on every local change — lets initRemoteSync tell
   // whether this device's settings or the server's saved copy is newer
