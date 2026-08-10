@@ -40,7 +40,8 @@
     "forward": "Dopredu",
     "stats": "Štatistiky",
     "downloads": "Stiahnuté",
-    "grab": "Import"
+    "grab": "Import",
+    "pinnedAlbums": "Pripnuté albumy"
   },
   "header": {
     "searchPlaceholder": "Čo si chcete vypočuť?"
@@ -98,7 +99,9 @@
     "songCountPlural": "{count} skladieb"
   },
   "album": {
-    "empty": "Tento album neobsahuje žiadne skladby."
+    "empty": "Tento album neobsahuje žiadne skladby.",
+    "pin": "Pripnúť do bočného panela",
+    "unpin": "Odopnúť z bočného panela"
   },
   "kind": {
     "playlist": "Playlist",

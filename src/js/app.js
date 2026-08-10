@@ -7,6 +7,7 @@ import { platform, isDesktop, isMobile, sessionStore, windowControls, wireHardwa
 import { createConnect } from './connect.js';
 import { isSupported as downloadsSupported, isDownloaded, downloadTrack, deleteDownload, onDownloadsChange, getDownloadedTracks, getLocalImageUri } from './downloads.js';
 import { renderGrab } from './grab.js';
+import { getPinnedAlbums, isAlbumPinned, togglePinAlbum, onPinnedAlbumsChange } from './pinnedAlbums.js';
 
 // ---------- DOM refs ----------
 const loginScreen = document.getElementById('login-screen');
@@ -18,6 +19,8 @@ const btnRetryConnection = document.getElementById('btn-retry-connection');
 
 const viewRoot = document.getElementById('view-root');
 const playlistListEl = document.getElementById('playlist-list');
+const pinnedAlbumsListEl = document.getElementById('pinned-albums-list');
+const pinnedAlbumsSectionEl = document.getElementById('pinned-albums-section');
 const globalSearchWrap = document.getElementById('global-search-wrap');
 const globalSearchInput = document.getElementById('global-search');
 
@@ -416,8 +419,11 @@ async function enterApp(username) {
   musicLibraryId = libs[0]?.Id;
 
   await loadPlaylistSidebar();
+  loadPinnedAlbumsSidebar();
   navigateTo({ view: 'home' });
 }
+
+onPinnedAlbumsChange(loadPinnedAlbumsSidebar);
 
 // ---------- Login form ----------
 btnRetryConnection.addEventListener('click', async () => {
@@ -1372,6 +1378,24 @@ async function loadPlaylistSidebar() {
   });
 }
 
+function loadPinnedAlbumsSidebar() {
+  const albums = getPinnedAlbums();
+  pinnedAlbumsSectionEl.hidden = !albums.length;
+  pinnedAlbumsListEl.innerHTML = '';
+  albums.forEach((album) => {
+    const item = el('button', 'playlist-item');
+    const img = document.createElement('img');
+    img.className = 'pl-thumb';
+    img.src = artUrl(album);
+    item.appendChild(img);
+    const span = document.createElement('span');
+    span.textContent = album.Name;
+    item.appendChild(span);
+    item.addEventListener('click', () => navigateTo({ view: 'album', id: album.Id }));
+    pinnedAlbumsListEl.appendChild(item);
+  });
+}
+
 // ---------- View router with back/forward ----------
 function navigateTo(state, pushHistory = true) {
   if (pushHistory && viewHistory.length) viewFuture = [];
@@ -2070,7 +2094,8 @@ async function renderAlbumDetail(id) {
     round: false,
     onPlayAll: tracks.length ? () => player.setQueue(tracks, 0, id) : undefined,
     trackIds: tracks.map((t) => t.Id),
-    downloadTracks: tracks
+    downloadTracks: tracks,
+    pinAlbum: tracks.length ? { Id: id, Name: first?.Album || 'Album', AlbumId: id } : undefined
   }));
   if (!tracks.length) {
     viewRoot.appendChild(el('div', 'empty-state', t('album.empty')));
@@ -2323,7 +2348,7 @@ async function playCollection(item, kind) {
   }
 }
 
-function buildDetailHeader({ kind, title, sub, art, round, onPlayAll, trackIds, onChangeArt, downloadTracks }) {
+function buildDetailHeader({ kind, title, sub, art, round, onPlayAll, trackIds, onChangeArt, downloadTracks, pinAlbum }) {
   const wrap = el('div', '');
   const header = el('div', 'detail-header');
   const artWrap = el('div', 'detail-art-wrap');
@@ -2379,6 +2404,13 @@ function buildDetailHeader({ kind, title, sub, art, round, onPlayAll, trackIds, 
       dlBtn.type = 'button';
       wireAlbumDownloadButton(dlBtn, downloadTracks);
       actions.appendChild(dlBtn);
+    }
+
+    if (pinAlbum) {
+      const pinBtn = el('button', 'detail-pin-btn', '<i class="fi fi-br-thumbtack"></i>');
+      pinBtn.type = 'button';
+      wirePinButton(pinBtn, pinAlbum);
+      actions.appendChild(pinBtn);
     }
 
     wrap.appendChild(actions);
@@ -2458,6 +2490,20 @@ function wireAlbumDownloadButton(btn, tracks) {
         return;
       }
     }
+    refresh();
+  });
+}
+
+function wirePinButton(btn, album) {
+  const refresh = () => {
+    const pinned = isAlbumPinned(album.Id);
+    btn.classList.toggle('pinned', pinned);
+    btn.title = t(pinned ? 'album.unpin' : 'album.pin');
+  };
+  refresh();
+  btn.addEventListener('click', (evt) => {
+    evt.stopPropagation();
+    togglePinAlbum(album);
     refresh();
   });
 }

@@ -40,7 +40,8 @@
     "forward": "Forward",
     "stats": "Stats",
     "downloads": "Downloads",
-    "grab": "Import"
+    "grab": "Import",
+    "pinnedAlbums": "Pinned Albums"
   },
   "header": {
     "searchPlaceholder": "What do you want to play?"
@@ -98,7 +99,9 @@
     "songCountPlural": "{count} songs"
   },
   "album": {
-    "empty": "This album has no tracks."
+    "empty": "This album has no tracks.",
+    "pin": "Pin to sidebar",
+    "unpin": "Unpin from sidebar"
   },
   "kind": {
     "playlist": "Playlist",
