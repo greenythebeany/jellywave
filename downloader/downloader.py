@@ -93,69 +93,77 @@ _BORDER_SAMPLE_STEP = 4  # sample every Nth row/column instead of all of them, f
 _BORDER_MATCH_FRACTION = 0.95  # how much of a row/column must match to still count as border
 
 
-def _detect_pillarbox_crop(image_path: str):
-    """Return a PIL crop box (left, top, right, bottom) if the image looks
-    like a square cover padded with a solid-color border into a wider
-    frame, else None.
+_MAX_BORDER_LAYERS = 1  # real thumbnails only had one genuine padding layer, verified
+# by testing an actual reported case -- what looked like a second, nested
+# border in earlier screenshots turned out to be the image viewer's own
+# letterboxing, not part of the file. Multiple passes actively caused a
+# real bug: pass 2 re-samples the corner color of the already-cropped
+# result, and compression blur right at the padding/content boundary reads
+# as still-padding, so it keeps eating inward into real content (verified:
+# it ate a clean 720x720 crop down to 534x614, clipping the actual text).
+
+
+def _detect_border_layer(img):
+    """One pass: return a PIL crop box (left, top, right, bottom) if img
+    has a uniform-colored border on its edges, else None.
 
     Samples the actual corner color and scans inward looking for where
     that color stops, rather than assuming padding is black-ish the way
     ffmpeg's cropdetect filter does -- padding shows up in every color
     (dark red, olive, navy, ...) and a fixed black-detection threshold
     misses most of them, which is exactly what happened before this.
+
+    Deliberately doesn't check for a square-ish result here -- some
+    thumbnails nest multiple borders (e.g. a black letterbox frame around
+    an olive pillarbox around the actual square art), and an intermediate
+    layer stripped on its own isn't square yet. See _crop, which peels
+    layers in a loop and only checks squareness of the final result.
     """
-    from PIL import Image
+    w, h = img.size
+    px = img.load()
 
-    with Image.open(image_path) as img:
-        img = img.convert("RGB")
-        w, h = img.size
-        px = img.load()
+    corners = [px[0, 0], px[w - 1, 0], px[0, h - 1], px[w - 1, h - 1]]
+    ref = tuple(sum(c[i] for c in corners) // 4 for i in range(3))
 
-        corners = [px[0, 0], px[w - 1, 0], px[0, h - 1], px[w - 1, h - 1]]
-        ref = tuple(sum(c[i] for c in corners) // 4 for i in range(3))
+    def matches(color):
+        return all(abs(color[i] - ref[i]) <= _BORDER_TOLERANCE for i in range(3))
 
-        def matches(color):
-            return all(abs(color[i] - ref[i]) <= _BORDER_TOLERANCE for i in range(3))
+    def column_is_border(x):
+        ys = range(0, h, _BORDER_SAMPLE_STEP)
+        hits = sum(1 for y in ys if matches(px[x, y]))
+        return hits / len(ys) >= _BORDER_MATCH_FRACTION
 
-        def column_is_border(x):
-            ys = range(0, h, _BORDER_SAMPLE_STEP)
-            hits = sum(1 for y in ys if matches(px[x, y]))
-            return hits / len(ys) >= _BORDER_MATCH_FRACTION
+    def row_is_border(y):
+        xs = range(0, w, _BORDER_SAMPLE_STEP)
+        hits = sum(1 for x in xs if matches(px[x, y]))
+        return hits / len(xs) >= _BORDER_MATCH_FRACTION
 
-        def row_is_border(y):
-            xs = range(0, w, _BORDER_SAMPLE_STEP)
-            hits = sum(1 for x in xs if matches(px[x, y]))
-            return hits / len(xs) >= _BORDER_MATCH_FRACTION
+    left = 0
+    while left < w // 2 and column_is_border(left):
+        left += 1
+    right = w - 1
+    while right > w // 2 and column_is_border(right):
+        right -= 1
+    top = 0
+    while top < h // 2 and row_is_border(top):
+        top += 1
+    bottom = h - 1
+    while bottom > h // 2 and row_is_border(bottom):
+        bottom -= 1
 
-        left = 0
-        while left < w // 2 and column_is_border(left):
-            left += 1
-        right = w - 1
-        while right > w // 2 and column_is_border(right):
-            right -= 1
-        top = 0
-        while top < h // 2 and row_is_border(top):
-            top += 1
-        bottom = h - 1
-        while bottom > h // 2 and row_is_border(bottom):
-            bottom -= 1
+    crop_w, crop_h = right - left + 1, bottom - top + 1
+    if crop_w <= 0 or crop_h <= 0:
+        return None
+    # A layer has to actually give up a meaningful chunk of the image to
+    # count -- otherwise compression noise near an edge could "detect" a
+    # sliver-thin border forever and this would never terminate on its own
+    # (the _MAX_BORDER_LAYERS cap would still stop it, but this keeps each
+    # individual pass meaningful rather than relying only on that cap).
+    area_ratio = (crop_w * crop_h) / (w * h)
+    if not (0.4 <= area_ratio < 0.98):
+        return None
 
-        crop_w, crop_h = right - left + 1, bottom - top + 1
-        if crop_w <= 0 or crop_h <= 0:
-            return None
-
-        area_ratio = (crop_w * crop_h) / (w * h)
-        if not (0.4 <= area_ratio < 0.95):
-            return None
-        # Specifically hunting for square album art padded into a wider
-        # frame -- require the result to actually look square-ish, so a
-        # real photo that happens to have uniform-colored edges doesn't
-        # get cropped into some arbitrary non-square shape.
-        aspect = crop_w / crop_h
-        if not (0.8 <= aspect <= 1.25):
-            return None
-
-        return left, top, right + 1, bottom + 1
+    return left, top, right + 1, bottom + 1
 
 
 class _CropPillarboxedThumbnailPP(yt_dlp.postprocessor.PostProcessor):
@@ -184,32 +192,74 @@ class _CropPillarboxedThumbnailPP(yt_dlp.postprocessor.PostProcessor):
             if not filepath or not os.path.exists(filepath):
                 continue
             try:
-                self._crop(filepath)
+                new_path = self._crop(filepath)
+                if new_path != filepath:
+                    thumb["filepath"] = new_path
             except Exception as exc:
                 self._log(f"Skipping pillarbox crop ({exc})")
         return [], info
 
-    def _crop(self, image_path: str) -> None:
+    def _crop(self, image_path: str) -> str:
+        """Crop to square and normalize to JPEG. Returns the path the
+        result was actually written to (same as image_path unless the
+        source wasn't already .jpg).
+
+        Normalizing to JPEG isn't just about cropping: yt-dlp downloads
+        thumbnails as WebP, and WebP/PNG embed fine per the ID3 spec, but
+        Windows Explorer's thumbnail extractor is flaky about anything
+        that isn't a plain JPEG cover -- verified directly: a working
+        older download had ID3v2.3 + image/jpeg, a broken new one had
+        ID3v2.4 + image/png (yt-dlp's own EmbedThumbnail step converts
+        WebP to PNG for embedding since it can't embed WebP directly).
+        Producing JPEG here ourselves, with a matching .jpg extension,
+        sidesteps that conversion happening at all."""
         from PIL import Image
 
-        box = _detect_pillarbox_crop(image_path)
-        if box is None:
-            return
+        with Image.open(image_path) as original:
+            img = original.convert("RGB")
+            original_size = img.size
 
-        with Image.open(image_path) as img:
-            fmt = img.format
-            cropped = img.crop(box)
-            # Re-save under the exact same path/format the original was in
-            # -- guarantees the extension and the actual file content stay
-            # in sync (a mismatch there, from an earlier ffmpeg-based
-            # version of this, broke yt-dlp's later thumbnail-format
-            # conversion step for EmbedThumbnail).
-            save_kwargs = {"quality": 95} if fmt == "JPEG" else {}
-            if fmt == "JPEG":
-                cropped = cropped.convert("RGB")
-            cropped.save(image_path, format=fmt, **save_kwargs)
+            # Smart pass: strip any solid-color padding layers first, so a
+            # properly-centered piece of square art isn't just blindly
+            # trimmed from whichever side happens to be wider. Isolated in
+            # its own try/except -- squaring below is unconditional and a
+            # crash in this smart pass specifically must not be able to
+            # skip it, only fall back to it detecting nothing.
+            try:
+                for _ in range(_MAX_BORDER_LAYERS):
+                    box = _detect_border_layer(img)
+                    if box is None:
+                        break
+                    img = img.crop(box)
+            except Exception:
+                pass
 
-        self._log("Cropped pillarboxed cover art to the actual square artwork")
+            # Unconditional pass: cover art must always end up 1:1, no
+            # exceptions. Border detection above doesn't always fully
+            # resolve a thumbnail to square (some are genuinely non-square
+            # designs -- a wide title card, not padded square art at all
+            # -- and detection can miss real cases too), so force it with
+            # a centered square crop regardless of what that pass did or
+            # didn't find.
+            w, h = img.size
+            if w != h:
+                side = min(w, h)
+                x, y = (w - side) // 2, (h - side) // 2
+                img = img.crop((x, y, x + side, y + side))
+
+            was_cropped = img.size != original_size
+
+        already_jpeg = image_path.lower().endswith((".jpg", ".jpeg"))
+        if not was_cropped and already_jpeg:
+            return image_path  # already square and already the target format -- nothing to do
+
+        out_path = os.path.splitext(image_path)[0] + ".jpg"
+        img.save(out_path, format="JPEG", quality=95)
+        if out_path != image_path:
+            os.remove(image_path)
+
+        self._log("Cropped cover art to a square" if was_cropped else "Converted cover art to JPEG for compatibility")
+        return out_path
 
 
 class _QuietLogger:
