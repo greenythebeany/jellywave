@@ -2500,7 +2500,13 @@ function wireSwipeActions(rowEl, { onSwipeRight, onSwipeLeft, onLongPress } = {}
   // relative to the row itself (the nearest *positioned* ancestor, per
   // .track-row/.queue-row's position:relative), not that cell, so it still
   // spans the row's full width correctly either way.
-  const iconHost = (rowEl.tagName === 'TR' ? rowEl.querySelector('td') : rowEl) || rowEl;
+  // The first <td> (track index/play-icon cell) already has its own hover/
+  // playing play indicator — hosting the swipe icon there too (still just
+  // a DOM-attachment point, position:absolute means it renders relative
+  // to the row regardless of which cell it's actually in) put both icons
+  // in the same cramped spot. The last cell (track time) has nothing else
+  // in it.
+  const iconHost = (rowEl.tagName === 'TR' ? rowEl.querySelector('td:last-child') : rowEl) || rowEl;
   if (onSwipeRight) iconHost.appendChild(el('i', 'fi fi-br-list-music swipe-icon swipe-icon-queue'));
   if (onSwipeLeft) iconHost.appendChild(el('i', 'fi fi-br-trash swipe-icon swipe-icon-remove'));
 
@@ -3065,6 +3071,16 @@ function buildQueueRow(track, idx, isPlaying) {
 // never has to be disambiguated from the swipe-to-remove gesture on the
 // same row — Pointer Events unify mouse (desktop) and touch (mobile).
 function wireQueueDragHandle(handle, row) {
+  // Pointer Events and Touch Events are separate, parallel systems —
+  // stopPropagation() on the pointerdown below does NOT stop the browser's
+  // own native touchstart from also firing and bubbling up to the row's
+  // OWN touch listeners (wireSwipeActions' long-press timer among them).
+  // Without this, starting a drag from the handle also started that
+  // timer in parallel, and after 500ms it popped the context menu mid-
+  // drag, hijacking the gesture — confirmed on-device. Stopping the touch
+  // event here, at the handle itself before it ever bubbles to the row,
+  // is what actually prevents that.
+  handle.addEventListener('touchstart', (evt) => evt.stopPropagation(), { passive: true });
   handle.addEventListener('pointerdown', (evt) => {
     evt.preventDefault();
     evt.stopPropagation();

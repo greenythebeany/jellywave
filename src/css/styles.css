@@ -588,15 +588,21 @@ svg { fill: currentColor; width: 100%; height: 100%; }
    and beat-sync there would re-route audio through Web Audio, which is
    unsafe on Android's WebView — see syncCatJamVisibility). */
 .now-playing-art-wrap .cat-jam {
-  position: absolute; left: auto; right: 0; bottom: 0; z-index: 3;
+  position: absolute; left: 0; right: auto; bottom: 0; z-index: 3;
   width: 40%; height: 40%; max-width: 130px; max-height: 130px;
-  transform-origin: bottom right;
-  /* Flush against the art's own right/bottom edges, so those two corners
-     match its existing rounding; the bottom-left corner is the one that
-     actually sits out in the open middle of the art, so round it too
-     rather than leaving a sharp rectangle floating there. */
-  border-bottom-left-radius: var(--radius-lg);
-  border-bottom-right-radius: var(--radius-lg);
+  transform-origin: bottom left;
+  /* Flush against the art's own left/bottom edges, so its bottom-left
+     corner needs to match the art's actual radius (--radius-md, not
+     --radius-lg — this used the wrong token before) to blend rather than
+     poke a sharp corner out past the art's own rounded one. The bottom-
+     right corner just floats in open space with nothing to match, so it's
+     rounded a bit purely for looks, not to line up with anything specific.
+     transform: scale() below scales the rendered radius right along with
+     everything else, so dividing by --cat-scale here cancels that out —
+     without it, the *visual* radius drifted with the slider instead of
+     staying pinned to the art's own corner. */
+  border-bottom-left-radius: calc(var(--radius-md) / var(--cat-scale, 1));
+  border-bottom-right-radius: calc(var(--radius-md) / var(--cat-scale, 1));
 }
 .now-playing-info-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 220px; margin: 0 auto; }
 .now-playing-text { min-width: 0; text-align: center; }
@@ -641,6 +647,10 @@ svg { fill: currentColor; width: 100%; height: 100%; }
   cursor: grab; touch-action: none;
 }
 .queue-row-handle:hover { color: var(--text-secondary); }
+/* The remove swipe-icon sits at the row's right edge, exactly where the
+   drag handle already lives at rest — fade the handle out while a swipe
+   is actively revealing that icon instead of showing both stacked. */
+.queue-row.swipe-remove .queue-row-handle, .queue-row.swipe-queue .queue-row-handle { opacity: 0; transition: opacity 0.1s ease; }
 .queue-row.dragging { background: var(--bg-highlight); box-shadow: 0 8px 20px rgba(0,0,0,0.35); cursor: grabbing; }
 .queue-empty { color: var(--text-tertiary); font-size: 13.5px; text-align: center; margin-top: 30px; padding: 0 16px; }
 

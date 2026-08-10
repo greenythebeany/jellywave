@@ -398,15 +398,20 @@ export class Player {
     this._loadCurrent(true);
   }
 
-  // Appends a single track to the end of the current queue without
-  // replacing it — if nothing is playing yet, this just starts it instead.
+  // Inserts a single track to play right after whatever's currently
+  // playing (not appended at the end) — if nothing is playing yet, this
+  // just starts it instead. Also inserted into originalQueue at the
+  // equivalent position, so it stays right after the same track if the
+  // user later turns shuffle off.
   enqueue(track) {
     if (this.currentIndex < 0 || !this.queue.length) {
       this.setQueue([track], 0);
       return;
     }
-    this.queue.push(track);
-    this.originalQueue.push(track);
+    this.queue.splice(this.currentIndex + 1, 0, track);
+    const currentTrack = this.queue[this.currentIndex];
+    const originalIdx = this.originalQueue.indexOf(currentTrack);
+    this.originalQueue.splice(originalIdx >= 0 ? originalIdx + 1 : this.originalQueue.length, 0, track);
     this._emit('queuechange');
   }
 
