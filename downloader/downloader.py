@@ -9,7 +9,6 @@ yt-dlp is actively maintained specifically to track those changes.
 """
 import os
 import re
-import subprocess
 
 import yt_dlp
 
@@ -89,52 +88,81 @@ class _NormalizeArtistSeparatorPP(yt_dlp.postprocessor.PostProcessor):
         return [], info
 
 
-_CROPDETECT_LIMITS = (30, 35, 40, 45, 50, 55, 60)
+_BORDER_TOLERANCE = 24   # per RGB channel; JPEG/WebP compression adds noise even to flat color
+_BORDER_SAMPLE_STEP = 4  # sample every Nth row/column instead of all of them, for speed
+_BORDER_MATCH_FRACTION = 0.95  # how much of a row/column must match to still count as border
 
 
-def _detect_pillarbox_crop(image_path: str, ffmpeg: str):
-    """Return (w, h, x, y) crop box if the image looks like a square
-    cover padded with solid-color bars into a wider frame, else None.
+def _detect_pillarbox_crop(image_path: str):
+    """Return a PIL crop box (left, top, right, bottom) if the image looks
+    like a square cover padded with a solid-color border into a wider
+    frame, else None.
 
-    The padding color varies per upload (often a dark theme color, not
-    pure black) and its detected luma shifts with image codec/compression
-    (jpg vs webp versions of the "same" thumbnail need different
-    thresholds), so cropdetect's default limit (~24) is unreliable. Sweep
-    increasing thresholds and stop at the first that finds a plausible
-    crop -- the smallest threshold that detects anything is the most
-    conservative, least likely to eat into real artwork.
+    Samples the actual corner color and scans inward looking for where
+    that color stops, rather than assuming padding is black-ish the way
+    ffmpeg's cropdetect filter does -- padding shows up in every color
+    (dark red, olive, navy, ...) and a fixed black-detection threshold
+    misses most of them, which is exactly what happened before this.
     """
-    orig_w = orig_h = None
-    for limit in _CROPDETECT_LIMITS:
-        result = subprocess.run(
-            [ffmpeg, "-i", image_path, "-vf", f"cropdetect=limit={limit}:round=2:skip=0", "-f", "null", "-"],
-            capture_output=True, text=True, timeout=20,
-        )
+    from PIL import Image
 
-        if orig_w is None:
-            size_match = re.search(r"Video:.*?(\d+)x(\d+)", result.stderr)
-            if not size_match:
-                return None
-            orig_w, orig_h = int(size_match.group(1)), int(size_match.group(2))
-            if not orig_w or not orig_h:
-                return None
+    with Image.open(image_path) as img:
+        img = img.convert("RGB")
+        w, h = img.size
+        px = img.load()
 
-        crop_match = re.search(r"crop=(\d+):(\d+):(\d+):(\d+)", result.stderr)
-        if not crop_match:
-            continue
-        crop_w, crop_h, crop_x, crop_y = (int(g) for g in crop_match.groups())
-        area_ratio = (crop_w * crop_h) / (orig_w * orig_h)
-        if 0.4 <= area_ratio < 0.95:
-            return crop_w, crop_h, crop_x, crop_y
+        corners = [px[0, 0], px[w - 1, 0], px[0, h - 1], px[w - 1, h - 1]]
+        ref = tuple(sum(c[i] for c in corners) // 4 for i in range(3))
 
-    return None
+        def matches(color):
+            return all(abs(color[i] - ref[i]) <= _BORDER_TOLERANCE for i in range(3))
+
+        def column_is_border(x):
+            ys = range(0, h, _BORDER_SAMPLE_STEP)
+            hits = sum(1 for y in ys if matches(px[x, y]))
+            return hits / len(ys) >= _BORDER_MATCH_FRACTION
+
+        def row_is_border(y):
+            xs = range(0, w, _BORDER_SAMPLE_STEP)
+            hits = sum(1 for x in xs if matches(px[x, y]))
+            return hits / len(xs) >= _BORDER_MATCH_FRACTION
+
+        left = 0
+        while left < w // 2 and column_is_border(left):
+            left += 1
+        right = w - 1
+        while right > w // 2 and column_is_border(right):
+            right -= 1
+        top = 0
+        while top < h // 2 and row_is_border(top):
+            top += 1
+        bottom = h - 1
+        while bottom > h // 2 and row_is_border(bottom):
+            bottom -= 1
+
+        crop_w, crop_h = right - left + 1, bottom - top + 1
+        if crop_w <= 0 or crop_h <= 0:
+            return None
+
+        area_ratio = (crop_w * crop_h) / (w * h)
+        if not (0.4 <= area_ratio < 0.95):
+            return None
+        # Specifically hunting for square album art padded into a wider
+        # frame -- require the result to actually look square-ish, so a
+        # real photo that happens to have uniform-colored edges doesn't
+        # get cropped into some arbitrary non-square shape.
+        aspect = crop_w / crop_h
+        if not (0.8 <= aspect <= 1.25):
+            return None
+
+        return left, top, right + 1, bottom + 1
 
 
 class _CropPillarboxedThumbnailPP(yt_dlp.postprocessor.PostProcessor):
     """Many "official" music uploads on YouTube pad a square album cover
-    with solid color bars to fill out a 16:9 thumbnail frame. Detect and
-    strip that padding before EmbedThumbnail runs, so the embedded art
-    is the clean square cover instead of a pillarboxed one.
+    with a solid color border to fill out a 16:9 thumbnail frame. Detect
+    and strip that padding before EmbedThumbnail runs, so the embedded
+    art is the clean square cover instead of a padded one.
 
     Every step here is wrapped so a crop failure can only ever mean "skip
     the crop, embed the original thumbnail" -- it must never be able to
@@ -162,32 +190,26 @@ class _CropPillarboxedThumbnailPP(yt_dlp.postprocessor.PostProcessor):
         return [], info
 
     def _crop(self, image_path: str) -> None:
-        ffmpeg = FFMPEG_LOCATION or "ffmpeg"
-        box = _detect_pillarbox_crop(image_path, ffmpeg)
+        from PIL import Image
+
+        box = _detect_pillarbox_crop(image_path)
         if box is None:
             return
-        w, h, x, y = box
 
-        # Keep the output in the same format as the input (ffmpeg infers
-        # format from the output extension) -- writing e.g. jpeg bytes into
-        # a ".webp"-named path desyncs the filename from its content, which
-        # broke yt-dlp's later webp->png conversion step for EmbedThumbnail.
-        ext = os.path.splitext(image_path)[1]
-        cropped_path = image_path + f".cropped{ext}"
-        try:
-            result = subprocess.run(
-                [ffmpeg, "-y", "-i", image_path, "-vf", f"crop={w}:{h}:{x}:{y}", cropped_path],
-                capture_output=True, timeout=20,
-            )
-            if result.returncode == 0 and os.path.getsize(cropped_path) > 0:
-                os.replace(cropped_path, image_path)
-                self._log("Cropped pillarboxed cover art to the actual square artwork")
-        finally:
-            if os.path.exists(cropped_path) and cropped_path != image_path:
-                try:
-                    os.remove(cropped_path)
-                except OSError:
-                    pass
+        with Image.open(image_path) as img:
+            fmt = img.format
+            cropped = img.crop(box)
+            # Re-save under the exact same path/format the original was in
+            # -- guarantees the extension and the actual file content stay
+            # in sync (a mismatch there, from an earlier ffmpeg-based
+            # version of this, broke yt-dlp's later thumbnail-format
+            # conversion step for EmbedThumbnail).
+            save_kwargs = {"quality": 95} if fmt == "JPEG" else {}
+            if fmt == "JPEG":
+                cropped = cropped.convert("RGB")
+            cropped.save(image_path, format=fmt, **save_kwargs)
+
+        self._log("Cropped pillarboxed cover art to the actual square artwork")
 
 
 class _QuietLogger:
