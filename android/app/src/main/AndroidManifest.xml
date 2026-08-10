@@ -37,4 +37,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Required to attach a global (session 0) android.media.audiofx effect,
+         see LoudnessPlugin.java. Without this, LoudnessEnhancer/Equalizer
+         constructed with session 0 fail outright, which is what made the
+         native volume boost silently do nothing. -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 </manifest>
