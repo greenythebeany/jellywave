@@ -722,12 +722,20 @@ input[type="range"].volume-bar { width: 110px; flex: none; }
    flow entirely) rather than a true "reveal from underneath" background
    layer, which a <tr>'s structure doesn't easily support. */
 .track-row, .queue-row { position: relative; }
+/* A solid circular badge, not a bare floating glyph — track rows always
+   have real content at both edges (the index number on the left, the
+   time on the right), so there's no genuinely empty space to reveal the
+   icon into. An opaque badge cleanly covers whatever's underneath instead
+   of a semi-transparent icon visibly overlapping that text. */
 .swipe-icon {
   position: absolute; top: 50%; transform: translateY(-50%);
-  font-size: 17px; opacity: 0; transition: opacity 0.15s ease; pointer-events: none;
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; opacity: 0; transition: opacity 0.15s ease; pointer-events: none;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.35);
 }
-.swipe-icon-queue { left: 14px; color: var(--accent); }
-.swipe-icon-remove { right: 14px; color: var(--danger); }
+.swipe-icon-queue { left: 14px; background: var(--accent-bg); color: var(--accent-contrast); }
+.swipe-icon-remove { right: 14px; background: var(--danger); color: #fff; }
 .track-row.swipe-queue .swipe-icon-queue, .queue-row.swipe-queue .swipe-icon-queue { opacity: 1; }
 .track-row.swipe-remove .swipe-icon-remove, .queue-row.swipe-remove .swipe-icon-remove { opacity: 1; }
 
