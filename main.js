@@ -1,12 +1,14 @@
-const { app, BrowserWindow, ipcMain, safeStorage, shell, globalShortcut } = require('electron');
+const { app, BrowserWindow, ipcMain, safeStorage, shell, globalShortcut, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { spawn } = require('child_process');
 const { Client: DiscordRpcClient } = require('@xhayper/discord-rpc');
 const { checkForUpdates } = require('./update-checker');
 
 const CONFIG_PATH = path.join(app.getPath('userData'), 'session.dat');
 const DISCORD_CLIENT_ID = '1534197353056174180';
 const DOWNLOADS_DIR = path.join(app.getPath('userData'), 'downloads');
+const GRAB_CLI = path.join(__dirname, 'downloader', 'cli.py');
 
 let mainWindow;
 
@@ -288,4 +290,62 @@ ipcMain.handle('downloads:getPath', (_event, itemId) => {
   } catch (err) {
     return null;
   }
+});
+
+// --- Import from YouTube/YouTube Music/SoundCloud (grab) ---
+// Runs the Python/yt-dlp engine in downloader/ as a child process rather
+// than reimplementing its logic in JS -- it already handles cookie auth,
+// YouTube's JS challenge solving, release-date correction, and pillarboxed
+// cover-art cropping, all of which are nontrivial to port. Each stdout line
+// is one JSON event (see downloader/cli.py) forwarded to the renderer as-is.
+let grabProcess = null;
+
+ipcMain.handle('grab:pickFolder', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, { properties: ['openDirectory', 'createDirectory'] });
+  if (result.canceled || !result.filePaths.length) return null;
+  return result.filePaths[0];
+});
+
+ipcMain.on('grab:start', (event, { url, outputDir }) => {
+  if (grabProcess) {
+    event.sender.send('grab:event', { type: 'error', message: 'A download is already in progress.' });
+    return;
+  }
+
+  grabProcess = spawn('python', [GRAB_CLI, url, outputDir], { cwd: path.dirname(GRAB_CLI) });
+  let buffer = '';
+
+  grabProcess.stdout.on('data', (chunk) => {
+    buffer += chunk.toString();
+    const lines = buffer.split('\n');
+    buffer = lines.pop(); // last entry may be a partial line -- keep it for next chunk
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      try {
+        event.sender.send('grab:event', JSON.parse(line));
+      } catch (err) {
+        // Non-JSON stray output (e.g. a library warning) -- surface as a log line rather than drop it silently.
+        event.sender.send('grab:event', { type: 'log', message: line });
+      }
+    }
+  });
+
+  grabProcess.stderr.on('data', (chunk) => {
+    event.sender.send('grab:event', { type: 'log', message: chunk.toString().trim() });
+  });
+
+  grabProcess.on('close', (code) => {
+    grabProcess = null;
+    if (code !== 0) event.sender.send('grab:event', { type: 'error', message: `Process exited with code ${code}` });
+  });
+
+  grabProcess.on('error', (err) => {
+    grabProcess = null;
+    event.sender.send('grab:event', { type: 'error', message: `Could not start Python: ${err.message}` });
+  });
+});
+
+ipcMain.on('grab:cancel', () => {
+  grabProcess?.kill();
+  grabProcess = null;
 });

@@ -39,7 +39,8 @@
     "back": "Back",
     "forward": "Forward",
     "stats": "Stats",
-    "downloads": "Downloads"
+    "downloads": "Downloads",
+    "grab": "Import"
   },
   "header": {
     "searchPlaceholder": "What do you want to play?"
@@ -248,5 +249,22 @@
   "downloads": {
     "title": "Downloads",
     "empty": "No downloaded songs yet."
+  },
+  "grab": {
+    "title": "Import",
+    "subtitle": "Pull a track, playlist, or album from YouTube, YouTube Music, or SoundCloud into a local folder as MP3s.",
+    "desktopOnly": "Importing is only available in the desktop app.",
+    "urlLabel": "Video, playlist, or track URL",
+    "urlPlaceholder": "https://...",
+    "folderLabel": "Save to",
+    "folderPlaceholder": "Choose a folder…",
+    "browse": "Browse…",
+    "start": "Start",
+    "cancel": "Cancel",
+    "starting": "Starting…",
+    "missingFields": "Enter a URL and pick a destination folder first.",
+    "progressStatus": "{done} of {total} done",
+    "doneStatus": "Finished: {done} of {total} succeeded",
+    "cancelled": "Cancelled."
   }
 }

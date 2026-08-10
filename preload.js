@@ -36,5 +36,13 @@ contextBridge.exposeInMainWorld('api', {
     save: (itemId, url, headers) => ipcRenderer.invoke('downloads:save', itemId, url, headers),
     delete: (itemId) => ipcRenderer.invoke('downloads:delete', itemId),
     getPath: (itemId) => ipcRenderer.invoke('downloads:getPath', itemId)
+  },
+  grab: {
+    pickFolder: () => ipcRenderer.invoke('grab:pickFolder'),
+    start: (url, outputDir) => ipcRenderer.send('grab:start', { url, outputDir }),
+    cancel: () => ipcRenderer.send('grab:cancel'),
+    onEvent: (callback) => {
+      ipcRenderer.on('grab:event', (_event, data) => callback(data));
+    }
   }
 });

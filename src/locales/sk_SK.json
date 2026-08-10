@@ -39,7 +39,8 @@
     "back": "Späť",
     "forward": "Dopredu",
     "stats": "Štatistiky",
-    "downloads": "Stiahnuté"
+    "downloads": "Stiahnuté",
+    "grab": "Import"
   },
   "header": {
     "searchPlaceholder": "Čo si chcete vypočuť?"
@@ -248,5 +249,22 @@
   "downloads": {
     "title": "Stiahnuté",
     "empty": "Zatiaľ žiadne stiahnuté skladby."
+  },
+  "grab": {
+    "title": "Import",
+    "subtitle": "Stiahni skladbu, playlist alebo album z YouTube, YouTube Music alebo SoundCloud do priečinka ako MP3.",
+    "desktopOnly": "Import je dostupný len v desktopovej aplikácii.",
+    "urlLabel": "Odkaz na video, playlist alebo skladbu",
+    "urlPlaceholder": "https://...",
+    "folderLabel": "Uložiť do",
+    "folderPlaceholder": "Vyber priečinok…",
+    "browse": "Prehľadávať…",
+    "start": "Spustiť",
+    "cancel": "Zrušiť",
+    "starting": "Spúšťam…",
+    "missingFields": "Zadaj odkaz a vyber cieľový priečinok.",
+    "progressStatus": "{done} z {total} hotových",
+    "doneStatus": "Dokončené: {done} z {total} úspešných",
+    "cancelled": "Zrušené."
   }
 }

@@ -374,6 +374,55 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .stats-list-name { flex: 1; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stats-list-count { color: var(--text-tertiary); font-size: 13px; }
 
+/* Import (grab) page */
+.grab-subtitle { color: var(--text-secondary); font-size: 13.5px; margin: -12px 0 20px; }
+.grab-card { background: var(--bg-card); border-radius: var(--radius-md); padding: 22px; max-width: 560px; display: flex; flex-direction: column; gap: 16px; }
+.grab-field { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--text-secondary); font-weight: 600; }
+.grab-field input[type="text"] {
+  background: var(--bg-highlight);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px 13px;
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 400;
+}
+.grab-field input[type="text"]:focus { outline: none; border-color: var(--accent); }
+.grab-field input[type="text"]:disabled { opacity: 0.6; }
+.grab-folder-row { display: flex; gap: 8px; }
+.grab-folder-row input { flex: 1; min-width: 0; }
+.btn-secondary {
+  background: var(--bg-highlight);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  transition: background 0.15s ease;
+  white-space: nowrap;
+}
+.btn-secondary:hover { background: var(--bg-card-hover); }
+.btn-secondary:disabled { opacity: 0.6; cursor: default; }
+.grab-btn-row { display: flex; gap: 10px; }
+.grab-btn-row .btn-primary, .grab-btn-row .btn-secondary { margin-top: 0; flex: 1; }
+.grab-progress-wrap { display: flex; flex-direction: column; gap: 6px; }
+.grab-progress-bar { height: 6px; border-radius: 999px; background: var(--bg-highlight); overflow: hidden; }
+.grab-progress-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.2s ease; }
+.grab-status { font-size: 12.5px; color: var(--text-secondary); }
+.grab-log {
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--bg-void);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.grab-log:empty { display: none; }
+.grab-log-line { padding: 2px 0; white-space: pre-wrap; word-break: break-word; }
+
 /* Card grid (albums / artists / playlists) */
 .card-grid {
   display: grid;
@@ -618,7 +667,12 @@ svg { fill: currentColor; width: 100%; height: 100%; }
   border-bottom-left-radius: calc(var(--radius-md) / var(--cat-scale, 1));
   border-bottom-right-radius: calc(var(--radius-md) / var(--cat-scale, 1));
 }
-.now-playing-info-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 220px; margin: 0 auto; }
+/* justify-content is "center", not "space-between": the like/download
+   buttons default to display:none (only shown on the mobile layout below),
+   so on desktop this row's only actual flex child is .now-playing-text --
+   and space-between with a single flex item resolves to flex-start
+   (left-aligned) per the flexbox spec, not centered. */
+.now-playing-info-row { display: flex; align-items: center; justify-content: center; gap: 12px; max-width: 220px; margin: 0 auto; }
 .now-playing-text { min-width: 0; text-align: center; }
 .now-playing-title { font-size: 17px; font-weight: 800; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .now-playing-artist { font-size: 13.5px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -925,7 +979,13 @@ body.platform-mobile .titlebar { display: none; }
   .now-playing-art-wrap { max-width: 100%; width: 100%; margin-bottom: 26px; border-radius: var(--radius-lg); }
   .now-playing-art { border-radius: var(--radius-lg); box-shadow: 0 24px 50px rgba(0,0,0,0.5); }
   .now-playing-info-row { max-width: 100%; justify-content: center; position: relative; }
-  .now-playing-text { text-align: center; }
+  /* The like/download buttons are pulled out of flow (position: absolute,
+     left/right below) so they can sit as corner overlays without pushing
+     this text around -- which leaves .now-playing-text as flexbox's only
+     real child to size on the main axis. Its shrink-to-fit width isn't
+     reliably centered by justify-content alone, so span the full row width
+     explicitly and let text-align do the centering within guaranteed room. */
+  .now-playing-text { width: 100%; text-align: center; }
   .now-playing-title { font-size: 20px; }
   .now-playing-artist { font-size: 14.5px; }
   .now-playing-like-btn { display: flex; position: absolute; right: 0; }

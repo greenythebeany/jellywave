@@ -8,6 +8,10 @@ __pycache__/
 *.pyc
 yt_to_mp3.py
 
+# Live YouTube session cookies (exported via a browser extension) used by
+# the Import feature's downloader engine -- never commit real auth cookies.
+downloader/cookies.txt
+
 # Secrets — the Android release signing keystore must never be public.
 android/keystore/
 

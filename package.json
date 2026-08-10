@@ -1,6 +1,6 @@
 {
   "name": "jellywave",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A sleek, Spotify-style desktop client for your own Jellyfin music server",
   "main": "main.js",
   "author": "",

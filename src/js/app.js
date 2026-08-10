@@ -6,6 +6,7 @@ import { LOCALES, loadLocale, applyTranslations, t } from './i18n.js';
 import { platform, isDesktop, isMobile, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
 import { createConnect } from './connect.js';
 import { isSupported as downloadsSupported, isDownloaded, downloadTrack, deleteDownload, onDownloadsChange, getDownloadedTracks, getLocalImageUri } from './downloads.js';
+import { renderGrab } from './grab.js';
 
 // ---------- DOM refs ----------
 const loginScreen = document.getElementById('login-screen');
@@ -187,10 +188,23 @@ function formatTime(seconds) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+// Ley Lofaj's collab tracks got imported with badly mangled, sometimes
+// self-duplicated join strings ("Ley Lofaj, Dominik Láznička, Ley Lofaj",
+// "Ley Lofaj, Ley Lofaj, ...") before the artist-tagging fix landed —
+// display those as plain "Ley Lofaj" specifically. NOT a general rule for
+// every collab in the library — every other multi-artist credit keeps
+// showing its full joined name as before.
+function simplifyKnownMangledName(str) {
+  const parts = str.toLowerCase().split(/\s*[,;&+/]\s*/).map((s) => s.trim());
+  if (parts.includes('ley lofaj')) return 'Ley Lofaj';
+  return null;
+}
+
 // Jellyfin sometimes stores a multi-artist collab as one un-split "A;B" name
 // (unparsed tag delimiter) instead of separate entries — clean that up for display.
 function formatDisplayName(name) {
-  return (name || '').replace(/\s*;\s*/g, ', ');
+  const str = (name || '').replace(/\s*;\s*/g, ', ').trim();
+  return simplifyKnownMangledName(str) || str;
 }
 
 // fallback is for a track with genuinely empty Artists/AlbumArtist tags of
@@ -1407,6 +1421,7 @@ async function renderView(state) {
       case 'songs': await renderAllSongs(); break;
       case 'liked': await renderLikedSongs(); break;
       case 'downloads': await renderDownloads(); break;
+      case 'grab': await renderGrab(); break;
       case 'library': renderLibrary(); break;
       case 'genres': await renderGenres(); break;
       case 'genre': await renderGenreDetail(state.id, state.name); break;
@@ -1854,18 +1869,18 @@ function dropKnownAliasArtists(artists) {
 // artist's page (see creditIncludesArtist / renderArtistDetail), so the
 // compound entity is pure duplicate noise in the browse grid.
 function dropCompoundDuplicateArtists(artists) {
-  const nameSet = new Set(artists.map((a) => (a.Name || '').trim().toLowerCase()));
   return artists.filter((a) => {
     const parts = splitCreditParts(a.Name || '');
     // The real artist isn't always listed first ("Huddy/Palaye Royale",
     // "OmenXIII/Palaye Royale" both put the well-known name second), so hide
-    // this as a redundant joined credit if ANY of its joined names also has
-    // its own standalone card to fold into (renderArtistDetail's merge logic
-    // already pulls it into every matching part's page). A joined name with
-    // no standalone match anywhere (like "Dame, Smart" before "Dame" existed
-    // as its own artist) stays visible, since hiding it would leave nowhere
-    // to find it at all — adding the missing name as a real artist on the
-    // server is what makes it start counting here too.
+    // this as a redundant joined credit if ANY other artist's (possibly
+    // itself multi-part, e.g. "Dame, SMART") name is fully contained in
+    // this one (renderArtistDetail's merge logic already pulls it into
+    // every matching artist's page). A joined name with no standalone match
+    // anywhere (like "Dame, Smart" before "Dame, SMART" existed as its own
+    // artist) stays visible, since hiding it would leave nowhere to find it
+    // at all — adding the missing name as a real artist on the server is
+    // what makes it start counting here too.
     if (parts.length < 2) return true;
     // A compound entity with its own real art (not the placeholder) is
     // itself a genuine, distinct thing — e.g. "Dame, SMART" as a duo with
@@ -1876,13 +1891,44 @@ function dropCompoundDuplicateArtists(artists) {
     // artist; only bare, art-less joins like "Dame, Separ, SMART" get
     // hidden and merged into it.
     if (a.ImageTags?.Primary) return true;
-    return !parts.some((p) => nameSet.has(p));
+    // creditIncludesArtist (not a plain single-token Set lookup) is what
+    // lets this match a real artist whose own name is itself multi-part —
+    // "Dame, SMART, Juraj" needs both "dame" AND "smart" present to fold
+    // into "Dame, SMART", which a single-token check can never satisfy
+    // since neither "Dame" nor "SMART" exists as its own standalone entry.
+    return !artists.some((other) => other !== a && creditIncludesArtist(a.Name, other.Name));
   });
+}
+
+// Ley Lofaj's collab tracks got imported with badly mangled, sometimes
+// self-duplicated join strings ("Ley Lofaj, Dominik Láznička, Ley Lofaj",
+// "Ley Lofaj, Ley Lofaj, ...") before the artist-tagging fix landed,
+// scattering one artist's catalog across several server-side entities that
+// dropCompoundDuplicateArtists can't fully collapse (there's no bare "Ley
+// Lofaj" entity for them to fold into in every case). Treat any of these
+// as fragments of the same artist. Scoped to this one artist by name, not
+// a general system for every collab in the library.
+function isLeyLofajFragment(name) {
+  return splitCreditParts(name || '').includes('ley lofaj');
+}
+
+// Collapses every Ley Lofaj fragment entity down to one representative
+// (preferring one with real art, if any) so the browse grid shows exactly
+// one "Ley Lofaj" card instead of one per mangled import.
+function mergeLeyLofajFragments(artists) {
+  const fragments = artists.filter((a) => isLeyLofajFragment(a.Name));
+  if (fragments.length < 2) return artists;
+  const canonical =
+    fragments.find((a) => (a.Name || '').trim().toLowerCase() === 'ley lofaj') ||
+    fragments.find((a) => a.ImageTags?.Primary) ||
+    fragments[0];
+  const fragmentIds = new Set(fragments.map((a) => a.Id));
+  return artists.filter((a) => a.Id === canonical.Id || !fragmentIds.has(a.Id));
 }
 
 async function renderArtists() {
   const rawArtists = await jellyfin.getArtists(musicLibraryId);
-  const artists = dropKnownAliasArtists(dropCompoundDuplicateArtists(rawArtists));
+  const artists = mergeLeyLofajFragments(dropKnownAliasArtists(dropCompoundDuplicateArtists(rawArtists)));
   viewRoot.innerHTML = '';
   viewRoot.appendChild(el('div', 'view-title', t('artists.title')));
   if (!artists.length) {
@@ -2091,6 +2137,41 @@ async function renderArtistDetail(id, name) {
         }
       }
       if (aliasSongs.length) songs = [...songs, ...aliasSongs];
+    }
+  }
+
+  // Ley Lofaj's catalog is scattered across several mangled fragment
+  // entities (see mergeLeyLofajFragments) -- pull every other fragment's
+  // songs and albums into this one page too, same pooling pattern as the
+  // alias merge above.
+  if (isLeyLofajFragment(targetName)) {
+    const rawArtists = await jellyfin.getArtists(musicLibraryId);
+    const fragmentArtists = rawArtists.filter((a) => isLeyLofajFragment(a.Name) && a.Id !== id);
+    if (fragmentArtists.length) {
+      const [fragmentAlbumLists, fragmentSongLists] = await Promise.all([
+        Promise.all(fragmentArtists.map((a) => jellyfin.getAlbumsByArtist(a.Id))),
+        Promise.all(fragmentArtists.map((a) => jellyfin.getSongsByArtist(a.Id)))
+      ]);
+      const seenAlbumIds = new Set(albums.map((al) => al.Id));
+      for (const list of fragmentAlbumLists) {
+        for (const al of list) {
+          if (!seenAlbumIds.has(al.Id)) {
+            seenAlbumIds.add(al.Id);
+            albums.push(al);
+          }
+        }
+      }
+      const seenSongIds = new Set(songs.map((tr) => tr.Id));
+      const fragmentSongs = [];
+      for (const list of fragmentSongLists) {
+        for (const tr of list) {
+          if (!seenSongIds.has(tr.Id)) {
+            seenSongIds.add(tr.Id);
+            fragmentSongs.push(tr);
+          }
+        }
+      }
+      if (fragmentSongs.length) songs = [...songs, ...fragmentSongs];
     }
   }
 
