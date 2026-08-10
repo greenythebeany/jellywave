@@ -1969,6 +1969,7 @@ async function renderPlaylistDetail(id, name) {
     round: false,
     onPlayAll: tracks.length ? () => player.setQueue(tracks, 0, id) : undefined,
     trackIds: tracks.map((t) => t.Id),
+    downloadTracks: tracks,
     onChangeArt: async (file) => {
       try {
         await jellyfin.uploadPlaylistImage(id, file);
