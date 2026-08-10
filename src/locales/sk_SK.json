@@ -170,7 +170,7 @@
     "replayGain": "Normalizácia hlasitosti",
     "replayGainDesc": "Vyrovnáva rozdiely v hlasitosti medzi skladbami (vyžaduje údaje ReplayGain na serveri)",
     "equalizer": "Ekvalizér",
-    "equalizerDesc": "Uprav zvuk pomocou 5-pásmového grafického ekvalizéra (iba na počítači)",
+    "equalizerDesc": "Uprav zvuk pomocou 5-pásmového grafického ekvalizéra (počítač a Android)",
     "equalizerReset": "Obnoviť",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Zobrazí na tvojom Discord profile, čo práve počúvaš (iba desktop)",

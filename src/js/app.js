@@ -3,7 +3,7 @@ import { Player, RepeatMode, EQ_PRESETS } from './player.js';
 import { fetchLyrics } from './lyrics.js';
 import { getSettings, updateSettings, applySettings, currentBitrateKbps, initRemoteSync, PALETTES, AUDIO_QUALITIES } from './settings.js';
 import { LOCALES, loadLocale, applyTranslations, t } from './i18n.js';
-import { platform, isDesktop, isMobile, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
+import { platform, isDesktop, isMobile, isAndroid, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
 import { createConnect } from './connect.js';
 import { isSupported as downloadsSupported, isDownloaded, downloadTrack, deleteDownload, onDownloadsChange, getDownloadedTracks, getLocalImageUri } from './downloads.js';
 import { renderGrab } from './grab.js';
@@ -560,10 +560,12 @@ function wireSettingsUI() {
     player?.setReplayGainEnabled(toggleReplayGain.checked);
   });
 
-  // The equalizer only has a working implementation on desktop (Web Audio)
-  // — mobile gets a fixed, non-adjustable native volume boost attempt
-  // instead (see Player._tryNativeLoudnessBoost), not a real equalizer.
-  if (!isDesktop) {
+  // Desktop (Web Audio) and Android (native android.media.audiofx.Equalizer,
+  // see LoudnessPlugin.java) both have a working implementation. iOS gets a
+  // fixed, non-adjustable native volume boost attempt instead (see
+  // Player._tryNativeLoudnessBoost), not a real equalizer, since neither of
+  // those approaches has been built for it.
+  if (!isDesktop && !isAndroid) {
     setHidden(equalizerToggleRow, true);
     setHidden(equalizerBandsRow, true);
   }
