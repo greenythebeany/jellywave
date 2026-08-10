@@ -238,18 +238,11 @@ export class Player {
     return this._ensureAudioGraph(el)?.analyser || null;
   }
 
-  // Desktop uses the Web Audio graph above. Android routes through the
-  // native plugin instead (see LoudnessPlugin.java's Equalizer section) --
-  // Web Audio's createMediaElementSource() is what the constructor's audio
-  // graph comment calls unsafe on Android's WebView (risks silencing real
-  // output entirely), so this never touches that path there. iOS has
-  // neither yet.
+  // Desktop only — see the constructor's Web Audio graph comment for why
+  // Android instead gets a fixed native boost attempt (_tryNativeLoudnessBoost)
+  // rather than a real equalizer.
   setEqualizerEnabled(enabled) {
     this.eqEnabled = !!enabled;
-    if (isAndroid) {
-      this._nativeLoudness?.setEqualizerEnabled({ enabled: this.eqEnabled }).catch(() => {});
-      return;
-    }
     if (this.eqEnabled) {
       // Build both elements' graphs up front so the setting stays audible
       // across gapless/crossfade swaps between them, not just the active one.
@@ -262,10 +255,6 @@ export class Player {
   setEqualizerBand(index, gainDb) {
     if (index < 0 || index >= this.eqGains.length) return;
     this.eqGains[index] = Math.min(12, Math.max(-12, gainDb));
-    if (isAndroid) {
-      this._nativeLoudness?.setEqualizerBand({ band: index, gainDb: this.eqGains[index] }).catch(() => {});
-      return;
-    }
     if (this.eqEnabled) this._applyEqGains();
   }
 

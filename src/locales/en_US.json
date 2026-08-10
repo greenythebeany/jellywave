@@ -170,7 +170,7 @@
     "replayGain": "Volume normalization",
     "replayGainDesc": "Even out loudness differences between tracks (needs ReplayGain data on the server)",
     "equalizer": "Equalizer",
-    "equalizerDesc": "Shape the sound with a 5-band graphic equalizer (desktop and Android)",
+    "equalizerDesc": "Shape the sound with a 5-band graphic equalizer (desktop only)",
     "equalizerReset": "Reset",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Shows what you're listening to on your Discord profile (desktop only)",
