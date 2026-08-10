@@ -25,7 +25,7 @@ const CLIENT_NAME = 'JellyWave';
 // this has no build step to inject it automatically, so it drifts silently
 // otherwise (this is exactly how it ended up stuck reporting 1.0.0 to the
 // server after the app itself moved to 1.0.1).
-const CLIENT_VERSION = '1.0.4';
+const CLIENT_VERSION = '1.0.5';
 
 function authHeader(token) {
   const device = isMobile ? 'Android' : 'Desktop';
