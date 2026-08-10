@@ -8,7 +8,16 @@ const { checkForUpdates } = require('./update-checker');
 const CONFIG_PATH = path.join(app.getPath('userData'), 'session.dat');
 const DISCORD_CLIENT_ID = '1534197353056174180';
 const DOWNLOADS_DIR = path.join(app.getPath('userData'), 'downloads');
-const GRAB_CLI = path.join(__dirname, 'downloader', 'cli.py');
+// Packaged builds pack downloader/ inside app.asar, a virtual archive only
+// Node's own fs shim understands -- python.exe (an external process) can't
+// open a path inside it at all. asarUnpack (see package.json) copies these
+// files out to a real "app.asar.unpacked" directory alongside app.asar
+// instead; point there when packaged, and at the plain source tree in dev
+// (npm start), where there's no asar to begin with.
+const DOWNLOADER_DIR = app.isPackaged
+  ? path.join(process.resourcesPath, 'app.asar.unpacked', 'downloader')
+  : path.join(__dirname, 'downloader');
+const GRAB_CLI = path.join(DOWNLOADER_DIR, 'cli.py');
 
 // A GUI-launched Electron process doesn't reliably inherit the same PATH a
 // terminal session has (this is what caused "spawn python ENOENT" even
