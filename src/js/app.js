@@ -1886,27 +1886,41 @@ async function renderAlbums() {
 
 // Real-world artist name variants Jellyfin has no way to know are the same
 // act — it only groups by the exact literal name string found in file tags,
-// with no online identity lookup. Left (alias, lowercase) maps to right
-// (canonical name as it should appear). Add more pairs here as they turn up.
-const KNOWN_ARTIST_ALIASES = {
-  'ghost b.c.': 'ghost' // US trademark dispute forced this name 2012-2015; same Swedish band
-};
+// with no online identity lookup. Each pair is unordered (either side can be
+// the one a library actually has tagged); whichever entity has real cover
+// art wins as the visible card, since which spelling "should" be canonical
+// isn't as important as not losing a real photo behind a placeholder one.
+// Add more pairs here as they turn up.
+const KNOWN_ARTIST_NAME_PAIRS = [
+  ['ghost b.c.', 'ghost'], // US trademark dispute forced this name 2012-2015; same Swedish band
+  ['ke$ha', 'kesha'] // stylized vs. plain spelling of the same artist's name, split across imports
+];
 
-function aliasNamesFor(canonicalName) {
-  const key = (canonicalName || '').trim().toLowerCase();
-  return Object.keys(KNOWN_ARTIST_ALIASES).filter((alias) => KNOWN_ARTIST_ALIASES[alias] === key);
+// Given one artist's name, finds the other name in its known pair (if any),
+// lowercase. Symmetric — works from either side of the pair.
+function pairedNameFor(name) {
+  const key = (name || '').trim().toLowerCase();
+  const pair = KNOWN_ARTIST_NAME_PAIRS.find((p) => p.includes(key));
+  if (!pair) return null;
+  return pair[0] === key ? pair[1] : pair[0];
 }
 
-// Drop artist entities that are just a known alias of another artist that
-// already has its own real entry — their albums/songs get folded into the
-// canonical artist's page instead (see renderArtistDetail), so the alias
-// entity is pure duplicate noise in the browse grid.
+// Drop whichever entity of a known name pair is the duplicate — its
+// albums/songs get folded into the surviving one's page instead (see
+// renderArtistDetail), so it's pure duplicate noise in the browse grid.
+// The one with real cover art survives; if neither/both have art, the
+// second name in the pair wins (arbitrary but stable).
 function dropKnownAliasArtists(artists) {
-  const nameSet = new Set(artists.map((a) => (a.Name || '').trim().toLowerCase()));
-  return artists.filter((a) => {
-    const canonical = KNOWN_ARTIST_ALIASES[(a.Name || '').trim().toLowerCase()];
-    return !(canonical && nameSet.has(canonical));
-  });
+  const byName = new Map(artists.map((a) => [(a.Name || '').trim().toLowerCase(), a]));
+  const dropIds = new Set();
+  for (const [nameA, nameB] of KNOWN_ARTIST_NAME_PAIRS) {
+    const a = byName.get(nameA);
+    const b = byName.get(nameB);
+    if (!a || !b) continue;
+    const keepA = !!a.ImageTags?.Primary && !b.ImageTags?.Primary;
+    dropIds.add(keepA ? b.Id : a.Id);
+  }
+  return artists.filter((a) => !dropIds.has(a.Id));
 }
 
 // Drop artist entities that are really just a joined collab credit for an
@@ -2149,16 +2163,18 @@ async function renderArtistDetail(id, name) {
     : [];
   if (extraAlbums.length) albums.push(...extraAlbums);
 
-  // Known real-world alias entities (e.g. "Ghost B.C." for "Ghost") are a
-  // genuinely separate Artist entry on the server — its albums/songs live
-  // under its own artist ID, so the ArtistIds filter above never finds them
-  // no matter what this page's own ID is. Look each alias up by name and
-  // fold its catalog in the same way, so nothing found by dropKnownAliasArtists
-  // (which hides the alias's own card) goes missing from browsing entirely.
-  const aliasNames = aliasNamesFor(targetName);
-  if (aliasNames.length) {
+  // Known real-world name-pair entities (e.g. "Ghost B.C." / "Ghost",
+  // "Ke$ha" / "Kesha") are genuinely separate Artist entries on the server —
+  // the paired name's albums/songs live under its own artist ID, so the
+  // ArtistIds filter above never finds them no matter which side of the
+  // pair this page's own ID belongs to. Look the paired name up and fold
+  // its catalog in the same way, so nothing found by dropKnownAliasArtists
+  // (which hides the duplicate's own card) goes missing from browsing
+  // entirely.
+  const pairedName = pairedNameFor(targetName);
+  if (pairedName) {
     const rawArtists = await jellyfin.getArtists(musicLibraryId);
-    const aliasArtists = rawArtists.filter((a) => aliasNames.includes((a.Name || '').trim().toLowerCase()));
+    const aliasArtists = rawArtists.filter((a) => (a.Name || '').trim().toLowerCase() === pairedName && a.Id !== id);
     if (aliasArtists.length) {
       const [aliasAlbumLists, aliasSongLists] = await Promise.all([
         Promise.all(aliasArtists.map((a) => jellyfin.getAlbumsByArtist(a.Id))),
@@ -3297,34 +3313,44 @@ function wireQueueDragHandle(handle, row) {
   handle.addEventListener('pointerdown', (evt) => {
     evt.preventDefault();
     evt.stopPropagation();
-    const startY = evt.clientY;
+    let startY = evt.clientY;
     const fromIdx = Number(row.dataset.idx);
-    let currentToIdx = fromIdx;
     row.classList.add('dragging');
     handle.setPointerCapture(evt.pointerId);
 
     const onMove = (moveEvt) => {
-      const dy = moveEvt.clientY - startY;
+      let dy = moveEvt.clientY - startY;
       row.style.transform = `translateY(${dy}px)`;
       row.style.zIndex = '10';
 
       // Swap DOM position with whichever sibling row the dragged row's
       // center has now crossed, live, so the list visibly reshuffles as you
-      // drag rather than only snapping into place on release.
+      // drag rather than only snapping into place on release. Direction is
+      // read from the siblings' CURRENT DOM order (not their original
+      // render index) so it stays correct after earlier swaps this same
+      // drag, including reversing direction mid-drag.
       const siblings = [...row.parentElement.querySelectorAll('.queue-row:not(.playing)')];
       const rowRect = row.getBoundingClientRect();
       const rowCenter = rowRect.top + rowRect.height / 2;
+      const rowPos = siblings.indexOf(row);
       for (const sibling of siblings) {
         if (sibling === row) continue;
         const sibRect = sibling.getBoundingClientRect();
         const sibCenter = sibRect.top + sibRect.height / 2;
-        const sibIdx = Number(sibling.dataset.idx);
-        const movingDown = currentToIdx < sibIdx;
+        const movingDown = rowPos < siblings.indexOf(sibling);
         const crossed = movingDown ? rowCenter > sibCenter : rowCenter < sibCenter;
         if (crossed) {
           if (movingDown) sibling.parentElement.insertBefore(row, sibling.nextSibling);
           else sibling.parentElement.insertBefore(row, sibling);
-          currentToIdx = sibIdx;
+          // The DOM swap above just shifted the row's static (untransformed)
+          // flow position by roughly one row's height — without correcting
+          // for that, the fixed `dy` offset would make the row visually
+          // jump/snap by that same height at this exact instant. Nudging
+          // startY cancels it out so the row stays exactly where the
+          // pointer left it, then tracks the pointer normally from there.
+          startY += movingDown ? sibRect.height : -sibRect.height;
+          dy = moveEvt.clientY - startY;
+          row.style.transform = `translateY(${dy}px)`;
           break;
         }
       }
@@ -3338,9 +3364,16 @@ function wireQueueDragHandle(handle, row) {
       row.classList.remove('dragging');
       row.style.transform = '';
       row.style.zIndex = '';
-      if (currentToIdx !== fromIdx) {
+      // Read the drop target straight from the final DOM order rather than
+      // tracking it incrementally during the drag above — a running tracker
+      // based on each sibling's original render index only stays correct
+      // for crossings in one direction, and goes wrong the moment a drag
+      // reverses direction partway through.
+      const siblings = [...row.parentElement.querySelectorAll('.queue-row:not(.playing)')];
+      const toIdx = player.currentIndex + 1 + siblings.indexOf(row);
+      if (toIdx !== fromIdx) {
         hapticImpact('light');
-        player.reorderQueueAt(fromIdx, currentToIdx);
+        player.reorderQueueAt(fromIdx, toIdx);
       }
     };
 
