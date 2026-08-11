@@ -2,6 +2,7 @@ package com.jellywave.app;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.media.audiofx.Equalizer;
 import android.media.audiofx.LoudnessEnhancer;
 
 import com.getcapacitor.JSObject;
@@ -10,21 +11,38 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
-// A fixed native volume boost attempt for the WebView's <audio> playback,
-// plus proper audio focus handling. There was previously a full native
-// equalizer here too (and a user-adjustable boost slider in Settings), but
-// on-device testing found android.media.audiofx effects — both Equalizer
-// and LoudnessEnhancer alike — fail with ERROR_INVALID_OPERATION when
-// attached to the global output mix (session 0) on at least one real
-// device. That's a HAL capability gap this app can't work around, so the
-// loudness side is deliberately minimal now: one fixed-gain attempt, no
-// settings, no error reporting — it quietly helps on devices where
-// session-0 effects work, and quietly does nothing where they don't.
+// Native volume boost + equalizer for the WebView's <audio> playback, plus
+// proper audio focus handling.
+//
+// Both effects attach to session 0 (the global output mix) rather than a
+// per-player session, since a WebView doesn't hand its internal <audio>
+// element's actual session ID to the embedding app through any
+// Capacitor/WebView API. An earlier attempt at this found session-0 effects
+// failing outright with ERROR_INVALID_OPERATION and concluded it was a HAL
+// capability gap -- that testing predated this app declaring
+// android.permission.MODIFY_AUDIO_SETTINGS, which is required to attach an
+// effect to the global mix. Once that permission was added, the loudness
+// boost below started working fine on session 0, so the equalizer gets the
+// same treatment now instead of the discovery-based approach that was
+// briefly tried and reverted.
 @CapacitorPlugin(name = "JellyWaveLoudness")
 public class LoudnessPlugin extends Plugin {
     private LoudnessEnhancer loudnessEnhancer;
     private AudioManager audioManager;
     private AudioManager.OnAudioFocusChangeListener focusChangeListener;
+
+    private Equalizer equalizer;
+    private boolean eqEnabled = false;
+    private final float[] eqGainsDb = new float[]{0, 0, 0, 0, 0};
+    // Same center frequencies as the desktop Web Audio equalizer (see
+    // EQ_BANDS in player.js) -- kept identical so the same 5-slider UI
+    // means the same thing on both platforms. A device's own native
+    // Equalizer usually exposes a *different* number of bands at different
+    // frequencies though (sometimes fewer than 5), and applyBandGain()
+    // below maps each of these onto whichever real band affects it most --
+    // on a device with fewer native bands than 5, two of these sliders can
+    // end up mapped to the same underlying band and affect each other.
+    private static final int[] BAND_FREQUENCIES_HZ = {60, 250, 1000, 4000, 12000};
 
     @PluginMethod
     public void setLoudnessGain(PluginCall call) {
@@ -42,6 +60,56 @@ public class LoudnessPlugin extends Plugin {
             call.resolve();
         } catch (Exception e) {
             call.reject("Could not set loudness gain: " + e.getMessage());
+        }
+    }
+
+    // ---------- Equalizer ----------
+
+    @PluginMethod
+    public void setEqualizerEnabled(PluginCall call) {
+        try {
+            eqEnabled = call.getBoolean("enabled", false);
+            ensureEqualizer();
+            if (equalizer != null) {
+                equalizer.setEnabled(eqEnabled);
+                if (eqEnabled) {
+                    for (int i = 0; i < BAND_FREQUENCIES_HZ.length; i++) applyBandGain(i);
+                }
+            }
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Could not set equalizer state: " + e.getMessage());
+        }
+    }
+
+    @PluginMethod
+    public void setEqualizerBand(PluginCall call) {
+        int band = call.getInt("band", -1);
+        double gainDb = call.getDouble("gainDb", 0.0);
+        if (band < 0 || band >= BAND_FREQUENCIES_HZ.length) {
+            call.reject("Invalid band index");
+            return;
+        }
+        eqGainsDb[band] = (float) gainDb;
+        applyBandGain(band);
+        call.resolve();
+    }
+
+    private void ensureEqualizer() {
+        if (equalizer != null) return;
+        equalizer = new Equalizer(0, 0);
+    }
+
+    private void applyBandGain(int band) {
+        if (equalizer == null || !eqEnabled) return;
+        try {
+            short nativeBand = equalizer.getBand(BAND_FREQUENCIES_HZ[band] * 1000); // Hz -> milliHz
+            short[] range = equalizer.getBandLevelRange(); // millibels
+            int millibels = Math.round(eqGainsDb[band] * 100);
+            millibels = Math.max(range[0], Math.min(range[1], millibels));
+            equalizer.setBandLevel(nativeBand, (short) millibels);
+        } catch (Exception e) {
+            // Quietly skip this one band rather than failing the whole EQ.
         }
     }
 

@@ -564,11 +564,11 @@ function wireSettingsUI() {
     player?.setReplayGainEnabled(toggleReplayGain.checked);
   });
 
-  // The equalizer only has a working implementation on desktop (Web Audio)
-  // — Android gets an adjustable native volume boost instead (see
-  // Player.setLoudnessBoostDb / LoudnessPlugin.java), not a real equalizer;
-  // iOS has neither.
-  if (!isDesktop) {
+  // Desktop (Web Audio) and Android (native android.media.audiofx.Equalizer,
+  // see LoudnessPlugin.java) both have a working equalizer implementation.
+  // iOS gets neither. Android also gets the adjustable native volume boost
+  // (Player.setLoudnessBoostDb / LoudnessPlugin.java), independent of the EQ.
+  if (!isDesktop && !isAndroid) {
     setHidden(equalizerToggleRow, true);
     setHidden(equalizerBandsRow, true);
   }
