@@ -21,11 +21,31 @@ function loadOrCreateDeviceId() {
 }
 const DEVICE_ID = loadOrCreateDeviceId();
 const CLIENT_NAME = 'JellyWave';
-// Keep in sync with package.json/android/app/build.gradle on every release —
-// this has no build step to inject it automatically, so it drifts silently
-// otherwise (this is exactly how it ended up stuck reporting 1.0.0 to the
-// server after the app itself moved to 1.0.1).
-const CLIENT_VERSION = '1.0.5';
+// Was previously a hardcoded string that had to be bumped by hand on every
+// release and repeatedly drifted out of sync with the app's real version
+// (stuck reporting 1.0.0, then stuck reporting 1.0.5, both while newer
+// versions had already shipped). Now read from the actual installed
+// version instead — Electron's app.getVersion() (via preload's IPC bridge)
+// on desktop, Capacitor's App.getInfo() on Android/iOS — so it can't go
+// stale again. initClientVersion() resolves this once at startup; the
+// literal below is only the fallback for the brief window before that
+// resolves (or if neither bridge is available, e.g. running in a plain
+// browser during development).
+let CLIENT_VERSION = '1.0.7';
+
+export async function initClientVersion() {
+  try {
+    if (window.Capacitor?.Plugins?.App) {
+      const info = await window.Capacitor.Plugins.App.getInfo();
+      if (info?.version) CLIENT_VERSION = info.version;
+    } else if (window.api?.app) {
+      const version = await window.api.app.getVersion();
+      if (version) CLIENT_VERSION = version;
+    }
+  } catch (err) {
+    // Best-effort — keeps whatever CLIENT_VERSION already was.
+  }
+}
 
 function authHeader(token) {
   const device = isMobile ? 'Android' : 'Desktop';

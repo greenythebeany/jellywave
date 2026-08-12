@@ -135,6 +135,13 @@ ipcMain.handle('update:check', async () => {
   }
 });
 
+// Lets jellyfin.js report the real installed version to the server instead
+// of a hardcoded constant that has to be remembered on every release (see
+// CLIENT_VERSION in jellyfin.js) — app.getVersion() reads package.json,
+// which is already the single source of truth kept up to date at release
+// time.
+ipcMain.handle('app:getVersion', () => app.getVersion());
+
 // --- Window controls for the custom title bar ---
 ipcMain.on('window:minimize', () => mainWindow?.minimize());
 ipcMain.on('window:maximize', () => {

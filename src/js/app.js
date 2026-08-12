@@ -1,4 +1,4 @@
-import { JellyfinClient } from './jellyfin.js';
+import { JellyfinClient, initClientVersion } from './jellyfin.js';
 import { Player, RepeatMode, EQ_PRESETS } from './player.js';
 import { fetchLyrics } from './lyrics.js';
 import { getSettings, updateSettings, applySettings, currentBitrateKbps, initRemoteSync, PALETTES, AUDIO_QUALITIES } from './settings.js';
@@ -313,6 +313,7 @@ async function init() {
   wireCreatePlaylistUI();
   wireBackButton();
 
+  await initClientVersion();
   await tryRestoreSession();
 }
 
