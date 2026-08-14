@@ -1961,35 +1961,43 @@ function dropCompoundDuplicateArtists(artists) {
   });
 }
 
-// Ley Lofaj's collab tracks got imported with badly mangled, sometimes
+// Some artists' collab tracks got imported with badly mangled, sometimes
 // self-duplicated join strings ("Ley Lofaj, Dominik Láznička, Ley Lofaj",
-// "Ley Lofaj, Ley Lofaj, ...") before the artist-tagging fix landed,
-// scattering one artist's catalog across several server-side entities that
-// dropCompoundDuplicateArtists can't fully collapse (there's no bare "Ley
-// Lofaj" entity for them to fold into in every case). Treat any of these
-// as fragments of the same artist. Scoped to this one artist by name, not
-// a general system for every collab in the library.
-function isLeyLofajFragment(name) {
-  return splitCreditParts(name || '').includes('ley lofaj');
+// "Petrofski, Petrofski, Toyota Va...") before their tagging got cleaned
+// up, scattering one artist's catalog across several server-side entities
+// that dropCompoundDuplicateArtists can't fully collapse (there's no bare
+// entity for them to fold into in every case). Each name here gets treated
+// as fragments of one artist. Scoped to specific known artists by name, not
+// a general system for every collab in the library — add more here only
+// once a real case turns up, the same way Petrofski joined Ley Lofaj.
+const FRAGMENTED_ARTIST_NAMES = ['ley lofaj', 'petrofski'];
+
+function fragmentedArtistNameOf(name) {
+  return FRAGMENTED_ARTIST_NAMES.find((known) => splitCreditParts(name || '').includes(known)) || null;
 }
 
-// Collapses every Ley Lofaj fragment entity down to one representative
-// (preferring one with real art, if any) so the browse grid shows exactly
-// one "Ley Lofaj" card instead of one per mangled import.
-function mergeLeyLofajFragments(artists) {
-  const fragments = artists.filter((a) => isLeyLofajFragment(a.Name));
-  if (fragments.length < 2) return artists;
-  const canonical =
-    fragments.find((a) => (a.Name || '').trim().toLowerCase() === 'ley lofaj') ||
-    fragments.find((a) => a.ImageTags?.Primary) ||
-    fragments[0];
-  const fragmentIds = new Set(fragments.map((a) => a.Id));
-  return artists.filter((a) => a.Id === canonical.Id || !fragmentIds.has(a.Id));
+// Collapses every fragment entity of the same fragmented artist down to one
+// representative (preferring the bare name, then one with real art) so the
+// browse grid shows exactly one card per artist instead of one per mangled
+// import.
+function mergeFragmentedArtists(artists) {
+  let result = artists;
+  for (const known of FRAGMENTED_ARTIST_NAMES) {
+    const fragments = result.filter((a) => fragmentedArtistNameOf(a.Name) === known);
+    if (fragments.length < 2) continue;
+    const canonical =
+      fragments.find((a) => (a.Name || '').trim().toLowerCase() === known) ||
+      fragments.find((a) => a.ImageTags?.Primary) ||
+      fragments[0];
+    const fragmentIds = new Set(fragments.map((a) => a.Id));
+    result = result.filter((a) => a.Id === canonical.Id || !fragmentIds.has(a.Id));
+  }
+  return result;
 }
 
 async function renderArtists() {
   const rawArtists = await jellyfin.getArtists(musicLibraryId);
-  const artists = mergeLeyLofajFragments(dropKnownAliasArtists(dropCompoundDuplicateArtists(rawArtists)));
+  const artists = mergeFragmentedArtists(dropKnownAliasArtists(dropCompoundDuplicateArtists(rawArtists)));
   viewRoot.innerHTML = '';
   viewRoot.appendChild(el('div', 'view-title', t('artists.title')));
   if (!artists.length) {
@@ -2204,13 +2212,14 @@ async function renderArtistDetail(id, name) {
     }
   }
 
-  // Ley Lofaj's catalog is scattered across several mangled fragment
-  // entities (see mergeLeyLofajFragments) -- pull every other fragment's
+  // This artist's catalog may be scattered across several mangled fragment
+  // entities (see mergeFragmentedArtists) -- pull every other fragment's
   // songs and albums into this one page too, same pooling pattern as the
   // alias merge above.
-  if (isLeyLofajFragment(targetName)) {
+  const fragmentedName = fragmentedArtistNameOf(targetName);
+  if (fragmentedName) {
     const rawArtists = await jellyfin.getArtists(musicLibraryId);
-    const fragmentArtists = rawArtists.filter((a) => isLeyLofajFragment(a.Name) && a.Id !== id);
+    const fragmentArtists = rawArtists.filter((a) => fragmentedArtistNameOf(a.Name) === fragmentedName && a.Id !== id);
     if (fragmentArtists.length) {
       const [fragmentAlbumLists, fragmentSongLists] = await Promise.all([
         Promise.all(fragmentArtists.map((a) => jellyfin.getAlbumsByArtist(a.Id))),
