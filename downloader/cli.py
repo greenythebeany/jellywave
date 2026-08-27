@@ -9,7 +9,7 @@ Usage: python cli.py <url> <output_dir>
 import json
 import sys
 
-from downloader import download_and_convert, download_playlist, is_playlist_url
+from downloader import download_and_convert, download_playlist, is_playlist_url, strip_ansi
 
 
 def emit(event_type, **fields):
@@ -39,7 +39,7 @@ def main():
             path = download_and_convert(url, output_dir, log=log)
             emit("done", count=1, failedCount=0, path=path)
     except Exception as e:
-        emit("error", message=str(e))
+        emit("error", message=strip_ansi(str(e)))
         sys.exit(1)
 
 

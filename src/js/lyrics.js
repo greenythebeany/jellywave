@@ -25,6 +25,29 @@ function parseLrc(lrc) {
   return result.sort((a, b) => a.time - b.time);
 }
 
+// Tracks imported from YouTube (see grab.js) keep the video's own title
+// verbatim, which often carries extra text past the real song name --
+// wrapping quotes, or a trailing " - Show/Game/Album name" segment, e.g.
+// `"Just Gold" - Five Nights at Freddy's`. lrclib's search matches fairly
+// literally, so that extra text alone was enough to make a real, indexed
+// track come back as "no lyrics found". Strips both, for a fallback retry
+// only -- see fetchLyrics.
+function cleanedTitleForSearch(title) {
+  return (title || '')
+    .trim()
+    .replace(/^["'“”‘’]+|["'“”‘’]+$/g, '')
+    .split(/\s+[-–—]\s+/)[0]
+    .trim();
+}
+
+async function searchLyrics(title, artist) {
+  const searchParams = new URLSearchParams({ track_name: title || '', artist_name: artist || '' });
+  const res = await fetch(`${LRCLIB_BASE}/search?${searchParams.toString()}`);
+  if (!res.ok) return null;
+  const results = await res.json();
+  return results && results.length ? results[0] : null;
+}
+
 export async function fetchLyrics({ title, artist, album, durationSeconds }) {
   const params = new URLSearchParams({
     track_name: title || '',
@@ -48,15 +71,12 @@ export async function fetchLyrics({ title, artist, album, durationSeconds }) {
   }
 
   try {
-    const searchParams = new URLSearchParams({
-      track_name: title || '',
-      artist_name: artist || ''
-    });
-    const res = await fetch(`${LRCLIB_BASE}/search?${searchParams.toString()}`);
-    if (!res.ok) return null;
-    const results = await res.json();
-    if (!results || results.length === 0) return null;
-    const best = results[0];
+    let best = await searchLyrics(title, artist);
+    if (!best) {
+      const cleaned = cleanedTitleForSearch(title);
+      if (cleaned && cleaned !== (title || '').trim()) best = await searchLyrics(cleaned, artist);
+    }
+    if (!best) return null;
     return {
       synced: parseLrc(best.syncedLyrics),
       plain: best.plainLyrics || null,

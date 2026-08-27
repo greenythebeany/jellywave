@@ -262,6 +262,20 @@ class _CropPillarboxedThumbnailPP(yt_dlp.postprocessor.PostProcessor):
         return out_path
 
 
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*[a-zA-Z]")
+
+
+def strip_ansi(text: str) -> str:
+    """yt-dlp colors its own error/warning text with ANSI escape codes
+    regardless of whether the destination is a real terminal -- "no_color"
+    in _base_opts stops it generating them in the first place, but this is
+    a second layer so any message that slips through (or any other
+    exception's str()) can't dump raw \\x1b[...m garbage into a UI log box
+    that doesn't interpret them, which is exactly what was happening
+    before (showed up as literal box characters)."""
+    return _ANSI_RE.sub("", text)
+
+
 class _QuietLogger:
     def __init__(self, log):
         self._log = log
@@ -273,10 +287,10 @@ class _QuietLogger:
         pass
 
     def warning(self, msg):
-        self._log(f"Warning: {msg}")
+        self._log(f"Warning: {strip_ansi(msg)}")
 
     def error(self, msg):
-        self._log(f"Error: {msg}")
+        self._log(f"Error: {strip_ansi(msg)}")
 
 
 def _base_opts(output_dir: str, log) -> dict:
@@ -296,6 +310,7 @@ def _base_opts(output_dir: str, log) -> dict:
         "noplaylist": True,
         "quiet": True,
         "no_warnings": True,
+        "no_color": True,
         "logger": _QuietLogger(log),
         # Lets yt-dlp fetch its JS challenge-solver script (runs via Deno) --
         # required for YouTube's signature/format checks; disabled by
