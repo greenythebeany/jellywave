@@ -28,7 +28,8 @@ contextBridge.exposeInMainWorld('api', {
     check: () => ipcRenderer.invoke('update:check'),
     onAvailable: (callback) => {
       ipcRenderer.on('update:available', (_event, result) => callback(result));
-    }
+    },
+    setAutoCheckEnabled: (enabled) => ipcRenderer.send('update:setAutoCheckEnabled', enabled)
   },
   mediaKeys: {
     onKey: (callback) => {

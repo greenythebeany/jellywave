@@ -53,6 +53,10 @@ export async function loadLocale(code) {
     }
   }
   currentLocale = code;
+  // Screen readers and spellcheckers rely on a correct lang attribute to
+  // pick the right pronunciation/dictionary — the locale code's language
+  // part (e.g. "sk" out of "sk_SK") is also valid BCP-47 on its own.
+  document.documentElement.lang = code.split('_')[0];
 }
 
 export function getLocale() {
@@ -88,6 +92,12 @@ export function applyTranslations(root = document) {
     el.placeholder = t(el.dataset.i18nPlaceholder);
   });
   root.querySelectorAll('[data-i18n-title]').forEach((el) => {
-    el.title = t(el.dataset.i18nTitle);
+    const label = t(el.dataset.i18nTitle);
+    el.title = label;
+    // These attributes are only ever put on icon-only controls (nothing
+    // that already has visible text), so the title also doubles as the
+    // control's accessible name — a bare `title` alone isn't reliably
+    // exposed to screen readers or reachable without hovering.
+    el.setAttribute('aria-label', label);
   });
 }

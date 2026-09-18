@@ -19,6 +19,18 @@
   <style id="custom-css-style"></style>
 </head>
 <body>
+  <!-- First-run privacy notice: no cookies/trackers exist to ask consent
+       for, but a few background lookups do talk to outside services, so
+       this discloses them up front instead of leaving people to find out
+       from a settings menu they may never open. -->
+  <div id="privacy-notice" class="privacy-notice" hidden role="region" aria-label="Privacy notice">
+    <p data-i18n="privacyNotice.text">JellyWave keeps everything on your own device and your own Jellyfin server. A couple of background lookups (album art, update checks) talk to outside services — see the Privacy Policy for exactly what's sent, and turn them off any time in Settings.</p>
+    <div class="privacy-notice-actions">
+      <button type="button" id="privacy-notice-view" class="attribution-link" data-i18n="privacyNotice.viewPolicy">Privacy Policy</button>
+      <button type="button" id="privacy-notice-dismiss" class="btn-primary" data-i18n="privacyNotice.dismiss">Got it</button>
+    </div>
+  </div>
+
   <!-- Custom title bar -->
   <div class="titlebar">
     <div class="titlebar-drag">
@@ -290,7 +302,7 @@
     <div class="modal-card modal-card-small">
       <div class="modal-header">
         <h2 data-i18n="createPlaylist.title">Create Playlist</h2>
-        <button id="btn-close-create-playlist" class="btn-icon-plain"><i class="fi fi-br-cross-small"></i></button>
+        <button id="btn-close-create-playlist" class="btn-icon-plain" type="button" data-i18n-title="common.close" title="Close"><i class="fi fi-br-cross-small"></i></button>
       </div>
       <form id="create-playlist-form" class="modal-body">
         <label class="modal-field">
@@ -307,7 +319,7 @@
     <div class="modal-card">
       <div class="modal-header">
         <h2 data-i18n="settings.title">Settings</h2>
-        <button id="btn-close-settings" class="btn-icon-plain"><i class="fi fi-br-cross-small"></i></button>
+        <button id="btn-close-settings" class="btn-icon-plain" type="button" data-i18n-title="common.close" title="Close"><i class="fi fi-br-cross-small"></i></button>
       </div>
       <div class="modal-body">
         <section class="settings-section">
@@ -487,6 +499,29 @@
           </div>
         </section>
         <section class="settings-section">
+          <h3 data-i18n="settings.privacy">Privacy</h3>
+          <div class="settings-row" id="album-art-lookup-row">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.albumArtLookup">Online album art lookup</div>
+              <div class="settings-row-desc" data-i18n="settings.albumArtLookupDesc">Sends the artist/album name to Deezer's public search API when your Jellyfin server doesn't have cover art. Turn off to keep that from ever leaving your device.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-album-art-lookup" />
+              <span class="switch-track"></span>
+            </label>
+          </div>
+          <div class="settings-row" id="auto-update-check-row">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.autoUpdateCheck">Automatic update check</div>
+              <div class="settings-row-desc" data-i18n="settings.autoUpdateCheckDesc">Checks GitHub in the background for a newer JellyWave release. No personal data is sent, just a version lookup. Turn off to check manually via the Releases page instead.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-auto-update-check" />
+              <span class="switch-track"></span>
+            </label>
+          </div>
+        </section>
+        <section class="settings-section">
           <h3 data-i18n="settings.advanced">Advanced</h3>
           <div class="settings-row settings-row-stack">
             <div>
@@ -502,6 +537,120 @@
             <div class="settings-row-label">JellyWave</div>
             <a href="https://www.flaticon.com/uicons" target="_blank" rel="noopener noreferrer" class="attribution-link">Uicons by Flaticon</a>
           </div>
+          <div class="settings-row">
+            <div class="settings-row-label" data-i18n="settings.catJam">Jam on paw level</div>
+            <a href="https://github.com/BlafKing/spicetify-cat-jam-synced" target="_blank" rel="noopener noreferrer" class="attribution-link" data-i18n="settings.catJamCredit">"Cat Jam" animation adapted from BlafKing's spicetify-cat-jam-synced</a>
+          </div>
+          <div class="settings-row settings-row-stack">
+            <div class="settings-row-label" data-i18n="settings.legalHeading">Legal</div>
+            <div class="legal-links">
+              <button type="button" class="attribution-link" id="btn-open-legal-privacy" data-i18n="settings.privacyPolicy">Privacy Policy</button>
+              <button type="button" class="attribution-link" id="btn-open-legal-terms" data-i18n="settings.termsOfService">Terms of Service</button>
+              <button type="button" class="attribution-link" id="btn-open-legal-thirdparty" data-i18n="settings.thirdPartyNotices">Third-Party Notices &amp; Licenses</button>
+              <button type="button" class="attribution-link" id="btn-open-legal-deletion" data-i18n="settings.dataDeletion">Delete Your Data</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legal & Privacy overlay -->
+  <div id="legal-overlay" class="modal-overlay" hidden>
+    <div class="modal-card modal-card-legal" role="dialog" aria-modal="true" aria-labelledby="legal-overlay-title">
+      <div class="modal-header">
+        <h2 id="legal-overlay-title" data-i18n="legal.overlayTitle">Legal &amp; Privacy</h2>
+        <button id="btn-close-legal" class="btn-icon-plain" type="button" data-i18n-title="common.close" title="Close"><i class="fi fi-br-cross-small"></i></button>
+      </div>
+      <nav class="legal-nav" aria-label="Legal document sections">
+        <a href="#legal-privacy" data-i18n="legal.navPrivacy">Privacy Policy</a>
+        <a href="#legal-terms" data-i18n="legal.navTerms">Terms of Service</a>
+        <a href="#legal-refunds" data-i18n="legal.navRefunds">Refund Policy</a>
+        <a href="#legal-cookies" data-i18n="legal.navCookies">Cookie &amp; Local Storage Policy</a>
+        <a href="#legal-deletion" data-i18n="legal.navDeletion">Data Deletion</a>
+        <a href="#legal-thirdparty" data-i18n="legal.navThirdParty">Third-Party Notices &amp; Licenses</a>
+        <a href="#legal-accessibility" data-i18n="legal.navAccessibility">Accessibility Statement</a>
+      </nav>
+      <div class="modal-body legal-body" id="legal-body" tabindex="-1">
+        <p class="legal-meta">Last updated: 2026-09-18. JellyWave is a free, open-source (MIT-licensed) personal project maintained by one developer (GitHub: <a href="https://github.com/greenythebeany" target="_blank" rel="noopener noreferrer">greenythebeany</a>). There is no company behind it. The only contact channel is <a href="https://github.com/greenythebeany/jellywave/issues" target="_blank" rel="noopener noreferrer">GitHub Issues on the jellywave repo</a> — that's also where to report a privacy, accessibility, or licensing concern.</p>
+
+        <section id="legal-privacy">
+          <h3>Privacy Policy</h3>
+          <p>JellyWave is a client app for a Jellyfin media server <strong>you host yourself</strong>. The developer does not run any backend for JellyWave, does not receive analytics or telemetry from your copy of the app, and cannot see your library, your account, or what you play. Everything below is a complete list of where data goes — nothing happens beyond it.</p>
+          <h4>Data that stays on your device</h4>
+          <ul>
+            <li><strong>Your Jellyfin session</strong> (server address, username, access token) — saved to a local file (<code>session.dat</code> in JellyWave's app-data folder) using your OS's encryption (Electron <code>safeStorage</code>) when the OS supports it. If your OS doesn't support that encryption, the file is saved as plain text instead — worth knowing if your device disk itself isn't encrypted.</li>
+            <li><strong>App preferences</strong> (theme, language, audio settings, etc.) — stored in local browser storage on desktop, and via the Capacitor Preferences plugin on Android. These also sync to your own Jellyfin server's user-data store so they follow you between your own devices — that sync target is your server, never the developer.</li>
+            <li><strong>Downloaded tracks</strong> — saved as ordinary audio files in JellyWave's app-data folder for offline playback.</li>
+            <li><strong>Listening stats</strong> (top artists/tracks, play history) — computed from your local playback and stored the same way as preferences, above.</li>
+          </ul>
+          <h4>Data sent to other services (never to the developer)</h4>
+          <ul>
+            <li><strong>Your own Jellyfin server</strong> — the app talks to it directly with your credentials to stream your library. This is infrastructure you control.</li>
+            <li><strong>GitHub (api.github.com)</strong> — a background check for a newer JellyWave release. Sends a generic app identifier, nothing that identifies you. Can be turned off in Settings → Privacy.</li>
+            <li><strong>Deezer (api.deezer.com)</strong> — when your server has no cover art for a track, the current artist/album/track name is sent to Deezer's public search to find one. No account or personal identifier is sent. Can be turned off in Settings → Privacy.</li>
+            <li><strong>Discord</strong> — only if you explicitly connect it in Settings → Audio → Discord Rich Presence. While connected, the currently playing track/artist and its cover art URL are sent to your local Discord client so it can show on your Discord profile. Off by default; disconnect any time.</li>
+            <li><strong>YouTube / YouTube Music / SoundCloud</strong> — only if you use the "Import" feature to paste a link, which fetches that specific media directly to your device. See the Terms of Service section below for the responsibility that comes with this feature.</li>
+          </ul>
+          <h4>Children's data</h4>
+          <p>JellyWave has no sign-up, no account creation of its own, and no data collection by the developer, so there's nothing here that depends on a user's age — the developer never receives personal data regardless of who's using the app. That said, JellyWave is not directed at children, and using it requires access to a Jellyfin server, which should be set up and supervised by an adult.</p>
+          <h4>Email</h4>
+          <p>JellyWave does not send email, does not run a mailing list, and does not collect email addresses. There's no "unsubscribe" link anywhere because no such messages exist.</p>
+        </section>
+
+        <section id="legal-terms">
+          <h3>Terms of Service</h3>
+          <ul>
+            <li>JellyWave is provided <strong>as-is, free of charge, under the MIT license</strong> (see the repository's <code>LICENSE</code>/README) — no warranty of any kind, to the extent the law allows.</li>
+            <li>You need your own Jellyfin server and account; JellyWave is an independent, unofficial client and is not affiliated with, endorsed by, or supported by the Jellyfin project.</li>
+            <li>Discord, Deezer, GitHub, YouTube, YouTube Music, and SoundCloud are third-party services referenced only to describe how JellyWave integrates with them. JellyWave is not affiliated with or endorsed by any of them, and each remains governed by its own terms.</li>
+            <li>The "Import" feature downloads media from a URL you provide, using the open-source <code>yt-dlp</code> engine. <strong>You are solely responsible</strong> for having the right to download that media and for complying with the source platform's terms of service and applicable copyright law in your country. The developer does not host, index, or distribute any third-party media.</li>
+            <li>You're responsible for the security of your own Jellyfin server and account credentials.</li>
+          </ul>
+        </section>
+
+        <section id="legal-refunds">
+          <h3>Refund Policy</h3>
+          <p>Not applicable. JellyWave is free, open-source, and distributed only through <a href="https://github.com/greenythebeany/jellywave/releases" target="_blank" rel="noopener noreferrer">GitHub Releases</a>. There is no purchase, subscription, or in-app payment of any kind, so there is nothing to refund. If that ever changes, this section will be updated first.</p>
+        </section>
+
+        <section id="legal-cookies">
+          <h3>Cookie &amp; Local Storage Policy</h3>
+          <p>JellyWave does not use cookies, and does not use any advertising or analytics trackers. The app does use ordinary local storage mechanisms that exist to make it function at all, not to track you across sessions or devices:</p>
+          <ul>
+            <li>Local storage / Capacitor Preferences — app settings and cached UI state, kept only on your device.</li>
+            <li>An encrypted local file — your Jellyfin session, so you don't have to log in every launch.</li>
+          </ul>
+          <p>None of this is shared with any third party, and none of it is used to track you across other apps or sites. You can clear it at any time by logging out (clears the session file) or by uninstalling the app (clears everything).</p>
+        </section>
+
+        <section id="legal-deletion">
+          <h3>Data Deletion</h3>
+          <p>Because the developer never receives or stores your data in the first place, there is nothing for the developer to delete on your behalf. Deleting it means clearing what's on your own device and your own server:</p>
+          <ul>
+            <li><strong>On this device</strong> — Settings → Log Out clears your saved session immediately. Uninstalling JellyWave (or deleting its app-data folder — on Windows, typically <code>%APPDATA%\JellyWave</code>) removes all local settings, downloads, and cached data.</li>
+            <li><strong>Synced settings/stats on your Jellyfin server</strong> — since these live in your own server's user-data store, delete them from your Jellyfin server directly (its admin dashboard or database), the same as any other Jellyfin client's data. The developer has no access to your server and cannot delete anything on it.</li>
+          </ul>
+          <p>Questions about this can be raised via <a href="https://github.com/greenythebeany/jellywave/issues" target="_blank" rel="noopener noreferrer">GitHub Issues</a>.</p>
+        </section>
+
+        <section id="legal-thirdparty">
+          <h3>Third-Party Notices &amp; Licenses</h3>
+          <ul>
+            <li><strong>Jellyfin</strong> — the media server this app connects to. JellyWave is an independent, unofficial client, not affiliated with or endorsed by the Jellyfin project. See <a href="https://jellyfin.org/" target="_blank" rel="noopener noreferrer">jellyfin.org</a>.</li>
+            <li><strong>Electron</strong> and <strong>Capacitor</strong> (and its official plugins: app, filesystem, haptics, local-notifications, preferences, android/ios core) — open-source app runtimes, MIT-licensed.</li>
+            <li><strong>@xhayper/discord-rpc</strong> — MIT-licensed library used for the optional Discord Rich Presence integration.</li>
+            <li><strong>Poppins</strong> font, via Fontsource — licensed under the SIL Open Font License 1.1, bundled and self-hosted (never loaded from Google Fonts or any other third-party CDN).</li>
+            <li><strong>Uicons by Flaticon</strong> — the app's icon set, used and credited per Flaticon's license (see the credit in Settings → About, and in the README).</li>
+            <li><strong>yt-dlp</strong> and <strong>Pillow</strong> — used by the optional "Import" feature's Python helper script to fetch and process media. yt-dlp is released into the public domain (Unlicense). Neither is bundled inside the app — the Import feature requires a separate Python installation on your system.</li>
+            <li><strong>"Cat Jam" animation</strong> (the optional "Jam on paw level" easter egg) — adapted from <a href="https://github.com/BlafKing/spicetify-cat-jam-synced" target="_blank" rel="noopener noreferrer">BlafKing's spicetify-cat-jam-synced</a>.</li>
+            <li><strong>Deezer</strong>, <strong>Discord</strong>, <strong>GitHub</strong>, <strong>YouTube</strong>, <strong>YouTube Music</strong>, and <strong>SoundCloud</strong> — third-party services JellyWave can optionally talk to (see Privacy Policy above). Their names and logos belong to their respective owners; JellyWave is not affiliated with or endorsed by any of them.</li>
+          </ul>
+        </section>
+
+        <section id="legal-accessibility">
+          <h3>Accessibility Statement</h3>
+          <p>JellyWave aims to meet WCAG 2.1 AA where it reasonably can for a native desktop/mobile app: real alt text on cover art, labeled icon-only controls, keyboard-operable menus and dialogs (including closing any overlay with Escape), and color combinations checked against the 4.5:1 contrast minimum for normal text. This is an ongoing, best-effort goal from a one-person project rather than a certified compliance claim. If you hit an accessibility barrier, please report it via <a href="https://github.com/greenythebeany/jellywave/issues" target="_blank" rel="noopener noreferrer">GitHub Issues</a> — real reports are the fastest way to get something fixed.</p>
         </section>
       </div>
     </div>
@@ -512,12 +661,12 @@
   <div id="update-toast" class="update-toast" hidden>
     <span id="update-toast-text" data-i18n="update.available">A new version is available.</span>
     <a id="update-toast-link" href="#" target="_blank" rel="noopener noreferrer" data-i18n="update.view">View</a>
-    <button id="update-toast-dismiss" class="btn-icon-plain" type="button"><i class="fi fi-br-cross-small"></i></button>
+    <button id="update-toast-dismiss" class="btn-icon-plain" type="button" data-i18n-title="common.close" title="Close"><i class="fi fi-br-cross-small"></i></button>
   </div>
 
   <div id="offline-toast" class="update-toast" hidden>
     <span data-i18n="login.offlineToast">Couldn't reach your server — showing downloaded content only.</span>
-    <button id="offline-toast-dismiss" class="btn-icon-plain" type="button"><i class="fi fi-br-cross-small"></i></button>
+    <button id="offline-toast-dismiss" class="btn-icon-plain" type="button" data-i18n-title="common.close" title="Close"><i class="fi fi-br-cross-small"></i></button>
   </div>
 
   <div id="sleep-timer-menu" class="account-menu sleep-timer-menu" hidden>

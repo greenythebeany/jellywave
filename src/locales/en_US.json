@@ -2,6 +2,9 @@
   "app": {
     "name": "JellyWave"
   },
+  "common": {
+    "close": "Close"
+  },
   "titlebar": {
     "minimize": "Minimize",
     "maximize": "Maximize",
@@ -136,6 +139,7 @@
     "title": "Now Playing"
   },
   "player": {
+    "coverArtAlt": "Cover art for {name} by {artist}",
     "shuffle": "Shuffle",
     "previous": "Previous",
     "play": "Play",
@@ -185,7 +189,33 @@
     "customCssDesc": "Write your own CSS to further tweak the app's look. Applied live.",
     "about": "About",
     "offlineMode": "Offline mode",
-    "offlineModeDesc": "Only show and play songs you've downloaded — everything else is grayed out"
+    "offlineModeDesc": "Only show and play songs you've downloaded — everything else is grayed out",
+    "privacy": "Privacy",
+    "albumArtLookup": "Online album art lookup",
+    "albumArtLookupDesc": "Sends the artist/album name to Deezer's public search API when your Jellyfin server doesn't have cover art. Turn off to keep that from ever leaving your device.",
+    "autoUpdateCheck": "Automatic update check",
+    "autoUpdateCheckDesc": "Checks GitHub in the background for a newer JellyWave release. No personal data is sent, just a version lookup. Turn off to check manually via the Releases page instead.",
+    "catJamCredit": "\"Cat Jam\" animation adapted from BlafKing's spicetify-cat-jam-synced",
+    "legalHeading": "Legal",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "thirdPartyNotices": "Third-Party Notices & Licenses",
+    "dataDeletion": "Delete Your Data"
+  },
+  "privacyNotice": {
+    "text": "JellyWave keeps everything on your own device and your own Jellyfin server. A couple of background lookups (album art, update checks) talk to outside services — see the Privacy Policy for exactly what's sent, and turn them off any time in Settings.",
+    "viewPolicy": "Privacy Policy",
+    "dismiss": "Got it"
+  },
+  "legal": {
+    "overlayTitle": "Legal & Privacy",
+    "navPrivacy": "Privacy Policy",
+    "navTerms": "Terms of Service",
+    "navRefunds": "Refund Policy",
+    "navCookies": "Cookie & Local Storage Policy",
+    "navDeletion": "Data Deletion",
+    "navThirdParty": "Third-Party Notices & Licenses",
+    "navAccessibility": "Accessibility Statement"
   },
   "audioQuality": {
     "auto": "Automatic (best available)",

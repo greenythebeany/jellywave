@@ -59,6 +59,10 @@ const crossfadeSlider = document.getElementById('crossfade-slider');
 const crossfadeValue = document.getElementById('crossfade-value');
 const toggleReplayGain = document.getElementById('toggle-replaygain');
 const toggleOfflineMode = document.getElementById('toggle-offline-mode');
+const albumArtLookupRow = document.getElementById('album-art-lookup-row');
+const toggleAlbumArtLookup = document.getElementById('toggle-album-art-lookup');
+const autoUpdateCheckRow = document.getElementById('auto-update-check-row');
+const toggleAutoUpdateCheck = document.getElementById('toggle-auto-update-check');
 const toggleEqualizer = document.getElementById('toggle-equalizer');
 const equalizerToggleRow = document.getElementById('equalizer-toggle-row');
 const equalizerBandsRow = document.getElementById('equalizer-bands-row');
@@ -90,6 +94,20 @@ const createPlaylistOverlay = document.getElementById('create-playlist-overlay')
 const btnCloseCreatePlaylist = document.getElementById('btn-close-create-playlist');
 const createPlaylistForm = document.getElementById('create-playlist-form');
 const inputPlaylistName = document.getElementById('input-playlist-name');
+
+// Legal & Privacy overlay
+const legalOverlay = document.getElementById('legal-overlay');
+const btnCloseLegal = document.getElementById('btn-close-legal');
+const legalBody = document.getElementById('legal-body');
+const btnOpenLegalPrivacy = document.getElementById('btn-open-legal-privacy');
+const btnOpenLegalTerms = document.getElementById('btn-open-legal-terms');
+const btnOpenLegalThirdParty = document.getElementById('btn-open-legal-thirdparty');
+const btnOpenLegalDeletion = document.getElementById('btn-open-legal-deletion');
+
+// First-run privacy notice
+const privacyNotice = document.getElementById('privacy-notice');
+const privacyNoticeView = document.getElementById('privacy-notice-view');
+const privacyNoticeDismiss = document.getElementById('privacy-notice-dismiss');
 
 // Player bar elements
 const playerBar = document.getElementById('player-bar');
@@ -227,6 +245,15 @@ function artistNames(item, fallback) {
   return formatDisplayName(raw);
 }
 
+// Cover art conveys real information (which album is playing), so it needs
+// a real alt text instead of the alt="" used for purely decorative images —
+// screen reader users would otherwise get no indication of what's showing.
+function setArtAlt(name, artist) {
+  const label = t('player.coverArtAlt', { name: name || '', artist: artist || '' });
+  playerArt.alt = label;
+  nowPlayingArt.alt = label;
+}
+
 // Maps a Jellyfin item Type to the "kind" strings this UI uses internally.
 function typeToKind(type) {
   switch (type) {
@@ -299,6 +326,10 @@ function syncCardStates() {
 
 // ---------- Session bootstrap ----------
 async function init() {
+  // Sent as early as possible, ahead of main.js's background update check
+  // (fired ~4s after app ready) -- that's the only way to actually stop the
+  // GitHub network call itself rather than just hiding its result.
+  if (isDesktop) window.api.updates?.setAutoCheckEnabled?.(getSettings().autoUpdateCheckEnabled !== false);
   if (isMobile) requestNotificationPermission();
   wireUpdateToast();
   if (isDesktop) wireMediaKeys();
@@ -311,6 +342,8 @@ async function init() {
   customCssStyle.textContent = getSettings().customCss || '';
   wireSettingsUI();
   wireCreatePlaylistUI();
+  wireLegalOverlay();
+  wirePrivacyNotice();
   wireBackButton();
 
   await initClientVersion();
@@ -483,6 +516,20 @@ document.addEventListener('click', (evt) => {
     accountMenu.hidden = true;
   }
 });
+
+// Every dismissible overlay/menu below only ever closed via a mouse click
+// outside it -- a keyboard-only user had no way to back out of one. Escape
+// is the universal "close this" key, checked top-down in the order a user
+// would expect (innermost/most-recently-opened thing first).
+document.addEventListener('keydown', (evt) => {
+  if (evt.key !== 'Escape') return;
+  if (!legalOverlay.hidden) { closeLegal(); return; }
+  if (!settingsOverlay.hidden) { closeSettings(); return; }
+  if (!createPlaylistOverlay.hidden) { closeCreatePlaylist(); return; }
+  if (!accountMenu.hidden) { accountMenu.hidden = true; btnAccount.focus(); return; }
+  if (!sleepTimerMenu.hidden) { sleepTimerMenu.hidden = true; return; }
+  if (!connectMenu.hidden) { connectMenu.hidden = true; }
+});
 menuLogout.addEventListener('click', async () => {
   await sessionStore.clear();
   connect?.stop();
@@ -563,6 +610,21 @@ function wireSettingsUI() {
   toggleReplayGain.addEventListener('change', () => {
     updateSettings({ replayGainEnabled: toggleReplayGain.checked });
     player?.setReplayGainEnabled(toggleReplayGain.checked);
+  });
+
+  // Both rows only do anything on desktop (Deezer lookup and the update
+  // check are both Electron-only, see platform.js/preload.js) — hide them
+  // rather than ship a toggle with nothing behind it.
+  if (!isDesktop) {
+    setHidden(albumArtLookupRow, true);
+    setHidden(autoUpdateCheckRow, true);
+  }
+  toggleAlbumArtLookup.addEventListener('change', () => {
+    updateSettings({ albumArtLookupEnabled: toggleAlbumArtLookup.checked });
+  });
+  toggleAutoUpdateCheck.addEventListener('change', () => {
+    updateSettings({ autoUpdateCheckEnabled: toggleAutoUpdateCheck.checked });
+    window.api?.updates?.setAutoCheckEnabled?.(toggleAutoUpdateCheck.checked);
   });
 
   // Desktop (Web Audio) and Android (native android.media.audiofx.Equalizer,
@@ -1200,6 +1262,7 @@ function updateRemoteBarUI(session) {
       withOfflineArtFallback(nowPlayingArt, track);
       nowPlayingTitle.textContent = track.Name;
       nowPlayingArtist.textContent = artistNames(track);
+      setArtAlt(track.Name, artistNames(track));
       nowPlayingLikeBtn.classList.toggle('liked', !!track.UserData?.IsFavorite);
       setDownloadButtonState(nowPlayingDownloadBtn, isDownloaded(track.Id) ? 'downloaded' : 'idle');
       const playing = !player.audio.paused;
@@ -1238,6 +1301,7 @@ function updateRemoteBarUI(session) {
     nowPlayingArt.src = jellyfin.imageUrl(item, 'Primary', 800) || art;
     nowPlayingTitle.textContent = item.Name || '';
     nowPlayingArtist.textContent = artistNames(item);
+    setArtAlt(item.Name, artistNames(item));
     nowPlayingLikeBtn.classList.toggle('liked', !!item.UserData?.IsFavorite);
     const posSeconds = (playState.PositionTicks || 0) / 10000000;
     const durSeconds = (item.RunTimeTicks || 0) / 10000000;
@@ -1274,6 +1338,8 @@ function refreshSettingsUI() {
   crossfadeValue.textContent = s.crossfadeSeconds ? `${s.crossfadeSeconds}s` : 'Off';
   crossfadeSlider.style.setProperty('--pct', rangeFillPercent(((s.crossfadeSeconds || 0) / 12) * 100, crossfadeSlider, 13));
   toggleOfflineMode.checked = !!s.offlineMode;
+  toggleAlbumArtLookup.checked = s.albumArtLookupEnabled !== false;
+  toggleAutoUpdateCheck.checked = s.autoUpdateCheckEnabled !== false;
   toggleReplayGain.checked = !!s.replayGainEnabled;
   const loudnessBoostDb = s.loudnessBoostDb ?? 10;
   loudnessBoostSlider.value = loudnessBoostDb;
@@ -1309,18 +1375,68 @@ function refreshSettingsUI() {
   audioQualitySelect.value = s.audioQuality;
 }
 
+let settingsTriggerEl = null;
 function openSettings() {
   refreshSettingsUI();
+  settingsTriggerEl = document.activeElement;
   settingsOverlay.hidden = false;
+  btnCloseSettings.focus();
 }
 function closeSettings() {
   settingsOverlay.hidden = true;
+  settingsTriggerEl?.focus();
+}
+
+// ---------- Legal & Privacy overlay ----------
+let legalTriggerEl = null;
+function openLegal(anchor) {
+  legalTriggerEl = document.activeElement;
+  legalOverlay.hidden = false;
+  const target = anchor && document.getElementById(anchor);
+  if (target) target.scrollIntoView({ block: 'start' });
+  else legalBody.scrollTop = 0;
+  btnCloseLegal.focus();
+}
+function closeLegal() {
+  legalOverlay.hidden = true;
+  legalTriggerEl?.focus();
+}
+function wireLegalOverlay() {
+  btnCloseLegal.addEventListener('click', closeLegal);
+  legalOverlay.addEventListener('click', (evt) => {
+    if (evt.target === legalOverlay) closeLegal();
+  });
+  btnOpenLegalPrivacy.addEventListener('click', () => openLegal('legal-privacy'));
+  btnOpenLegalTerms.addEventListener('click', () => openLegal('legal-terms'));
+  btnOpenLegalThirdParty.addEventListener('click', () => openLegal('legal-thirdparty'));
+  btnOpenLegalDeletion.addEventListener('click', () => openLegal('legal-deletion'));
+}
+
+// ---------- First-run privacy notice ----------
+// There are no cookies/trackers here to ask consent for, but a few
+// background lookups do talk to outside services (see Privacy Policy) --
+// disclosed once, up front, rather than left for someone to stumble on in
+// a settings menu they may never open.
+const PRIVACY_NOTICE_SEEN_KEY = 'jellywave:privacyNoticeSeen';
+function wirePrivacyNotice() {
+  if (!localStorage.getItem(PRIVACY_NOTICE_SEEN_KEY)) setHidden(privacyNotice, false);
+  const dismiss = () => {
+    localStorage.setItem(PRIVACY_NOTICE_SEEN_KEY, '1');
+    setHidden(privacyNotice, true);
+  };
+  privacyNoticeDismiss.addEventListener('click', dismiss);
+  privacyNoticeView.addEventListener('click', () => {
+    dismiss();
+    openLegal('legal-privacy');
+  });
 }
 
 // ---------- Create playlist modal ----------
+let createPlaylistTriggerEl = null;
 function wireCreatePlaylistUI() {
   btnNewPlaylist.addEventListener('click', () => {
     inputPlaylistName.value = '';
+    createPlaylistTriggerEl = document.activeElement;
     createPlaylistOverlay.hidden = false;
     inputPlaylistName.focus();
   });
@@ -1348,6 +1464,7 @@ function wireCreatePlaylistUI() {
 }
 function closeCreatePlaylist() {
   createPlaylistOverlay.hidden = true;
+  createPlaylistTriggerEl?.focus();
 }
 
 // ---------- Hardware back button (Android) ----------
@@ -2947,6 +3064,7 @@ function wirePlayer() {
     withOfflineArtFallback(nowPlayingArt, track);
     nowPlayingTitle.textContent = track.Name;
     nowPlayingArtist.textContent = artistNames(track);
+    setArtAlt(track.Name, artistNames(track));
     nowPlayingLikeBtn.classList.toggle('liked', !!track.UserData?.IsFavorite);
     setDownloadButtonState(nowPlayingDownloadBtn, isDownloaded(track.Id) ? 'downloaded' : 'idle');
     syncPlayAllButton();

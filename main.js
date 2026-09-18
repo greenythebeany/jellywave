@@ -37,6 +37,7 @@ function resolvePythonExecutable() {
 const PYTHON_EXE = resolvePythonExecutable();
 
 let mainWindow;
+let autoUpdateCheckEnabled = true;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -81,7 +82,12 @@ app.whenReady().then(() => {
   });
 
   // Silent background check — only speaks up if something's actually newer.
+  // Settings → Privacy → "Automatic update check" can turn this off entirely
+  // (autoUpdateCheckEnabled, pushed over IPC as soon as the renderer loads
+  // its settings) -- checked here, not just at display time, so the
+  // opt-out actually stops the GitHub request rather than just hiding it.
   setTimeout(() => {
+    if (!autoUpdateCheckEnabled) return;
     checkForUpdates()
       .then((result) => {
         if (result.status === 'available' && mainWindow) {
@@ -133,6 +139,10 @@ ipcMain.handle('update:check', async () => {
   } catch (err) {
     return { status: 'error', error: err.message };
   }
+});
+
+ipcMain.on('update:setAutoCheckEnabled', (_event, enabled) => {
+  autoUpdateCheckEnabled = enabled !== false;
 });
 
 // Lets jellyfin.js report the real installed version to the server instead

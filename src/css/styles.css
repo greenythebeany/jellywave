@@ -4,7 +4,7 @@
   --radius-lg: 14px;
   --titlebar-h: 36px;
   --player-h: 104px;
-  --accent-contrast: #ffffff;
+  --accent-contrast: #0a0a0a;
   --accent-bg: var(--accent, #00a4dc);
 }
 
@@ -18,7 +18,10 @@
   --bg-card-hover: #262626;
   --text-primary: #ffffff;
   --text-secondary: #a7a7a7;
-  --text-tertiary: #6a6a6a;
+  /* #6a6a6a on near-black only hit ~3.9:1 (WCAG AA needs 4.5:1 for normal
+     text) -- #7d7d7d clears it with some margin while staying visually
+     "tertiary" next to --text-secondary. */
+  --text-tertiary: #7d7d7d;
   --border-subtle: rgba(255, 255, 255, 0.09);
   --scrim: rgba(0, 0, 0, 0.55);
   --danger: #f15e6c;
@@ -32,16 +35,23 @@
   --bg-card-hover: #e3e3e8;
   --text-primary: #121214;
   --text-secondary: #5c5c63;
-  --text-tertiary: #8c8c93;
+  /* #8c8c93 on the light backgrounds here only hit ~3:1 -- #6e6e75 clears
+     the 4.5:1 AA threshold for normal-size text. */
+  --text-tertiary: #6e6e75;
   --border-subtle: rgba(0, 0, 0, 0.09);
   --scrim: rgba(255, 255, 255, 0.7);
   --danger: #d13c4b;
 }
 
 /* ---------- Color palettes ---------- */
-:root[data-palette="jellyfin"] { --accent: #00a4dc; --accent-hover: #2bb9ec; --accent-contrast: #ffffff; --seek-start: #00a4dc; --seek-end: #aa5cc3; --accent-bg: linear-gradient(135deg, #00a4dc 0%, #aa5cc3 100%); }
+/* accent-contrast is the text/icon color placed directly on top of the
+   accent color (e.g. .btn-primary) -- white on #00a4dc or #aa5cc3 only
+   reaches ~2.9:1 / ~4.2:1 against WCAG AA's 4.5:1 for normal text, so
+   those two use a dark near-black instead, same as spotify/mono already
+   did for their own bright accents. */
+:root[data-palette="jellyfin"] { --accent: #00a4dc; --accent-hover: #2bb9ec; --accent-contrast: #0a0a0a; --seek-start: #00a4dc; --seek-end: #aa5cc3; --accent-bg: linear-gradient(135deg, #00a4dc 0%, #aa5cc3 100%); }
 :root[data-palette="spotify"]  { --accent: #1ed760; --accent-hover: #3be275; --accent-contrast: #04140a; --seek-start: #1ed760; --seek-end: #1ed760; --accent-bg: #1ed760; }
-:root[data-palette="purple"]   { --accent: #aa5cc3; --accent-hover: #bd74d4; --accent-contrast: #ffffff; --seek-start: #aa5cc3; --seek-end: #aa5cc3; --accent-bg: #aa5cc3; }
+:root[data-palette="purple"]   { --accent: #aa5cc3; --accent-hover: #bd74d4; --accent-contrast: #0a0a0a; --seek-start: #aa5cc3; --seek-end: #aa5cc3; --accent-bg: #aa5cc3; }
 :root[data-palette="mono"]     { --accent: #e6e6e6; --accent-hover: #ffffff; --accent-contrast: #0a0a0a; --seek-start: #e6e6e6; --seek-end: #e6e6e6; --accent-bg: #e6e6e6; }
 
 * { box-sizing: border-box; }
@@ -897,6 +907,42 @@ input[type="range"].volume-bar { width: 110px; flex: none; }
 .settings-row-stack { flex-direction: column; align-items: stretch; }
 .settings-row-label { font-size: 14px; font-weight: 600; }
 .settings-row-desc { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+
+.legal-links { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.legal-links button { background: none; border: none; padding: 0; text-align: left; cursor: pointer; font-size: 11px; font-family: inherit; }
+
+/* ---------- Legal & Privacy overlay ---------- */
+.modal-card-legal { width: 680px; max-width: 92vw; }
+.legal-nav {
+  display: flex; flex-wrap: wrap; gap: 8px 16px;
+  padding: 14px 24px; border-bottom: 1px solid var(--border-subtle);
+  position: sticky; top: 65px; background: var(--bg-elevated); z-index: 1;
+}
+.legal-nav a { font-size: 12px; color: var(--accent); text-decoration: none; }
+.legal-nav a:hover { text-decoration: underline; }
+.legal-body { font-size: 13.5px; line-height: 1.6; color: var(--text-secondary); }
+.legal-body .legal-meta { font-size: 12px; color: var(--text-tertiary); border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px; margin-bottom: 8px; }
+.legal-body section { padding: 22px 0; border-bottom: 1px solid var(--border-subtle); }
+.legal-body section:last-child { border-bottom: none; }
+.legal-body h3 { color: var(--text-primary); font-size: 16px; font-weight: 800; margin: 0 0 12px; scroll-margin-top: 12px; }
+.legal-body h4 { color: var(--text-primary); font-size: 13px; font-weight: 700; margin: 16px 0 6px; }
+.legal-body p { margin: 0 0 10px; }
+.legal-body ul { margin: 0 0 10px; padding-left: 20px; }
+.legal-body li { margin-bottom: 6px; }
+.legal-body a { color: var(--accent); }
+.legal-body code { background: var(--bg-highlight); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+
+/* ---------- First-run privacy notice ---------- */
+.privacy-notice {
+  position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 300;
+  max-width: 640px; margin: 0 auto;
+  background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+  padding: 16px 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+}
+.privacy-notice p { margin: 0; font-size: 12.5px; color: var(--text-secondary); flex: 1 1 320px; }
+.privacy-notice-actions { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.privacy-notice-actions .btn-primary { padding: 8px 16px; font-size: 12.5px; }
 
 .custom-css-input {
   margin-top: 10px; width: 100%; min-height: 140px; resize: vertical;

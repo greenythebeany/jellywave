@@ -132,6 +132,11 @@ The Android project lives in `android/` and is a standard Capacitor project — 
 
 - [Jellyfin](https://jellyfin.org/) for the media server this app talks to
 - [Uicons by Flaticon](https://www.flaticon.com/uicons) for the icon set
+- [BlafKing's spicetify-cat-jam-synced](https://github.com/BlafKing/spicetify-cat-jam-synced) for the "Jam on paw level" cat animation
+
+## Legal & Privacy
+
+JellyWave is free, open-source, and doesn't run any backend of its own — see [`docs/legal/`](docs/legal/) for the full [Privacy Policy](docs/legal/PRIVACY.md), [Terms of Service](docs/legal/TERMS.md), [Refund Policy](docs/legal/REFUNDS.md), [Cookie & Local Storage Policy](docs/legal/COOKIES.md), [Data Deletion](docs/legal/DATA_DELETION.md), [Third-Party Notices & Licenses](docs/legal/THIRD_PARTY_NOTICES.md), and [Accessibility Statement](docs/legal/ACCESSIBILITY.md). These are also viewable inside the app under **Settings → About → Legal**.
 
 ## License
 

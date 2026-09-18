@@ -116,6 +116,12 @@ export async function clearDiscordActivity() {
 
 export async function searchDeezerAlbumArt(artist, album, trackName) {
   if (!isDesktop) return null;
+  // Settings → Privacy → "Online album art lookup" -- this is the only
+  // outbound call in the app that sends free-text derived from a user's
+  // library, so it gets its own explicit opt-out. Imported lazily to avoid
+  // a load-order/circular-import dependency between the two modules.
+  const { getSettings } = await import('./settings.js');
+  if (!getSettings().albumArtLookupEnabled) return null;
   try {
     return await window.api.deezer.searchAlbumArt(artist, album, trackName);
   } catch (err) {
