@@ -36,6 +36,13 @@ contextBridge.exposeInMainWorld('api', {
       ipcRenderer.on('media-key', (_event, key) => callback(key));
     }
   },
+  smtc: {
+    setMetadata: (meta) => ipcRenderer.send('smtc:setMetadata', meta),
+    setPlayback: (state, positionMs) => ipcRenderer.send('smtc:setPlayback', state, positionMs),
+    onEvent: (callback) => {
+      ipcRenderer.on('smtc:event', (_event, data) => callback(data));
+    }
+  },
   downloads: {
     save: (itemId, url, headers) => ipcRenderer.invoke('downloads:save', itemId, url, headers),
     delete: (itemId) => ipcRenderer.invoke('downloads:delete', itemId),

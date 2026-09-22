@@ -315,6 +315,24 @@ export class Player {
   }
 
   _setupMediaSession() {
+    // Windows SMTC button/seek events arrive over IPC (main.js forwards them
+    // from the native addon), not through navigator.mediaSession -- Electron
+    // never routes real OS media-key presses into the page the way it would
+    // for a proper Chrome tab. Wired unconditionally alongside whichever
+    // branch below actually applies to this platform.
+    window.api?.smtc?.onEvent((event) => {
+      switch (event.kind) {
+        case 'play': case 'pause': case 'toggle': this.togglePlay(); break;
+        case 'next': this.next(true); break;
+        case 'previous': this.previous(); break;
+        case 'stop': if (!this.audio.paused) this.togglePlay(); break;
+        case 'setposition': if (event.positionMs != null) this.seekTo(event.positionMs / 1000); break;
+        case 'seekforward': this.seekTo(Math.min(this.audio.duration || Infinity, this.audio.currentTime + 10)); break;
+        case 'seekbackward': this.seekTo(Math.max(0, this.audio.currentTime - 10)); break;
+        case 'seekby': if (event.positionMs != null) this.seekTo(Math.max(0, this.audio.currentTime + event.positionMs / 1000)); break;
+      }
+    });
+
     const native = this._nativeMediaSession();
     if (native) {
       native.setActionHandler({ action: 'play' }, () => this.togglePlay());
@@ -370,6 +388,19 @@ export class Player {
       ? [512, 384, 256, 192, 96].map((size) => ({ src: this.jellyfin.imageUrl(track, 'Primary', size), sizes: `${size}x${size}`, type: 'image/jpeg' })).filter((a) => a.src)
       : [];
 
+    // Windows SMTC (via the native addon -- see main.js/native/smtc): a
+    // separate sink from the Web MediaSession API below, since Electron's
+    // Chromium build never bridges navigator.mediaSession to the OS on
+    // Windows the way real Chrome does. Runs alongside, not instead of, the
+    // branches below so Capacitor/browser builds are unaffected.
+    window.api?.smtc?.setMetadata({
+      title: track?.Name || '',
+      artist,
+      album: track?.Album || '',
+      coverUrl: track ? this.jellyfin.imageUrl(track, 'Primary', 512) : null,
+      durationMs: track?.RunTimeTicks ? track.RunTimeTicks / 10000 : null
+    });
+
     const native = this._nativeMediaSession();
     if (native) {
       native.setMetadata({ title: track?.Name || '', artist, album: track?.Album || '', artwork }).catch(() => {});
@@ -385,6 +416,8 @@ export class Player {
 
   _setMediaSessionPlaybackState() {
     const state = this.audio.paused ? 'paused' : 'playing';
+    window.api?.smtc?.setPlayback(state, this.audio.currentTime * 1000);
+
     const native = this._nativeMediaSession();
     if (native) {
       native.setPlaybackState({ playbackState: state }).catch(() => {});

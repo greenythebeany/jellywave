@@ -8,6 +8,11 @@ const { checkForUpdates } = require('./update-checker');
 const CONFIG_PATH = path.join(app.getPath('userData'), 'session.dat');
 const DISCORD_CLIENT_ID = '1534197353056174180';
 const DOWNLOADS_DIR = path.join(app.getPath('userData'), 'downloads');
+// Same asarUnpack reasoning as DOWNLOADER_DIR below -- a native .node addon
+// can't be loaded from inside app.asar's virtual filesystem either.
+const SMTC_ADDON_PATH = app.isPackaged
+  ? path.join(process.resourcesPath, 'app.asar.unpacked', 'native', 'smtc', 'smtc.node')
+  : path.join(__dirname, 'native', 'smtc', 'smtc.node');
 // Packaged builds pack downloader/ inside app.asar, a virtual archive only
 // Node's own fs shim understands -- python.exe (an external process) can't
 // open a path inside it at all. asarUnpack (see package.json) copies these
@@ -38,6 +43,31 @@ const PYTHON_EXE = resolvePythonExecutable();
 
 let mainWindow;
 let autoUpdateCheckEnabled = true;
+let smtc = null;
+
+// Registers JellyWave as a real Windows SMTC (System Media Transport
+// Controls) provider -- the same OS-level session the taskbar media flyout,
+// lock screen, Xbox Game Bar, and third-party readers (e.g. Windhawk's
+// Island Media Controls) all read from. Electron never does this on its own
+// (see native/smtc/src/lib.rs for why); best-effort, since a missing/failed
+// native build must never stop the app from starting.
+function setupSmtc() {
+  if (process.platform !== 'win32' || !mainWindow) return;
+  try {
+    const { Smtc } = require(SMTC_ADDON_PATH);
+    // napi's plain `i64` binds to a JS number, not BigInt; HWNDs are always
+    // small enough that Number() loses nothing.
+    const hwnd = Number(mainWindow.getNativeWindowHandle().readBigInt64LE(0));
+    smtc = new Smtc(hwnd);
+    smtc.attach((err, event) => {
+      if (err || !event) return;
+      mainWindow?.webContents.send('smtc:event', event);
+    });
+  } catch (err) {
+    console.log('[smtc] native media controls unavailable:', err.message);
+    smtc = null;
+  }
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -72,7 +102,31 @@ function createWindow() {
 
   mainWindow.on('maximize', () => mainWindow.webContents.send('window:state', 'maximized'));
   mainWindow.on('unmaximize', () => mainWindow.webContents.send('window:state', 'normal'));
+
+  setupSmtc();
 }
+
+ipcMain.on('smtc:setMetadata', (_event, meta) => {
+  try {
+    smtc?.setMetadata({
+      title: meta?.title || '',
+      artist: meta?.artist || '',
+      album: meta?.album || '',
+      coverUrl: meta?.coverUrl || undefined,
+      durationMs: meta?.durationMs ?? undefined
+    });
+  } catch (err) {
+    // Non-fatal -- e.g. called right as the window is closing.
+  }
+});
+
+ipcMain.on('smtc:setPlayback', (_event, state, positionMs) => {
+  try {
+    smtc?.setPlayback(state, positionMs ?? undefined);
+  } catch (err) {
+    // Non-fatal, same as above.
+  }
+});
 
 app.whenReady().then(() => {
   createWindow();
@@ -123,6 +177,11 @@ app.on('window-all-closed', () => {
 
 app.on('will-quit', () => {
   globalShortcut.unregisterAll();
+  try {
+    smtc?.detach();
+  } catch (err) {
+    // Non-fatal -- we're quitting anyway.
+  }
   // Release the Discord RPC IPC connection explicitly rather than leaving it
   // to process teardown — matters for the updater, which detects a running
   // instance by image name and can end up fighting a lingering handle.

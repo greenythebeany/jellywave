@@ -45,10 +45,12 @@
       "node_modules/**/*",
       "downloader/**/*",
       "!downloader/cookies.txt",
-      "!downloader/__pycache__/**"
+      "!downloader/__pycache__/**",
+      "native/smtc/smtc.node"
     ],
     "asarUnpack": [
-      "downloader/**/*"
+      "downloader/**/*",
+      "native/smtc/smtc.node"
     ],
     "win": {
       "target": "nsis",
