@@ -189,7 +189,36 @@ export class JellyfinClient {
       Recursive: true,
       SortBy: 'Album,SortName',
       SortOrder: 'Ascending',
-      Fields: 'PrimaryImageAspectRatio,MediaSources,AlbumArtist,ArtistItems,UserData,Genres,NormalizationGain'
+      Fields: 'PrimaryImageAspectRatio,AlbumArtist,ArtistItems,UserData,Genres,NormalizationGain'
+    });
+    return data.Items || [];
+  }
+
+  // Small, server-sorted queries for the home page, so it doesn't have to
+  // wait for the whole library (getAllSongs) just to show a dozen cards.
+  async getPlayedSongs(parentId, sortBy, limit) {
+    const data = await this._get(`/Users/${this.userId}/Items`, {
+      ParentId: parentId,
+      IncludeItemTypes: 'Audio',
+      Recursive: true,
+      Filters: 'IsPlayed',
+      SortBy: sortBy,
+      SortOrder: 'Descending',
+      Limit: limit,
+      Fields: 'PrimaryImageAspectRatio,AlbumArtist,ArtistItems,UserData,Genres,NormalizationGain'
+    });
+    return data.Items || [];
+  }
+
+  async getLatestAlbums(parentId, limit) {
+    const data = await this._get(`/Users/${this.userId}/Items`, {
+      ParentId: parentId,
+      IncludeItemTypes: 'MusicAlbum',
+      Recursive: true,
+      SortBy: 'DateCreated,SortName',
+      SortOrder: 'Descending',
+      Limit: limit,
+      Fields: 'PrimaryImageAspectRatio,AlbumArtist'
     });
     return data.Items || [];
   }
@@ -225,7 +254,7 @@ export class JellyfinClient {
       Recursive: true,
       SortBy: 'Album,SortName',
       SortOrder: 'Ascending',
-      Fields: 'PrimaryImageAspectRatio,MediaSources,AlbumArtist,ArtistItems,UserData,Genres,NormalizationGain'
+      Fields: 'PrimaryImageAspectRatio,AlbumArtist,ArtistItems,UserData,Genres,NormalizationGain'
     });
     return data.Items || [];
   }
@@ -236,7 +265,7 @@ export class JellyfinClient {
       IncludeItemTypes: 'Audio',
       SortBy: 'ParentIndexNumber,IndexNumber',
       SortOrder: 'Ascending',
-      Fields: 'MediaSources,ArtistItems,UserData,Genres,NormalizationGain'
+      Fields: 'ArtistItems,UserData,Genres,NormalizationGain'
     });
     return data.Items || [];
   }
@@ -276,7 +305,7 @@ export class JellyfinClient {
   async getPlaylistItems(playlistId) {
     const data = await this._get(`/Playlists/${playlistId}/Items`, {
       UserId: this.userId,
-      Fields: 'MediaSources,ArtistItems,UserData,Genres,NormalizationGain'
+      Fields: 'ArtistItems,UserData,Genres,NormalizationGain'
     });
     return data.Items || [];
   }
@@ -340,7 +369,7 @@ export class JellyfinClient {
       IncludeItemTypes: 'Audio',
       Recursive: true,
       SortBy: 'SortName',
-      Fields: 'PrimaryImageAspectRatio,MediaSources,ArtistItems,UserData,Genres,NormalizationGain'
+      Fields: 'PrimaryImageAspectRatio,ArtistItems,UserData,Genres,NormalizationGain'
     });
     return data.Items || [];
   }
@@ -390,7 +419,7 @@ export class JellyfinClient {
       IncludeItemTypes: 'Audio',
       Recursive: true,
       SortBy: 'Album,SortName',
-      Fields: 'PrimaryImageAspectRatio,MediaSources,AlbumArtist,ArtistItems,UserData,Genres,NormalizationGain'
+      Fields: 'PrimaryImageAspectRatio,AlbumArtist,ArtistItems,UserData,Genres,NormalizationGain'
     });
     return data.Items || [];
   }
@@ -568,6 +597,15 @@ export class JellyfinClient {
     const params = new URLSearchParams({ maxWidth: maxSize, maxHeight: maxSize, quality: 90 });
     if (tag) params.set('tag', tag);
     return `${this.serverUrl}/Items/${id}/Images/${type}?${params.toString()}`;
+  }
+
+  // Backdrops live in their own BackdropImageTags array rather than in
+  // ImageTags, so they need a separate lookup from imageUrl().
+  backdropUrl(item, maxWidth = 1920) {
+    const tag = item.BackdropImageTags && item.BackdropImageTags[0];
+    if (!tag) return null;
+    const params = new URLSearchParams({ maxWidth, quality: 90, tag });
+    return `${this.serverUrl}/Items/${item.Id}/Images/Backdrop/0?${params.toString()}`;
   }
 
   // bitrateKbps: omit (or 0) for direct play at source quality; otherwise the

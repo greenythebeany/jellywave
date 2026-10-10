@@ -1,6 +1,6 @@
 {
   "name": "jellywave",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "A sleek, Spotify-style desktop client for your own Jellyfin music server",
   "main": "main.js",
   "author": "",
@@ -55,6 +55,11 @@
     "win": {
       "target": "nsis",
       "icon": "build/icon.ico"
+    },
+    "linux": {
+      "target": ["AppImage", "snap"],
+      "icon": "logo.png",
+      "category": "Audio"
     },
     "nsis": {
       "oneClick": false,

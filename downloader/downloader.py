@@ -316,6 +316,10 @@ def _base_opts(output_dir: str, log) -> dict:
         # required for YouTube's signature/format checks; disabled by
         # default since it's remote code, but needed for downloads to work.
         "remote_components": ["ejs:github"],
+        # yt-dlp only tries Deno by default; without any runtime the n-challenge
+        # fails and YouTube serves image-only formats. Fall back to Node/Bun,
+        # which are far more likely to already be installed.
+        "js_runtimes": {"deno": {}, "node": {}, "bun": {}},
     }
     if FFMPEG_LOCATION:
         opts["ffmpeg_location"] = FFMPEG_LOCATION
