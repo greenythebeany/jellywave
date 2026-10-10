@@ -87,6 +87,14 @@ offlineToastDismiss.addEventListener('click', () => { offlineToast.hidden = true
 const customCssInput = document.getElementById('custom-css-input');
 const customCssStyle = document.getElementById('custom-css-style');
 const mainBgArt = document.getElementById('main-bg-art');
+const mainEl = document.querySelector('.main');
+const mainHeaderEl = document.querySelector('.main-header');
+// While a detail backdrop is showing and the page is scrolled to the top,
+// the sticky header goes see-through so the art runs up behind the arrows.
+function syncHeroHeader() {
+  mainEl.classList.toggle('hero-top', mainEl.classList.contains('has-hero') && mainEl.scrollTop < 40);
+}
+mainEl.addEventListener('scroll', syncHeroHeader, { passive: true });
 
 // Create playlist modal
 const btnNewPlaylist = document.getElementById('btn-new-playlist');
@@ -406,6 +414,10 @@ async function enterApp(username) {
   // the first frame instead of flashing this device's old values first.
   // Best-effort: offline/unreachable just leaves local settings as they
   // were, same as any other view that degrades without a server.
+  // Fetched alongside the settings sync rather than after it -- one less
+  // sequential round trip before home can start loading.
+  const libsPromise = jellyfin.getMusicLibraries();
+  libsPromise.catch(() => {});
   await initRemoteSync(jellyfin);
 
   loginScreen.hidden = true;
@@ -453,10 +465,10 @@ async function enterApp(username) {
     accountAvatar.textContent = initial;
   }
 
-  const libs = await jellyfin.getMusicLibraries();
+  const libs = await libsPromise;
   musicLibraryId = libs[0]?.Id;
 
-  await loadPlaylistSidebar();
+  loadPlaylistSidebar().catch(() => {});
   loadPinnedAlbumsSidebar();
   navigateTo({ view: 'home' });
 }
@@ -1507,7 +1519,7 @@ async function loadPlaylistSidebar() {
     const item = el('button', 'playlist-item');
     const img = document.createElement('img');
     img.className = 'pl-thumb';
-    img.src = artUrl(pl);
+    img.src = artUrl(pl, 'album', 96);
     item.appendChild(img);
     const span = document.createElement('span');
     span.textContent = pl.Name;
@@ -1575,6 +1587,7 @@ window.addEventListener('mouseup', (evt) => {
 
 async function renderView(state) {
   viewRoot.innerHTML = '<div class="empty-state">Loading…</div>';
+  mainEl.classList.remove('has-hero', 'hero-top');
   playAllBtn = null;
   playAllTrackIds = [];
   cardRegistry = [];
@@ -1616,9 +1629,17 @@ function shuffleArray(arr) {
   return copy;
 }
 
+// Shares one in-flight request, so the background warm-up from renderHome
+// and a view that needs the cache don't both download the whole library.
+let allSongsCachePromise = null;
 async function ensureAllSongsCache() {
-  if (!allSongsCache) allSongsCache = await jellyfin.getAllSongs(musicLibraryId);
-  return allSongsCache;
+  if (allSongsCache) return allSongsCache;
+  if (!allSongsCachePromise) {
+    allSongsCachePromise = jellyfin.getAllSongs(musicLibraryId)
+      .then((songs) => { allSongsCache = songs; return songs; })
+      .finally(() => { allSongsCachePromise = null; });
+  }
+  return allSongsCachePromise;
 }
 
 // A collab track's Artists can be several names ("Avantasia" + "Tobias
@@ -1676,26 +1697,28 @@ function trackCredits(track) {
 // own UserData (PlayCount, LastPlayedDate) instead of anything stored
 // locally — UserData lives on the account server-side, so these follow the
 // user across devices instead of being stuck in one browser's storage.
-function accountRecentlyPlayed(limit = 12) {
-  if (!allSongsCache) return [];
-  return allSongsCache
+// `source` defaults to the full library cache; the home page instead passes
+// a small server-sorted slice so it doesn't need the whole library first.
+function accountRecentlyPlayed(limit = 12, source = allSongsCache) {
+  if (!source) return [];
+  return source
     .filter((tr) => tr.UserData?.LastPlayedDate)
     .sort((a, b) => new Date(b.UserData.LastPlayedDate) - new Date(a.UserData.LastPlayedDate))
     .slice(0, limit);
 }
 
-function accountMostPlayed(limit = 30) {
-  if (!allSongsCache) return [];
-  return allSongsCache
+function accountMostPlayed(limit = 30, source = allSongsCache) {
+  if (!source) return [];
+  return source
     .filter((tr) => (tr.UserData?.PlayCount || 0) > 0)
     .sort((a, b) => (b.UserData.PlayCount || 0) - (a.UserData.PlayCount || 0))
     .slice(0, limit);
 }
 
-function accountOnRepeat(limit = 30) {
-  if (!allSongsCache) return [];
+function accountOnRepeat(limit = 30, source = allSongsCache) {
+  if (!source) return [];
   const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
-  return allSongsCache
+  return source
     .filter((tr) => (tr.UserData?.PlayCount || 0) >= 3 && tr.UserData?.LastPlayedDate && new Date(tr.UserData.LastPlayedDate).getTime() >= cutoff)
     .sort((a, b) => (b.UserData.PlayCount || 0) - (a.UserData.PlayCount || 0))
     .slice(0, limit);
@@ -1751,10 +1774,8 @@ function buildSmartMixCard({ title, subtitle, art, onPlay, onOpen }) {
   return card;
 }
 
-function buildSmartMixCards(genres) {
+function buildSmartMixCards(genres, mostPlayed, onRepeat) {
   const cards = [];
-  const mostPlayed = accountMostPlayed(30);
-  const onRepeat = accountOnRepeat(30);
 
   if (mostPlayed.length >= 3) {
     cards.push(buildSmartMixCard({
@@ -1821,24 +1842,32 @@ async function renderSmartMix(state) {
   viewRoot.appendChild(buildTrackTable(tracks, tracks));
 }
 
+// Recently played songs fetched for "On Repeat" -- anything played 3+ times
+// in the last two weeks is near the top of a DatePlayed sort, so a few
+// hundred covers it without pulling the whole library.
+const HOME_RECENT_PLAYED_LIMIT = 300;
+
 async function renderHome() {
-  const [playlists, albums, genres] = await Promise.all([
+  const [playlists, albums, genres, recentPlayed, topPlayed] = await Promise.all([
     jellyfin.getPlaylists(),
-    jellyfin.getAlbums(musicLibraryId),
+    jellyfin.getLatestAlbums(musicLibraryId, 12),
     jellyfin.getMusicGenres().catch(() => []),
-    ensureAllSongsCache()
+    allSongsCache ? null : jellyfin.getPlayedSongs(musicLibraryId, 'DatePlayed', HOME_RECENT_PLAYED_LIMIT),
+    allSongsCache ? null : jellyfin.getPlayedSongs(musicLibraryId, 'PlayCount', 30)
   ]);
+  const recentSource = allSongsCache || recentPlayed;
+  const topSource = allSongsCache || topPlayed;
 
   viewRoot.innerHTML = '';
   viewRoot.appendChild(el('div', 'view-title', t('home.greeting')));
 
-  const recentlyPlayed = accountRecentlyPlayed(12);
+  const recentlyPlayed = accountRecentlyPlayed(12, recentSource);
   if (recentlyPlayed.length) {
     viewRoot.appendChild(el('div', 'section-title', t('home.recentlyPlayed')));
     viewRoot.appendChild(buildCardRow(recentlyPlayed, 'song'));
   }
 
-  const smartMixCards = buildSmartMixCards(genres);
+  const smartMixCards = buildSmartMixCards(genres, accountMostPlayed(30, topSource), accountOnRepeat(30, recentSource));
   if (smartMixCards.length) {
     viewRoot.appendChild(el('div', 'section-title', t('home.madeForYou')));
     const grid = el('div', 'card-grid');
@@ -1853,6 +1882,10 @@ async function renderHome() {
 
   viewRoot.appendChild(el('div', 'section-title', t('home.recentAlbums')));
   viewRoot.appendChild(buildCardGrid(albums.slice(0, 12), 'album'));
+
+  // Warm the full-library cache in the background once home is on screen,
+  // so Songs/Stats/artist pages are instant later instead of blocking now.
+  if (!allSongsCache) ensureAllSongsCache().catch(() => {});
 }
 
 async function renderSearch() {
@@ -1885,7 +1918,7 @@ async function renderSearch() {
 }
 
 async function renderAllSongs() {
-  if (!allSongsCache) allSongsCache = await jellyfin.getAllSongs(musicLibraryId);
+  await ensureAllSongsCache();
   viewRoot.innerHTML = '';
   viewRoot.appendChild(el('div', 'view-title', t('songs.title')));
   if (!allSongsCache.length) {
@@ -2371,6 +2404,10 @@ async function renderArtistDetail(id, name) {
     title: name || artistItem.Name || (albums[0] ? artistNames(albums[0]) : (songs[0] ? artistNames(songs[0]) : 'Artist')),
     sub: `${t(songs.length === 1 ? 'playlist.songCount' : 'playlist.songCountPlural', { count: songs.length })} · ${albums.length} ${t('kind.album').toLowerCase()}${albums.length === 1 ? '' : 's'}`,
     art: jellyfin.imageUrl(artistItem, 'Primary') || placeholderArt('artist'),
+    // Only use the artist's own logo -- imageUrl() would otherwise fall back
+    // to an album's image of the same type.
+    logo: artistItem.ImageTags?.Logo ? jellyfin.imageUrl(artistItem, 'Logo', 800) : null,
+    backdrop: jellyfin.backdropUrl(artistItem),
     round: true,
     onPlayAll: songs.length ? () => player.setQueue(songs, 0, id) : undefined,
     trackIds: songs.map((t) => t.Id)
@@ -2494,7 +2531,7 @@ async function openCollection(item, kind) {
   else if (kind === 'artist') navigateTo({ view: 'artist', id: item.Id, name: formatDisplayName(item.Name) });
   else if (kind === 'playlist') navigateTo({ view: 'playlist', id: item.Id, name: item.Name });
   else if (kind === 'song') {
-    if (!allSongsCache) allSongsCache = await jellyfin.getAllSongs(musicLibraryId);
+    await ensureAllSongsCache();
     const idx = allSongsCache.findIndex((t) => t.Id === item.Id);
     if (idx >= 0) player.setQueue(allSongsCache, idx);
     else player.setQueue([item], 0);
@@ -2513,8 +2550,25 @@ async function playCollection(item, kind) {
   }
 }
 
-function buildDetailHeader({ kind, title, sub, art, round, onPlayAll, trackIds, onChangeArt, downloadTracks, pinAlbum }) {
+function buildDetailHeader({ kind, title, sub, art, logo, backdrop, round, onPlayAll, trackIds, onChangeArt, downloadTracks, pinAlbum }) {
   const wrap = el('div', '');
+  if (backdrop) {
+    // Preload so a missing/stale backdrop just leaves the normal background
+    // instead of an empty banner.
+    const probe = new Image();
+    probe.addEventListener('load', () => {
+      if (!wrap.isConnected) return; // navigated away before it loaded
+      const bd = el('div', 'detail-backdrop');
+      bd.style.backgroundImage = `url("${backdrop}")`;
+      // Reach up under the sticky header (its height differs on mobile).
+      bd.style.setProperty('--header-h', `${mainHeaderEl.offsetHeight}px`);
+      wrap.classList.add('has-backdrop');
+      wrap.prepend(bd);
+      mainEl.classList.add('has-hero');
+      syncHeroHeader();
+    }, { once: true });
+    probe.src = backdrop;
+  }
   const header = el('div', 'detail-header');
   const artWrap = el('div', 'detail-art-wrap');
   const img = document.createElement('img');
@@ -2544,7 +2598,15 @@ function buildDetailHeader({ kind, title, sub, art, round, onPlayAll, trackIds, 
 
   const meta = el('div', 'detail-meta');
   meta.appendChild(el('div', 'detail-kind', kind));
-  meta.appendChild(el('div', 'detail-title', escapeHtml(title || '')));
+  const titleEl = el('div', 'detail-title', escapeHtml(title || ''));
+  if (logo) {
+    const logoImg = document.createElement('img');
+    logoImg.className = 'detail-logo';
+    logoImg.alt = title || '';
+    logoImg.addEventListener('load', () => titleEl.replaceWith(logoImg), { once: true });
+    logoImg.src = logo;
+  }
+  meta.appendChild(titleEl);
   if (sub) meta.appendChild(el('div', 'detail-sub', escapeHtml(sub)));
   header.appendChild(meta);
   wrap.appendChild(header);
