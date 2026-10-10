@@ -56,6 +56,11 @@
       "target": "nsis",
       "icon": "build/icon.ico"
     },
+    "linux": {
+      "target": ["AppImage", "snap"],
+      "icon": "logo.png",
+      "category": "Audio"
+    },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
