@@ -279,6 +279,13 @@ function placeholderArt(kind) {
     : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23242424"/><path d="M35 30v34a9 9 0 1 0 4 7V42l30-6v24a9 9 0 1 0 4 7V24z" fill="%23555"/></svg>';
 }
 
+// Requested art sizes, roughly 2x the largest size each is displayed at.
+// The server default (500px) is far more than a 42px row thumbnail needs —
+// a long track list full of those adds up to megabytes of images, which is
+// barely noticeable on a LAN but crawls over a slower link like Tailscale.
+const THUMB_ART_SIZE = 128;
+const CARD_ART_SIZE = 360;
+
 function artUrl(item, kind = 'album', maxSize) {
   return jellyfin.imageUrl(item, 'Primary', maxSize) || placeholderArt(kind);
 }
@@ -1266,7 +1273,7 @@ function updateRemoteBarUI(session) {
     // last-seen remote track showing.
     const track = player.currentTrack;
     if (track) {
-      playerArt.src = artUrl(track);
+      playerArt.src = artUrl(track, 'album', THUMB_ART_SIZE);
       withOfflineArtFallback(playerArt, track);
       playerTitle.textContent = track.Name;
       playerArtist.textContent = artistNames(track);
@@ -1538,7 +1545,7 @@ function loadPinnedAlbumsSidebar() {
     const item = el('button', 'playlist-item');
     const img = document.createElement('img');
     img.className = 'pl-thumb';
-    img.src = artUrl(album);
+    img.src = artUrl(album, 'album', THUMB_ART_SIZE);
     item.appendChild(img);
     const span = document.createElement('span');
     span.textContent = album.Name;
@@ -2472,8 +2479,10 @@ function buildCard(item, kind) {
   const artWrap = el('div', 'card-art-wrap');
   const img = document.createElement('img');
   img.className = 'card-art';
+  img.loading = 'lazy';
+  img.decoding = 'async';
   const placeholder = placeholderArt(kind === 'artist' ? 'artist' : 'album');
-  img.src = artUrl(item, kind === 'artist' ? 'artist' : 'album');
+  img.src = artUrl(item, kind === 'artist' ? 'artist' : 'album', CARD_ART_SIZE);
   // The URL can be well-formed but still 404 — e.g. a stale/mismatched
   // image tag on the item itself (seen in practice: an artist's albums
   // grid showing a broken image for an album whose own detail page, which
@@ -2487,7 +2496,7 @@ function buildCard(item, kind) {
     if (!triedTrackFallback) {
       triedTrackFallback = true;
       const trackArt = kind === 'album' && allSongsCache?.find((tr) => tr.AlbumId === item.Id);
-      if (trackArt) { img.src = artUrl(trackArt); return; }
+      if (trackArt) { img.src = artUrl(trackArt, 'album', CARD_ART_SIZE); return; }
     }
     img.src = placeholder;
   });
@@ -2761,7 +2770,9 @@ function buildTrackTable(tracks, queueRef, opts = {}) {
     const titleWrap = el('div', 'track-title-cell');
     if (!opts.hideArt) {
       const img = document.createElement('img');
-      img.src = artUrl(track);
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.src = artUrl(track, 'album', THUMB_ART_SIZE);
       withOfflineArtFallback(img, track);
       titleWrap.appendChild(img);
     }
@@ -3110,8 +3121,7 @@ function wirePlayer() {
     if (!track) return;
     playerBar.hidden = false;
     appRoot.classList.add('has-track');
-    const art = artUrl(track);
-    playerArt.src = art;
+    playerArt.src = artUrl(track, 'album', THUMB_ART_SIZE);
     withOfflineArtFallback(playerArt, track);
     playerTitle.textContent = track.Name;
     playerArtist.textContent = artistNames(track);
@@ -3448,7 +3458,9 @@ function buildQueueRow(track, idx, isPlaying) {
   const row = el('div', isPlaying ? 'queue-row playing' : 'queue-row');
   row.dataset.idx = idx;
   const img = document.createElement('img');
-  img.src = artUrl(track);
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  img.src = artUrl(track, 'album', THUMB_ART_SIZE);
   row.appendChild(img);
   const text = el('div', 'queue-row-text');
   text.innerHTML = `<div class="queue-row-title">${escapeHtml(track.Name)}</div><div class="queue-row-artist">${escapeHtml(artistNames(track))}</div>`;

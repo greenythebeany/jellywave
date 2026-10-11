@@ -54,6 +54,18 @@ function authHeader(token) {
   return header;
 }
 
+// Added to the big list queries (tracks, albums). By default Jellyfin
+// attaches tags and blurhash strings for every image type an item has
+// (Backdrop, Logo, Thumb, Disc, ...), and counts the total record count
+// separately — none of which a track or album list uses beyond the Primary
+// tag. Trimming them shrinks a whole-library response a lot, which matters
+// on slower connections (e.g. reaching the server over Tailscale).
+const LIST_QUERY_PARAMS = {
+  EnableImageTypes: 'Primary',
+  ImageTypeLimit: 1,
+  EnableTotalRecordCount: false
+};
+
 export class JellyfinClient {
   constructor({ serverUrl, accessToken, userId, avatarTag }) {
     this.serverUrl = serverUrl.replace(/\/+$/, '');
@@ -189,7 +201,8 @@ export class JellyfinClient {
       Recursive: true,
       SortBy: 'Album,SortName',
       SortOrder: 'Ascending',
-      Fields: 'PrimaryImageAspectRatio,AlbumArtist,ArtistItems,UserData,Genres,NormalizationGain'
+      Fields: 'PrimaryImageAspectRatio,AlbumArtist,ArtistItems,UserData,Genres,NormalizationGain',
+      ...LIST_QUERY_PARAMS
     });
     return data.Items || [];
   }
@@ -205,7 +218,8 @@ export class JellyfinClient {
       SortBy: sortBy,
       SortOrder: 'Descending',
       Limit: limit,
-      Fields: 'PrimaryImageAspectRatio,AlbumArtist,ArtistItems,UserData,Genres,NormalizationGain'
+      Fields: 'PrimaryImageAspectRatio,AlbumArtist,ArtistItems,UserData,Genres,NormalizationGain',
+      ...LIST_QUERY_PARAMS
     });
     return data.Items || [];
   }
@@ -218,7 +232,8 @@ export class JellyfinClient {
       SortBy: 'DateCreated,SortName',
       SortOrder: 'Descending',
       Limit: limit,
-      Fields: 'PrimaryImageAspectRatio,AlbumArtist'
+      Fields: 'PrimaryImageAspectRatio,AlbumArtist',
+      ...LIST_QUERY_PARAMS
     });
     return data.Items || [];
   }
@@ -230,7 +245,8 @@ export class JellyfinClient {
       Recursive: true,
       SortBy: 'SortName',
       SortOrder: 'Ascending',
-      Fields: 'PrimaryImageAspectRatio,AlbumArtist'
+      Fields: 'PrimaryImageAspectRatio,AlbumArtist',
+      ...LIST_QUERY_PARAMS
     });
     return data.Items || [];
   }
@@ -242,7 +258,8 @@ export class JellyfinClient {
       Recursive: true,
       SortBy: 'PremiereDate,SortName',
       SortOrder: 'Ascending',
-      Fields: 'PrimaryImageAspectRatio,AlbumArtist'
+      Fields: 'PrimaryImageAspectRatio,AlbumArtist',
+      ...LIST_QUERY_PARAMS
     });
     return data.Items || [];
   }
@@ -254,7 +271,8 @@ export class JellyfinClient {
       Recursive: true,
       SortBy: 'Album,SortName',
       SortOrder: 'Ascending',
-      Fields: 'PrimaryImageAspectRatio,AlbumArtist,ArtistItems,UserData,Genres,NormalizationGain'
+      Fields: 'PrimaryImageAspectRatio,AlbumArtist,ArtistItems,UserData,Genres,NormalizationGain',
+      ...LIST_QUERY_PARAMS
     });
     return data.Items || [];
   }
@@ -265,7 +283,8 @@ export class JellyfinClient {
       IncludeItemTypes: 'Audio',
       SortBy: 'ParentIndexNumber,IndexNumber',
       SortOrder: 'Ascending',
-      Fields: 'ArtistItems,UserData,Genres,NormalizationGain'
+      Fields: 'ArtistItems,UserData,Genres,NormalizationGain',
+      ...LIST_QUERY_PARAMS
     });
     return data.Items || [];
   }
@@ -305,7 +324,8 @@ export class JellyfinClient {
   async getPlaylistItems(playlistId) {
     const data = await this._get(`/Playlists/${playlistId}/Items`, {
       UserId: this.userId,
-      Fields: 'ArtistItems,UserData,Genres,NormalizationGain'
+      Fields: 'ArtistItems,UserData,Genres,NormalizationGain',
+      ...LIST_QUERY_PARAMS
     });
     return data.Items || [];
   }
@@ -369,7 +389,8 @@ export class JellyfinClient {
       IncludeItemTypes: 'Audio',
       Recursive: true,
       SortBy: 'SortName',
-      Fields: 'PrimaryImageAspectRatio,ArtistItems,UserData,Genres,NormalizationGain'
+      Fields: 'PrimaryImageAspectRatio,ArtistItems,UserData,Genres,NormalizationGain',
+      ...LIST_QUERY_PARAMS
     });
     return data.Items || [];
   }
@@ -419,7 +440,8 @@ export class JellyfinClient {
       IncludeItemTypes: 'Audio',
       Recursive: true,
       SortBy: 'Album,SortName',
-      Fields: 'PrimaryImageAspectRatio,AlbumArtist,ArtistItems,UserData,Genres,NormalizationGain'
+      Fields: 'PrimaryImageAspectRatio,AlbumArtist,ArtistItems,UserData,Genres,NormalizationGain',
+      ...LIST_QUERY_PARAMS
     });
     return data.Items || [];
   }
