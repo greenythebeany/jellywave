@@ -385,8 +385,11 @@ async function tryRestoreSession() {
   const attempts = 3;
   for (let i = 0; i < attempts; i++) {
     try {
-      await jellyfin.ping();
-      await enterApp(saved.username);
+      // The library list needs the same auth a dedicated ping would, so it
+      // doubles as the token check -- one less sequential round trip before
+      // home can start loading, which adds up on a slow link.
+      const libs = await jellyfin.getMusicLibraries();
+      await enterApp(saved.username, libs);
       return;
     } catch (err) {
       if (err?.status === 401) {
@@ -414,7 +417,7 @@ function showLogin() {
   appRoot.hidden = true;
 }
 
-async function enterApp(username) {
+async function enterApp(username, knownLibs) {
   // Reconciles this device's local settings against whatever's saved on
   // the account server-side (newer one wins — see initRemoteSync) before
   // the app becomes visible, so a synced EQ/theme/etc. takes effect from
@@ -423,7 +426,7 @@ async function enterApp(username) {
   // were, same as any other view that degrades without a server.
   // Fetched alongside the settings sync rather than after it -- one less
   // sequential round trip before home can start loading.
-  const libsPromise = jellyfin.getMusicLibraries();
+  const libsPromise = knownLibs ? Promise.resolve(knownLibs) : jellyfin.getMusicLibraries();
   libsPromise.catch(() => {});
   await initRemoteSync(jellyfin);
 

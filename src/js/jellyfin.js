@@ -139,13 +139,22 @@ export class JellyfinClient {
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null) url.searchParams.set(k, v);
     });
+    // The token goes in the query string rather than in headers so the GET
+    // stays a CORS "simple request". The app's page is never same-origin
+    // with the server (http://localhost in the Android WebView, file:// on
+    // desktop), and any custom header makes the browser send an OPTIONS
+    // preflight first, which doubles the round trips for every request. That
+    // costs a lot on a high-latency link like Tailscale on a phone. ApiKey is
+    // the current name; api_key is kept for servers that predate it.
+    url.searchParams.set('ApiKey', this.accessToken);
+    url.searchParams.set('api_key', this.accessToken);
     let res;
     try {
       // Every GET here is dynamic/user-specific — most importantly, Connect's
       // session polling hits the exact same /Sessions URL every few seconds,
       // and without this the browser's HTTP cache can start quietly serving
       // a stale response instead of actually hitting the server.
-      res = await fetch(url, { headers: this._headers(), cache: 'no-store' });
+      res = await fetch(url, { cache: 'no-store' });
     } catch (err) {
       // fetch itself threw — no response at all (offline, DNS, server down,
       // etc). Distinct from an actual HTTP error response.
