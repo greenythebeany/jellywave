@@ -220,23 +220,21 @@ function formatTime(seconds) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-// Ley Lofaj's collab tracks got imported with badly mangled, sometimes
-// self-duplicated join strings ("Ley Lofaj, Dominik Láznička, Ley Lofaj",
-// "Ley Lofaj, Ley Lofaj, ...") before the artist-tagging fix landed —
-// display those as plain "Ley Lofaj" specifically. NOT a general rule for
-// every collab in the library — every other multi-artist credit keeps
-// showing its full joined name as before.
-function simplifyKnownMangledName(str) {
-  const parts = str.toLowerCase().split(/\s*[,;&+/]\s*/).map((s) => s.trim());
-  if (parts.includes('ley lofaj')) return 'Ley Lofaj';
-  return null;
+// Badly imported tags can repeat a name inside one credit ("Ley Lofaj,
+// Dominik Láznička, Ley Lofaj", "Petrofski, Petrofski, ...") — show each
+// name once. Credits without a repeat keep their original text and
+// separators ("Simon & Garfunkel" stays as is).
+function dedupeRepeatedCredits(str) {
+  const parts = splitCreditPartsRaw(str);
+  const unique = [...new Map(parts.map((p) => [p.toLowerCase(), p])).values()];
+  return unique.length < parts.length ? unique.join(', ') : str;
 }
 
 // Jellyfin sometimes stores a multi-artist collab as one un-split "A;B" name
 // (unparsed tag delimiter) instead of separate entries — clean that up for display.
 function formatDisplayName(name) {
   const str = (name || '').replace(/\s*;\s*/g, ', ').trim();
-  return simplifyKnownMangledName(str) || str;
+  return dedupeRepeatedCredits(str);
 }
 
 // fallback is for a track with genuinely empty Artists/AlbumArtist tags of
@@ -1673,9 +1671,13 @@ function individualArtistNames(track) {
 // actual whitespace around them, or "with" would split a real single-artist
 // name like "Withers" in half.
 function splitCreditParts(creditName) {
+  return splitCreditPartsRaw(creditName).map((s) => s.toLowerCase());
+}
+
+// Same split, keeping the original capitalization for display.
+function splitCreditPartsRaw(creditName) {
   return (creditName || '')
     .trim()
-    .toLowerCase()
     .split(/\s*[,;&+/]\s*|\s+(?:feat\.?|ft\.?|with|vs\.?)\s+/i)
     .map((s) => s.trim())
     .filter(Boolean);
@@ -1923,7 +1925,7 @@ async function renderSearch() {
         const lowerTerm = term.toLowerCase();
         const artists = cleanArtists
           ? cleanArtists.filter((a) => (a.Name || '').toLowerCase().includes(lowerTerm)).slice(0, 20)
-          : cleanArtistList(serverItems.filter((item) => item.Type === 'MusicArtist'));
+          : groupArtists(serverItems.filter((item) => item.Type === 'MusicArtist'));
         items = [...artists, ...serverItems.filter((item) => item.Type !== 'MusicArtist')];
       } catch (err) {
         resultsEl.appendChild(el('div', 'empty-state', t('search.failed', { error: err.message })));
@@ -2068,106 +2070,97 @@ const KNOWN_ARTIST_NAME_PAIRS = [
   ['ke$ha', 'kesha'] // stylized vs. plain spelling of the same artist's name, split across imports
 ];
 
-// Given one artist's name, finds the other name in its known pair (if any),
-// lowercase. Symmetric — works from either side of the pair.
-function pairedNameFor(name) {
-  const key = (name || '').trim().toLowerCase();
-  const pair = KNOWN_ARTIST_NAME_PAIRS.find((p) => p.includes(key));
-  if (!pair) return null;
-  return pair[0] === key ? pair[1] : pair[0];
-}
-
-// Drop whichever entity of a known name pair is the duplicate — its
-// albums/songs get folded into the surviving one's page instead (see
-// renderArtistDetail), so it's pure duplicate noise in the browse grid.
-// The one with real cover art survives; if neither/both have art, the
-// second name in the pair wins (arbitrary but stable).
-function dropKnownAliasArtists(artists) {
-  const byName = new Map(artists.map((a) => [(a.Name || '').trim().toLowerCase(), a]));
-  const dropIds = new Set();
-  for (const [nameA, nameB] of KNOWN_ARTIST_NAME_PAIRS) {
-    const a = byName.get(nameA);
-    const b = byName.get(nameB);
-    if (!a || !b) continue;
-    const keepA = !!a.ImageTags?.Primary && !b.ImageTags?.Primary;
-    dropIds.add(keepA ? b.Id : a.Id);
+// Jellyfin creates one artist entity per distinct literal name in the tags,
+// so a single act's catalog often ends up scattered across several: the
+// same name with a repeated credit ("Ley Lofaj, Ley Lofaj"), a joined collab
+// credit ("Avantasia, Bob Catley"), or mangled imports with no clean entry
+// at all ("Petrofski, Toyota ..." and "Petrofski, ..." but never plain
+// "Petrofski"). groupArtists() folds all of that into one card per act, for
+// every artist in the library rather than a hand-maintained list.
+//
+// Each returned artist is a copy of a representative entity with Name set
+// to the display name and _memberIds listing every entity folded into it, so
+// the artist page can pull in their albums and songs (renderArtistDetail).
+// Joined credits that fold into an existing artist aren't listed as members:
+// their tracks are already matched by credit on that artist's page.
+function groupArtists(rawArtists) {
+  const groups = new Map(); // credit key -> { key, parts, entities }
+  for (const a of rawArtists) {
+    const key = artistCreditKey(a.Name);
+    if (!key) continue;
+    if (!groups.has(key)) groups.set(key, { key, parts: key.split(', '), entities: [] });
+    groups.get(key).entities.push(a);
   }
-  return artists.filter((a) => !dropIds.has(a.Id));
-}
+  const hasArt = (g) => g.entities.some((a) => a.ImageTags?.Primary);
 
-// Drop artist entities that are really just a joined collab credit for an
-// artist that already has its own real entry ("Avantasia, Alice Cooper" when
-// "Avantasia" itself exists) — those tracks are folded into the real
-// artist's page (see creditIncludesArtist / renderArtistDetail), so the
-// compound entity is pure duplicate noise in the browse grid.
-function dropCompoundDuplicateArtists(artists) {
-  return artists.filter((a) => {
-    const parts = splitCreditParts(a.Name || '');
-    // The real artist isn't always listed first ("Huddy/Palaye Royale",
-    // "OmenXIII/Palaye Royale" both put the well-known name second), so hide
-    // this as a redundant joined credit if ANY other artist's (possibly
-    // itself multi-part, e.g. "Dame, SMART") name is fully contained in
-    // this one (renderArtistDetail's merge logic already pulls it into
-    // every matching artist's page). A joined name with no standalone match
-    // anywhere (like "Dame, Smart" before "Dame, SMART" existed as its own
-    // artist) stays visible, since hiding it would leave nowhere to find it
-    // at all — adding the missing name as a real artist on the server is
-    // what makes it start counting here too.
-    if (parts.length < 2) return true;
-    // A compound entity with its own real art (not the placeholder) is
-    // itself a genuine, distinct thing — e.g. "Dame, SMART" as a duo with
-    // their own EP — not noise from one track crediting several people.
-    // Jellyfin only assigns an artist its own image deliberately, so this
-    // stops a real 2-name group from being folded away just because one of
-    // its members (e.g. "Dame" alone) also happens to be a real solo
-    // artist; only bare, art-less joins like "Dame, Separ, SMART" get
-    // hidden and merged into it.
-    if (a.ImageTags?.Primary) return true;
-    // creditIncludesArtist (not a plain single-token Set lookup) is what
-    // lets this match a real artist whose own name is itself multi-part —
-    // "Dame, SMART, Juraj" needs both "dame" AND "smart" present to fold
-    // into "Dame, SMART", which a single-token check can never satisfy
-    // since neither "Dame" nor "SMART" exists as its own standalone entry.
-    return !artists.some((other) => other !== a && creditIncludesArtist(a.Name, other.Name));
+  // Known name pairs: fold the duplicate side into the one with real art
+  // (or, if neither/both have art, into the second name of the pair).
+  for (const [nameA, nameB] of KNOWN_ARTIST_NAME_PAIRS) {
+    const a = groups.get(nameA);
+    const b = groups.get(nameB);
+    if (!a || !b) continue;
+    const [keep, drop] = hasArt(a) && !hasArt(b) ? [a, b] : [b, a];
+    keep.entities.push(...drop.entities);
+    groups.delete(drop.key);
+  }
+
+  // A joined credit folds into any other artist whose every name it
+  // contains ("Avantasia, Alice Cooper" into "Avantasia", "Dame, Separ,
+  // SMART" into the duo "Dame, SMART"), unless it has its own art: Jellyfin
+  // only gets an artist image deliberately, so a credit with one is a real
+  // group, not noise from one track crediting several people.
+  const all = [...groups.values()];
+  const looseCredits = [];
+  for (const g of all) {
+    if (g.parts.length < 2 || hasArt(g)) continue;
+    const foldsIntoOther = all.some((other) => other !== g && other.parts.every((p) => g.parts.includes(p)));
+    groups.delete(g.key);
+    if (!foldsIntoOther) looseCredits.push(g);
+  }
+
+  // What's left are joined credits with no artist entry to fold into. A name
+  // that recurs across several of them is an artist whose catalog only
+  // exists as fragments, so those become one artist under that name. Each
+  // credit goes to its most-recurring name (earliest listed on a tie, since
+  // the main artist is usually credited first); a credit whose names never
+  // recur keeps its own card, or it'd have nowhere to be found.
+  const partCounts = new Map();
+  for (const g of looseCredits) g.parts.forEach((p) => partCounts.set(p, (partCounts.get(p) || 0) + 1));
+  for (const g of looseCredits) {
+    const best = g.parts.reduce((top, p) => (partCounts.get(p) > partCounts.get(top) ? p : top), g.parts[0]);
+    if (partCounts.get(best) < 2) {
+      groups.set(g.key, g);
+      continue;
+    }
+    if (!groups.has(best)) groups.set(best, { key: best, parts: [best], entities: [], virtual: true });
+    groups.get(best).entities.push(...g.entities);
+  }
+
+  return [...groups.values()].map((g) => {
+    // Prefer the entity literally named as the act, then one with real art.
+    const rep =
+      g.entities.find((a) => (a.Name || '').trim().toLowerCase() === g.key) ||
+      g.entities.find((a) => a.ImageTags?.Primary) ||
+      g.entities[0];
+    const name = g.virtual ? casedCreditPart(g.entities, g.key) : formatDisplayName(rep.Name);
+    return { ...rep, Name: name, _memberIds: g.entities.map((a) => a.Id) };
   });
 }
 
-// Some artists' collab tracks got imported with badly mangled, sometimes
-// self-duplicated join strings ("Ley Lofaj, Dominik Láznička, Ley Lofaj",
-// "Petrofski, Petrofski, Toyota Va...") before their tagging got cleaned
-// up, scattering one artist's catalog across several server-side entities
-// that dropCompoundDuplicateArtists can't fully collapse (there's no bare
-// entity for them to fold into in every case). Each name here gets treated
-// as fragments of one artist. Scoped to specific known artists by name, not
-// a general system for every collab in the library — add more here only
-// once a real case turns up, the same way Petrofski joined Ley Lofaj.
-const FRAGMENTED_ARTIST_NAMES = ['ley lofaj', 'petrofski'];
-
-function fragmentedArtistNameOf(name) {
-  return FRAGMENTED_ARTIST_NAMES.find((known) => splitCreditParts(name || '').includes(known)) || null;
+// Lowercase, de-duplicated list of the names in a credit: the key two
+// entities share when they're the same artist(s) written differently.
+function artistCreditKey(name) {
+  return [...new Set(splitCreditParts(name))].join(', ');
 }
 
-// Collapses every fragment entity of the same fragmented artist down to one
-// representative (preferring the bare name, then one with real art) so the
-// browse grid shows exactly one card per artist instead of one per mangled
-// import.
-function mergeFragmentedArtists(artists) {
-  let result = artists;
-  for (const known of FRAGMENTED_ARTIST_NAMES) {
-    const fragments = result.filter((a) => fragmentedArtistNameOf(a.Name) === known);
-    if (fragments.length < 2) continue;
-    const canonical =
-      fragments.find((a) => (a.Name || '').trim().toLowerCase() === known) ||
-      fragments.find((a) => a.ImageTags?.Primary) ||
-      fragments[0];
-    const fragmentIds = new Set(fragments.map((a) => a.Id));
-    result = result.filter((a) => a.Id === canonical.Id || !fragmentIds.has(a.Id));
+// The original capitalization of one name inside the entities' credits, for
+// an artist that only exists as fragments ("petrofski" -> "Petrofski").
+function casedCreditPart(entities, part) {
+  for (const a of entities) {
+    const match = splitCreditPartsRaw(a.Name).find((p) => p.toLowerCase() === part);
+    if (match) return match;
   }
-  return result;
-}
-
-function cleanArtistList(rawArtists) {
-  return mergeFragmentedArtists(dropKnownAliasArtists(dropCompoundDuplicateArtists(rawArtists)));
+  return part;
 }
 
 // The cleaned-up artist list, fetched once per signed-in client and shared
@@ -2178,7 +2171,7 @@ function cleanArtistList(rawArtists) {
 let cleanArtistsCache = null; // { client, promise }
 function getCleanArtists() {
   if (cleanArtistsCache?.client !== jellyfin) {
-    const promise = jellyfin.getArtists(musicLibraryId).then(cleanArtistList);
+    const promise = jellyfin.getArtists(musicLibraryId).then(groupArtists);
     cleanArtistsCache = { client: jellyfin, promise };
     promise.catch(() => { if (cleanArtistsCache?.promise === promise) cleanArtistsCache = null; });
   }
@@ -2338,17 +2331,40 @@ async function renderAlbumDetail(id) {
   viewRoot.appendChild(buildTrackTable(tracks, tracks, { hideArt: true, sourceId: id, fallbackArtist: artistNames(first || {}) }));
 }
 
+function uniqueById(items) {
+  return [...new Map(items.map((item) => [item.Id, item])).values()];
+}
+
 async function renderArtistDetail(id, name) {
-  const [artistItem, albums, serverSongs, allSongs] = await Promise.all([
-    jellyfin.getItem(id),
-    jellyfin.getAlbumsByArtist(id),
-    jellyfin.getSongsByArtist(id),
+  // Resolve which merged artist this entity belongs to (see groupArtists) —
+  // the page may have been opened from a fragment entity, e.g. a song's
+  // "Go to artist" pointing at "Ley Lofaj, Ley Lofaj". Best-effort: without
+  // the list, the page still works off this one entity.
+  const groups = await getCleanArtists().catch(() => null);
+  const group = groups?.find((g) => g.Id === id) || groups?.find((g) => g._memberIds.includes(id));
+  const pageId = group ? group.Id : id;
+  const memberIds = group ? group._memberIds : [id];
+
+  const [artistItem, memberAlbumLists, memberSongLists, allSongs] = await Promise.all([
+    jellyfin.getItem(pageId),
+    Promise.all(memberIds.map((mid) => jellyfin.getAlbumsByArtist(mid).catch(() => []))),
+    Promise.all(memberIds.map((mid) => jellyfin.getSongsByArtist(mid).catch(() => []))),
     ensureAllSongsCache()
   ]);
-  const targetName = name || artistItem.Name;
+  const targetName = group ? group.Name : (name || formatDisplayName(artistItem.Name));
+
+  // Pool every member entity's albums and songs (same act written several
+  // ways, known name pairs, or fragments of an artist with no clean entry).
+  const albums = uniqueById(memberAlbumLists.flat());
+  // Each list comes back release-date sorted; keep that order once pooled.
+  if (memberIds.length > 1) albums.sort((a, b) => (a.PremiereDate || '').localeCompare(b.PremiereDate || ''));
+  const serverSongs = uniqueById(memberSongLists.flat());
+
+  // Tracks credited to a joined name ("Avantasia, Bob Catley") never turn up
+  // via the server's ArtistIds filter — match them by credit instead.
   const knownIds = new Set(serverSongs.map((tr) => tr.Id));
   const extraSongs = allSongs.filter((tr) => !knownIds.has(tr.Id) && trackCredits(tr).some((c) => creditIncludesArtist(c, targetName)));
-  let songs = extraSongs.length ? [...serverSongs, ...extraSongs] : serverSongs;
+  const songs = extraSongs.length ? [...serverSongs, ...extraSongs] : serverSongs;
 
   // Same reasoning as the songs merge above: an album entirely credited to
   // a joined name ("Avantasia, Michael Kiske, ...") never turns up via the
@@ -2361,86 +2377,10 @@ async function renderArtistDetail(id, name) {
     : [];
   if (extraAlbums.length) albums.push(...extraAlbums);
 
-  // Known real-world name-pair entities (e.g. "Ghost B.C." / "Ghost",
-  // "Ke$ha" / "Kesha") are genuinely separate Artist entries on the server —
-  // the paired name's albums/songs live under its own artist ID, so the
-  // ArtistIds filter above never finds them no matter which side of the
-  // pair this page's own ID belongs to. Look the paired name up and fold
-  // its catalog in the same way, so nothing found by dropKnownAliasArtists
-  // (which hides the duplicate's own card) goes missing from browsing
-  // entirely.
-  const pairedName = pairedNameFor(targetName);
-  if (pairedName) {
-    const rawArtists = await jellyfin.getArtists(musicLibraryId);
-    const aliasArtists = rawArtists.filter((a) => (a.Name || '').trim().toLowerCase() === pairedName && a.Id !== id);
-    if (aliasArtists.length) {
-      const [aliasAlbumLists, aliasSongLists] = await Promise.all([
-        Promise.all(aliasArtists.map((a) => jellyfin.getAlbumsByArtist(a.Id))),
-        Promise.all(aliasArtists.map((a) => jellyfin.getSongsByArtist(a.Id)))
-      ]);
-      const seenAlbumIds = new Set(albums.map((al) => al.Id));
-      for (const list of aliasAlbumLists) {
-        for (const al of list) {
-          if (!seenAlbumIds.has(al.Id)) {
-            seenAlbumIds.add(al.Id);
-            albums.push(al);
-          }
-        }
-      }
-      const seenSongIds = new Set(songs.map((tr) => tr.Id));
-      const aliasSongs = [];
-      for (const list of aliasSongLists) {
-        for (const tr of list) {
-          if (!seenSongIds.has(tr.Id)) {
-            seenSongIds.add(tr.Id);
-            aliasSongs.push(tr);
-          }
-        }
-      }
-      if (aliasSongs.length) songs = [...songs, ...aliasSongs];
-    }
-  }
-
-  // This artist's catalog may be scattered across several mangled fragment
-  // entities (see mergeFragmentedArtists) -- pull every other fragment's
-  // songs and albums into this one page too, same pooling pattern as the
-  // alias merge above.
-  const fragmentedName = fragmentedArtistNameOf(targetName);
-  if (fragmentedName) {
-    const rawArtists = await jellyfin.getArtists(musicLibraryId);
-    const fragmentArtists = rawArtists.filter((a) => fragmentedArtistNameOf(a.Name) === fragmentedName && a.Id !== id);
-    if (fragmentArtists.length) {
-      const [fragmentAlbumLists, fragmentSongLists] = await Promise.all([
-        Promise.all(fragmentArtists.map((a) => jellyfin.getAlbumsByArtist(a.Id))),
-        Promise.all(fragmentArtists.map((a) => jellyfin.getSongsByArtist(a.Id)))
-      ]);
-      const seenAlbumIds = new Set(albums.map((al) => al.Id));
-      for (const list of fragmentAlbumLists) {
-        for (const al of list) {
-          if (!seenAlbumIds.has(al.Id)) {
-            seenAlbumIds.add(al.Id);
-            albums.push(al);
-          }
-        }
-      }
-      const seenSongIds = new Set(songs.map((tr) => tr.Id));
-      const fragmentSongs = [];
-      for (const list of fragmentSongLists) {
-        for (const tr of list) {
-          if (!seenSongIds.has(tr.Id)) {
-            seenSongIds.add(tr.Id);
-            fragmentSongs.push(tr);
-          }
-        }
-      }
-      if (fragmentSongs.length) songs = [...songs, ...fragmentSongs];
-    }
-  }
-
   viewRoot.innerHTML = '';
   viewRoot.appendChild(buildDetailHeader({
     kind: t('kind.artist'),
-    title: name || artistItem.Name || (albums[0] ? artistNames(albums[0]) : (songs[0] ? artistNames(songs[0]) : 'Artist')),
+    title: targetName || (albums[0] ? artistNames(albums[0]) : (songs[0] ? artistNames(songs[0]) : 'Artist')),
     sub: `${t(songs.length === 1 ? 'playlist.songCount' : 'playlist.songCountPlural', { count: songs.length })} · ${albums.length} ${t('kind.album').toLowerCase()}${albums.length === 1 ? '' : 's'}`,
     art: jellyfin.imageUrl(artistItem, 'Primary') || placeholderArt('artist'),
     // Only use the artist's own logo -- imageUrl() would otherwise fall back
@@ -2448,7 +2388,7 @@ async function renderArtistDetail(id, name) {
     logo: artistItem.ImageTags?.Logo ? jellyfin.imageUrl(artistItem, 'Logo', 800) : null,
     backdrop: jellyfin.backdropUrl(artistItem),
     round: true,
-    onPlayAll: songs.length ? () => player.setQueue(songs, 0, id) : undefined,
+    onPlayAll: songs.length ? () => player.setQueue(songs, 0, pageId) : undefined,
     trackIds: songs.map((t) => t.Id)
   }));
 
@@ -2459,7 +2399,7 @@ async function renderArtistDetail(id, name) {
 
   if (songs.length) {
     viewRoot.appendChild(el('div', 'section-title', t('artists.songsSection')));
-    viewRoot.appendChild(buildTrackTable(songs, songs, { sourceId: id, fallbackArtist: targetName }));
+    viewRoot.appendChild(buildTrackTable(songs, songs, { sourceId: pageId, fallbackArtist: targetName }));
   }
 
   if (albums.length) {

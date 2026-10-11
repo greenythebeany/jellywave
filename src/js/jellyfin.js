@@ -305,15 +305,11 @@ export class JellyfinClient {
       SortBy: 'SortName',
       Fields: 'PrimaryImageAspectRatio'
     });
-    const items = data.Items || [];
-    // Jellyfin can list the same artist once per library section it appears in —
-    // collapse those into a single card by normalized name.
-    const seen = new Map();
-    for (const item of items) {
-      const key = (item.Name || '').trim().toLowerCase();
-      if (!seen.has(key)) seen.set(key, item);
-    }
-    return [...seen.values()];
+    // Jellyfin can list the same artist once per library section it appears
+    // in; those aren't collapsed here because the app's artist grouping
+    // (groupArtists in app.js) merges them and needs every entity's Id to
+    // pull in each one's songs and albums.
+    return data.Items || [];
   }
 
   async getPlaylists() {
