@@ -1913,7 +1913,18 @@ async function renderSearch() {
       if (!term) return;
       let items;
       try {
-        items = await jellyfin.search(term);
+        const [serverItems, cleanArtists] = await Promise.all([
+          jellyfin.search(term),
+          getCleanArtists().catch(() => null)
+        ]);
+        // Jellyfin's raw artist matches include every fragment and joined
+        // credit (six "Ley Lofaj" cards, "Avantasia, Bob Catley", ...), so
+        // take artists from the same cleaned list the Artists page shows.
+        const lowerTerm = term.toLowerCase();
+        const artists = cleanArtists
+          ? cleanArtists.filter((a) => (a.Name || '').toLowerCase().includes(lowerTerm)).slice(0, 20)
+          : cleanArtistList(serverItems.filter((item) => item.Type === 'MusicArtist'));
+        items = [...artists, ...serverItems.filter((item) => item.Type !== 'MusicArtist')];
       } catch (err) {
         resultsEl.appendChild(el('div', 'empty-state', t('search.failed', { error: err.message })));
         return;
@@ -2155,9 +2166,27 @@ function mergeFragmentedArtists(artists) {
   return result;
 }
 
+function cleanArtistList(rawArtists) {
+  return mergeFragmentedArtists(dropKnownAliasArtists(dropCompoundDuplicateArtists(rawArtists)));
+}
+
+// The cleaned-up artist list, fetched once per signed-in client and shared
+// by the Artists page and search. Search needs the whole list rather than
+// just the server's matches: whether a joined credit is a duplicate depends
+// on other artists that may not match the search term themselves ("Avantasia,
+// Bob Catley" matches "ley", plain "Avantasia" doesn't).
+let cleanArtistsCache = null; // { client, promise }
+function getCleanArtists() {
+  if (cleanArtistsCache?.client !== jellyfin) {
+    const promise = jellyfin.getArtists(musicLibraryId).then(cleanArtistList);
+    cleanArtistsCache = { client: jellyfin, promise };
+    promise.catch(() => { if (cleanArtistsCache?.promise === promise) cleanArtistsCache = null; });
+  }
+  return cleanArtistsCache.promise;
+}
+
 async function renderArtists() {
-  const rawArtists = await jellyfin.getArtists(musicLibraryId);
-  const artists = mergeFragmentedArtists(dropKnownAliasArtists(dropCompoundDuplicateArtists(rawArtists)));
+  const artists = await getCleanArtists();
   viewRoot.innerHTML = '';
   viewRoot.appendChild(el('div', 'view-title', t('artists.title')));
   if (!artists.length) {
