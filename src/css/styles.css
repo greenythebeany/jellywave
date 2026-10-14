@@ -743,6 +743,39 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .lyrics-empty { color: var(--text-tertiary); font-size: 13.5px; text-align: center; margin-top: 30px; }
 
 .queue-body { flex: 1; overflow-y: auto; padding: 8px 12px 24px; position: relative; z-index: 1; }
+
+/* Queue bottom sheet (phone layout only, see the 820px media query). */
+.btn-queue-mobile, .queue-sheet, .queue-sheet-backdrop { display: none; }
+.queue-sheet-backdrop {
+  position: fixed; inset: 0; z-index: 160;
+  background: rgba(0,0,0,0.5);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.queue-sheet-backdrop.open { opacity: 1; pointer-events: auto; }
+.queue-sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 161;
+  height: 78vh; height: 78dvh;
+  flex-direction: column;
+  background: var(--bg-elevated);
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 -12px 40px rgba(0,0,0,0.45);
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.queue-sheet.open { transform: translateY(0); }
+.queue-sheet.dragging { transition: none; }
+.queue-sheet-head { flex-shrink: 0; padding: 10px 20px 6px; touch-action: none; cursor: grab; }
+.queue-sheet-grabber { width: 40px; height: 4px; border-radius: 2px; background: var(--text-tertiary); opacity: 0.6; margin: 0 auto 12px; }
+.queue-sheet-title { font-size: 17px; font-weight: 800; }
+.queue-sheet .queue-body { padding-top: 0; }
+/* Phones/tablets always get the full-screen player (isPhoneLayout() in
+   app.js), even wider than the 820px breakpoint below. */
+body.platform-mobile .panel-tabs { display: none; }
+body.platform-mobile .btn-queue-mobile { display: flex; }
+body.platform-mobile .queue-sheet { display: flex; }
+body.platform-mobile .queue-sheet-backdrop { display: block; }
 .queue-section-title { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-tertiary); padding: 10px 10px 6px; }
 .queue-row {
   display: flex; align-items: center; gap: 12px;
@@ -923,6 +956,9 @@ input[type="range"].volume-bar { width: 110px; flex: none; }
   display: flex; align-items: center; justify-content: space-between;
   padding: 20px 24px; border-bottom: 1px solid var(--border-subtle);
   position: sticky; top: 0; background: var(--bg-elevated);
+  /* Above positioned/transformed content scrolling under it (switches,
+     the rotated EQ sliders), which would otherwise paint over the header. */
+  z-index: 5;
 }
 .modal-header h2 { margin: 0; font-size: 18px; font-weight: 800; }
 .modal-body { padding: 8px 24px 26px; }
@@ -1055,23 +1091,31 @@ body.platform-mobile .titlebar { display: none; }
      header, so it needed the same safe-area fix independently. */
   .lyrics-header { padding: 14px 16px 10px; padding-top: max(env(safe-area-inset-top, 0px), 24px); }
   .lyrics-header-actions .btn-icon-plain { width: 33px; height: 33px; }
+  /* Lyrics stay in the full-screen player; the queue moves to a sheet. */
+  .panel-tabs { display: none; }
+  .btn-queue-mobile { display: flex; }
+  .queue-sheet { display: flex; }
+  .queue-sheet-backdrop { display: block; }
   .np-collapse-btn { font-size: 22px; }
 
   .now-playing-summary { padding: 12px 24px 8px; }
   .now-playing-art-wrap { max-width: 100%; width: 100%; margin-bottom: 26px; border-radius: var(--radius-lg); }
   .now-playing-art { border-radius: var(--radius-lg); box-shadow: 0 24px 50px rgba(0,0,0,0.5); }
-  .now-playing-info-row { max-width: 100%; justify-content: center; position: relative; }
-  /* The like/download buttons are pulled out of flow (position: absolute,
-     left/right below) so they can sit as corner overlays without pushing
-     this text around -- which leaves .now-playing-text as flexbox's only
-     real child to size on the main axis. Its shrink-to-fit width isn't
-     reliably centered by justify-content alone, so span the full row width
-     explicitly and let text-align do the centering within guaranteed room. */
+  /* Three columns -- download | title | like -- so the title only ever
+     gets the space between the buttons, whatever the screen width, and
+     ellipsizes instead of running underneath them. */
+  .now-playing-info-row {
+    max-width: 100%; position: relative;
+    display: grid; grid-template-columns: 36px minmax(0, 1fr) 36px; gap: 8px; align-items: center;
+  }
+  /* Equal-width side columns keep the text centered under the art. */
   .now-playing-text { width: 100%; text-align: center; }
   .now-playing-title { font-size: 20px; }
   .now-playing-artist { font-size: 14.5px; }
-  .now-playing-like-btn { display: flex; position: absolute; right: 0; }
-  .now-playing-download-btn { display: flex; position: absolute; left: 0; }
+  .now-playing-like-btn { display: flex; justify-self: end; }
+  .now-playing-download-btn { display: flex; justify-self: start; }
+  .now-playing-art-wrap { cursor: grab; user-select: none; -webkit-user-drag: none; }
+  .now-playing-art-wrap img { pointer-events: none; }
 
   .mobile-now-playing-controls {
     display: flex; flex-direction: column; gap: 10px;
@@ -1165,3 +1209,49 @@ body.platform-mobile .titlebar { display: none; }
 
   .track-table thead th:nth-child(3), .track-album-cell { display: none; }
 }
+
+/* ---------- Touch feedback ---------- */
+/* Android's WebView flashes a blue box over whatever is tapped -- the app
+   already has its own hover/active styling, so drop it everywhere. */
+* { -webkit-tap-highlight-color: transparent; }
+/* Keyboard focus rings stay on desktop (accessibility), but on phones a
+   ring left behind after a tap, or after a menu returns focus to its
+   button, just reads as a stray outline. TalkBack draws its own. */
+body.platform-mobile :focus,
+body.platform-mobile :focus-visible { outline: none; }
+
+/* ---------- Open animations ---------- */
+@keyframes jw-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes jw-modal-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes jw-menu-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes jw-rise-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes jw-sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes jw-view-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.modal-overlay:not([hidden]) { animation: jw-fade-in 0.18s ease-out; }
+.modal-overlay:not([hidden]) .modal-card { animation: jw-modal-in 0.24s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.account-menu:not([hidden]),
+.context-menu,
+.add-playlist-menu { animation: jw-menu-in 0.14s ease-out; transform-origin: top right; }
+.update-toast:not([hidden]) { animation: jw-rise-in 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
+/* Each navigation replaces view-root's children, so this replays per page. */
+.view-root > * { animation: jw-view-in 0.22s ease-out both; }
+.lyrics-panel:not([hidden]) { animation: jw-fade-in 0.2s ease-out; }
+@media (max-width: 820px) {
+  /* The full-screen player slides up from the mini-player, like Spotify. */
+  .lyrics-panel:not([hidden]) { animation: jw-sheet-up 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+}
+body.platform-mobile .lyrics-panel:not([hidden]) { animation: jw-sheet-up 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
