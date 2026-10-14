@@ -182,6 +182,7 @@
         <div class="lyrics-header-actions">
           <button id="btn-connect-mobile" class="btn-icon-plain" type="button" data-i18n-title="connect.title" title="Connect"><i class="fi fi-br-screencast"></i></button>
           <button id="btn-sleep-timer-mobile" class="btn-icon-plain" type="button" data-i18n-title="player.sleepTimer" title="Sleep timer"><i class="fi fi-br-moon"></i></button>
+          <button id="btn-queue-mobile" class="btn-icon-plain btn-queue-mobile" type="button" data-i18n-title="nowPlaying.queueTab" title="Queue"><i class="fi fi-br-list-music"></i></button>
         </div>
       </div>
       <div class="now-playing-summary">
@@ -223,6 +224,16 @@
       <div id="lyrics-body" class="lyrics-body"></div>
       <div id="queue-body" class="queue-body" hidden></div>
     </aside>
+
+    <!-- Phone layout only: the queue opens as a bottom sheet over the
+         full-screen player instead of a tab (queue-body is moved in here). -->
+    <div id="queue-sheet-backdrop" class="queue-sheet-backdrop"></div>
+    <section id="queue-sheet" class="queue-sheet" aria-hidden="true">
+      <div id="queue-sheet-head" class="queue-sheet-head">
+        <div class="queue-sheet-grabber"></div>
+        <div class="queue-sheet-title" data-i18n="nowPlaying.queueTab">Queue</div>
+      </div>
+    </section>
 
     <video id="cat-jam" class="cat-jam" src="assets/catjam.webm" muted loop playsinline hidden></video>
 

@@ -29,6 +29,10 @@ const lyricsBody = document.getElementById('lyrics-body');
 const queueBody = document.getElementById('queue-body');
 const tabLyrics = document.getElementById('tab-lyrics');
 const tabQueue = document.getElementById('tab-queue');
+const btnQueueMobile = document.getElementById('btn-queue-mobile');
+const queueSheet = document.getElementById('queue-sheet');
+const queueSheetHead = document.getElementById('queue-sheet-head');
+const queueSheetBackdrop = document.getElementById('queue-sheet-backdrop');
 const nowPlayingArt = document.getElementById('now-playing-art');
 const nowPlayingArtWrap = document.querySelector('.now-playing-art-wrap');
 const nowPlayingTitle = document.getElementById('now-playing-title');
@@ -74,6 +78,9 @@ const loudnessBoostSlider = document.getElementById('loudness-boost-slider');
 const loudnessBoostValue = document.getElementById('loudness-boost-value');
 const toggleCatJam = document.getElementById('toggle-cat-jam');
 const catJamVideo = document.getElementById('cat-jam');
+// Where #cat-jam lives in the desktop layout, so it can be put back after a
+// narrow (phone-layout) window moved it onto the cover art.
+const catJamHome = { parent: catJamVideo.parentElement, next: catJamVideo.nextSibling };
 const catJamScaleRow = document.getElementById('cat-jam-scale-row');
 const catJamScaleSlider = document.getElementById('cat-jam-scale-slider');
 const catJamScaleValue = document.getElementById('cat-jam-scale-value');
@@ -1139,6 +1146,17 @@ function syncCatJamVisibility() {
   const catJamOn = getSettings().catJam;
   const shouldShow = catJamOn && !!player?.currentTrack;
 
+  // A narrow window gets the phone's full-screen player, which covers the
+  // desktop cat's spot above the player bar -- sit on the cover art there
+  // too (beat-sync keeps running on desktop either way).
+  if (!isMobile) {
+    if (isPhoneLayout()) {
+      if (catJamVideo.parentElement !== nowPlayingArtWrap) nowPlayingArtWrap.appendChild(catJamVideo);
+    } else if (catJamVideo.parentElement !== catJamHome.parent) {
+      catJamHome.parent.insertBefore(catJamVideo, catJamHome.next);
+    }
+  }
+
   if (isMobile) {
     // Mobile: a plain looping overlay on the cover art, no beat-sync — beat
     // detection needs Web Audio's createMediaElementSource, which reroutes
@@ -1236,9 +1254,9 @@ function uiNext() {
   player.next(true);
 }
 
-function uiPrevious() {
+function uiPrevious(skipRestart = false) {
   if (connect?.isConnected()) { connect.remotePrevious(); return; }
-  player.previous();
+  player.previous(skipRestart);
 }
 
 function uiSeekPercent(pct) {
@@ -1489,7 +1507,8 @@ function wireBackButton() {
     if (!createPlaylistOverlay.hidden) { closeCreatePlaylist(); return; }
     if (!accountMenu.hidden) { accountMenu.hidden = true; return; }
     if (activeAddMenu) { closeAddToPlaylistMenu(); return; }
-    if (!lyricsPanel.hidden) { lyricsPanel.hidden = true; return; }
+    if (queueSheetOpen) { closeQueueSheet(); return; }
+    if (!lyricsPanel.hidden) { closeNowPlaying(); return; }
 
     if (viewHistory.length > 1) { goBack(); return; }
 
@@ -2958,7 +2977,9 @@ function wireSwipeActions(rowEl, { onSwipeRight, onSwipeLeft, onLongPress } = {}
       if (Math.abs(rawDx) < 8 && Math.abs(y - startY) < 8) return;
       horizontal = Math.abs(rawDx) > Math.abs(y - startY);
       decided = true;
-      if (horizontal) clearTimeout(longPressTimer);
+      // Any real movement means it's a swipe or a scroll, not a press --
+      // a slow vertical scroll used to outlast the timer and pop the menu.
+      clearTimeout(longPressTimer);
     }
     if (!horizontal) return;
     if ((rawDx > 0 && !onSwipeRight) || (rawDx < 0 && !onSwipeLeft)) return;
@@ -3038,8 +3059,7 @@ function wirePlayer() {
   playerBar.addEventListener('click', (evt) => {
     if (!document.body.classList.contains('platform-mobile') && window.innerWidth > 820) return;
     if (evt.target.closest('#btn-play')) return;
-    lyricsPanel.hidden = false;
-    showPanelTab(activePanelTab);
+    openNowPlaying();
   });
 
   seekBar.addEventListener('input', () => {
@@ -3059,10 +3079,11 @@ function wirePlayer() {
   });
 
   btnLyrics.addEventListener('click', () => {
-    lyricsPanel.hidden = !lyricsPanel.hidden;
-    if (!lyricsPanel.hidden) showPanelTab(activePanelTab);
+    if (!lyricsPanel.hidden) { closeNowPlaying(); return; }
+    openNowPlaying();
   });
-  btnCloseLyrics.addEventListener('click', () => { lyricsPanel.hidden = true; });
+  btnCloseLyrics.addEventListener('click', () => closeNowPlaying());
+  wireNowPlayingGestures();
 
   nowPlayingLikeBtn.addEventListener('click', async () => {
     const track = player.currentTrack;
@@ -3100,9 +3121,13 @@ function wirePlayer() {
 
   tabLyrics.addEventListener('click', () => showPanelTab('lyrics'));
   tabQueue.addEventListener('click', () => showPanelTab('queue'));
+  btnQueueMobile.addEventListener('click', openQueueSheet);
+  // Crossing the phone-layout breakpoint moves the cat between its spots.
+  window.matchMedia('(max-width: 820px)').addEventListener('change', syncCatJamVisibility);
+  wireQueueSheet();
 
   player.on('queuechange', () => {
-    if (!lyricsPanel.hidden && activePanelTab === 'queue') renderQueue();
+    if (queueSheetOpen || (!lyricsPanel.hidden && activePanelTab === 'queue')) renderQueue();
   });
 
   player.on('trackchange', () => {
@@ -3136,6 +3161,7 @@ function wirePlayer() {
     updateDiscordPresence();
     syncCatJamVisibility();
 
+    if (queueSheetOpen) renderQueue();
     if (!lyricsPanel.hidden) {
       if (activePanelTab === 'lyrics') loadLyricsForCurrentTrack();
       else renderQueue();
@@ -3434,12 +3460,215 @@ function buildTrackContextMenuItems(track, queueCtx = {}) {
   return items;
 }
 
+// Same test the mini-player tap uses to decide the panel is the phone's
+// full-screen player (where the queue lives in the bottom sheet instead).
+function isPhoneLayout() {
+  return document.body.classList.contains('platform-mobile') || window.innerWidth <= 820;
+}
+
+let queueSheetOpen = false;
+
+function openQueueSheet() {
+  if (queueSheetOpen) return;
+  queueSheetOpen = true;
+  queueSheet.appendChild(queueBody);
+  setHidden(queueBody, false);
+  queueSheet.style.transform = '';
+  queueSheet.classList.add('open');
+  queueSheet.setAttribute('aria-hidden', 'false');
+  queueSheetBackdrop.classList.add('open');
+  renderQueue();
+  // Start with what plays next in view rather than the top of a long list.
+  const playing = queueBody.querySelector('.queue-row.playing');
+  queueBody.scrollTop = playing ? Math.max(0, playing.offsetTop - 40) : 0;
+}
+
+function closeQueueSheet() {
+  if (!queueSheetOpen) return;
+  queueSheetOpen = false;
+  queueSheet.style.transform = '';
+  queueSheet.classList.remove('open');
+  queueSheet.setAttribute('aria-hidden', 'true');
+  queueSheetBackdrop.classList.remove('open');
+}
+
+// Drag the sheet's header down to dismiss it, like a native bottom sheet.
+function wireQueueSheet() {
+  queueSheetBackdrop.addEventListener('click', closeQueueSheet);
+  let startY = null;
+  let lastY = 0;
+  let lastT = 0;
+  let velocity = 0;
+  queueSheetHead.addEventListener('pointerdown', (evt) => {
+    startY = evt.clientY;
+    lastY = evt.clientY;
+    lastT = performance.now();
+    velocity = 0;
+    queueSheet.classList.add('dragging');
+    queueSheetHead.setPointerCapture(evt.pointerId);
+  });
+  queueSheetHead.addEventListener('pointermove', (evt) => {
+    if (startY === null) return;
+    const now = performance.now();
+    velocity = (evt.clientY - lastY) / Math.max(1, now - lastT);
+    lastY = evt.clientY;
+    lastT = now;
+    const dy = Math.max(0, evt.clientY - startY);
+    queueSheet.style.transform = `translateY(${dy}px)`;
+  });
+  const end = (evt) => {
+    if (startY === null) return;
+    const dy = Math.max(0, evt.clientY - startY);
+    startY = null;
+    queueSheet.classList.remove('dragging');
+    // A tap on the header (no drag) also closes it, like Spotify's handle.
+    if (dy > queueSheet.offsetHeight * 0.25 || velocity > 0.6 || dy < 4) closeQueueSheet();
+    else queueSheet.style.transform = '';
+  };
+  queueSheetHead.addEventListener('pointerup', end);
+  queueSheetHead.addEventListener('pointercancel', end);
+}
+
+// ---------- Full-screen player open/close + gestures ----------
+let nowPlayingCloseTimer = null;
+
+function openNowPlaying() {
+  // Reopened mid-close: drop the slide-out so it doesn't hide afterwards.
+  clearTimeout(nowPlayingCloseTimer);
+  lyricsPanel.style.transition = '';
+  lyricsPanel.style.transform = '';
+  lyricsPanel.hidden = false;
+  showPanelTab(activePanelTab);
+}
+
+// Slides the phone's full-screen player down before hiding it (desktop's
+// side panel just hides). Also used to finish a swipe-down from wherever
+// the finger left it, since the transition starts from the current transform.
+function closeNowPlaying() {
+  closeQueueSheet();
+  if (lyricsPanel.hidden) return;
+  if (!isPhoneLayout()) { lyricsPanel.hidden = true; return; }
+  clearTimeout(nowPlayingCloseTimer);
+  lyricsPanel.style.transition = 'transform 0.26s cubic-bezier(0.4, 0, 1, 1)';
+  // Force the current position to be committed before animating away.
+  void lyricsPanel.offsetHeight;
+  lyricsPanel.style.transform = 'translateY(100%)';
+  nowPlayingCloseTimer = setTimeout(() => {
+    lyricsPanel.hidden = true;
+    lyricsPanel.style.transition = '';
+    lyricsPanel.style.transform = '';
+  }, 270);
+}
+
+// On the cover art: swipe left/right for next/previous track (the art
+// follows the finger, then slides out and the new cover slides in), swipe
+// down to close the player. Pointer Events, so it also works with a mouse
+// in a narrow desktop window.
+function wireNowPlayingGestures() {
+  const target = nowPlayingArtWrap;
+  target.style.touchAction = 'none';
+  let startX = 0, startY = 0, axis = null, pointerId = null, startT = 0;
+
+  const reset = () => {
+    target.style.transition = '';
+    target.style.transform = '';
+    target.style.opacity = '';
+  };
+
+  target.addEventListener('pointerdown', (evt) => {
+    if (!isPhoneLayout() || evt.button > 0) return;
+    pointerId = evt.pointerId;
+    startX = evt.clientX;
+    startY = evt.clientY;
+    startT = performance.now();
+    axis = null;
+    target.setPointerCapture(pointerId);
+  });
+
+  target.addEventListener('pointermove', (evt) => {
+    if (evt.pointerId !== pointerId) return;
+    const dx = evt.clientX - startX;
+    const dy = evt.clientY - startY;
+    if (!axis) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+    }
+    if (axis === 'x') {
+      target.style.transition = 'none';
+      target.style.transform = `translateX(${dx}px) rotate(${dx / 40}deg)`;
+      target.style.opacity = String(Math.max(0.4, 1 - Math.abs(dx) / 500));
+    } else if (dy > 0) {
+      lyricsPanel.style.transition = 'none';
+      lyricsPanel.style.transform = `translateY(${dy}px)`;
+    }
+  });
+
+  const end = (evt) => {
+    if (evt.pointerId !== pointerId) return;
+    pointerId = null;
+    const dx = evt.clientX - startX;
+    const dy = evt.clientY - startY;
+    const fast = performance.now() - startT < 250;
+
+    if (axis === 'x') {
+      const width = target.offsetWidth || 300;
+      const commit = Math.abs(dx) > width * 0.3 || (fast && Math.abs(dx) > 40);
+      if (!commit || !player?.currentTrack) {
+        target.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
+        target.style.transform = '';
+        target.style.opacity = '';
+        setTimeout(reset, 220);
+        return;
+      }
+      const dir = dx < 0 ? -1 : 1; // -1 = next (swiped left)
+      hapticImpact('light');
+      target.style.transition = 'transform 0.16s ease-in, opacity 0.16s ease-in';
+      target.style.transform = `translateX(${dir * width * 1.2}px) rotate(${dir * 8}deg)`;
+      target.style.opacity = '0';
+      setTimeout(() => {
+        if (dir < 0) uiNext();
+        else uiPrevious(true);
+        // New cover comes in from the opposite side.
+        target.style.transition = 'none';
+        target.style.transform = `translateX(${-dir * width * 0.6}px)`;
+        void target.offsetWidth;
+        target.style.transition = 'transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.22s ease-out';
+        target.style.transform = '';
+        target.style.opacity = '';
+        setTimeout(reset, 240);
+      }, 160);
+    } else if (axis === 'y') {
+      const height = lyricsPanel.offsetHeight || window.innerHeight;
+      if (dy > height * 0.2 || (fast && dy > 60)) {
+        closeNowPlaying();
+      } else {
+        lyricsPanel.style.transition = 'transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        lyricsPanel.style.transform = '';
+        setTimeout(() => { lyricsPanel.style.transition = ''; }, 240);
+      }
+    }
+    axis = null;
+  };
+  target.addEventListener('pointerup', end);
+  target.addEventListener('pointercancel', end);
+}
+
 function showPanelTab(tab) {
+  // Phone layout has no tabs: lyrics always show in the player and the
+  // queue opens as its own sheet.
+  if (isPhoneLayout()) {
+    if (tab === 'queue') openQueueSheet();
+    tab = 'lyrics';
+  } else if (queueBody.parentElement !== lyricsPanel) {
+    closeQueueSheet();
+    lyricsPanel.appendChild(queueBody);
+  }
   activePanelTab = tab;
   tabLyrics.classList.toggle('active', tab === 'lyrics');
   tabQueue.classList.toggle('active', tab === 'queue');
   setHidden(lyricsBody, tab !== 'lyrics');
-  setHidden(queueBody, tab !== 'queue');
+  // In the sheet (phone layout) the queue's visibility is the sheet's own.
+  if (queueBody.parentElement === lyricsPanel) setHidden(queueBody, tab !== 'queue');
   if (tab === 'lyrics') loadLyricsForCurrentTrack();
   else renderQueue();
 }
@@ -3505,6 +3734,10 @@ function wireQueueDragHandle(handle, row) {
     evt.stopPropagation();
     let startY = evt.clientY;
     const fromIdx = Number(row.dataset.idx);
+    // The rows on screen were rendered relative to this; currentIndex can
+    // move mid-drag (a song ending), which used to skew the drop index.
+    const baseIndex = player.currentIndex;
+    queueDragActive = true;
     row.classList.add('dragging');
     handle.setPointerCapture(evt.pointerId);
 
@@ -3519,30 +3752,29 @@ function wireQueueDragHandle(handle, row) {
       // read from the siblings' CURRENT DOM order (not their original
       // render index) so it stays correct after earlier swaps this same
       // drag, including reversing direction mid-drag.
-      const siblings = [...row.parentElement.querySelectorAll('.queue-row:not(.playing)')];
-      const rowRect = row.getBoundingClientRect();
-      const rowCenter = rowRect.top + rowRect.height / 2;
-      const rowPos = siblings.indexOf(row);
-      for (const sibling of siblings) {
-        if (sibling === row) continue;
-        const sibRect = sibling.getBoundingClientRect();
-        const sibCenter = sibRect.top + sibRect.height / 2;
-        const movingDown = rowPos < siblings.indexOf(sibling);
-        const crossed = movingDown ? rowCenter > sibCenter : rowCenter < sibCenter;
-        if (crossed) {
-          if (movingDown) sibling.parentElement.insertBefore(row, sibling.nextSibling);
-          else sibling.parentElement.insertBefore(row, sibling);
-          // The DOM swap above just shifted the row's static (untransformed)
-          // flow position by roughly one row's height — without correcting
-          // for that, the fixed `dy` offset would make the row visually
-          // jump/snap by that same height at this exact instant. Nudging
-          // startY cancels it out so the row stays exactly where the
-          // pointer left it, then tracks the pointer normally from there.
-          startY += movingDown ? sibRect.height : -sibRect.height;
-          dy = moveEvt.clientY - startY;
-          row.style.transform = `translateY(${dy}px)`;
-          break;
-        }
+      // Keep swapping until the row's center sits between its neighbours --
+      // a fast drag can cross several rows in one move event, and handling
+      // only one per event left the DOM order (and so the drop slot) behind
+      // the finger.
+      for (let guard = 0; guard < 200; guard++) {
+        const rowRect = row.getBoundingClientRect();
+        const rowCenter = rowRect.top + rowRect.height / 2;
+        const prev = row.previousElementSibling?.matches('.queue-row:not(.playing)') ? row.previousElementSibling : null;
+        const next = row.nextElementSibling?.matches('.queue-row:not(.playing)') ? row.nextElementSibling : null;
+        const centerOf = (r) => { const b = r.getBoundingClientRect(); return b.top + b.height / 2; };
+        let target = null;
+        if (next && rowCenter > centerOf(next)) target = () => row.parentElement.insertBefore(row, next.nextSibling);
+        else if (prev && rowCenter < centerOf(prev)) target = () => row.parentElement.insertBefore(row, prev);
+        if (!target) break;
+        // The DOM move shifts the row's untransformed position; compensate
+        // startY by exactly that (offsetTop ignores transforms, and this
+        // also accounts for any gap/margin between rows) so the row stays
+        // under the finger instead of jumping.
+        const before = row.offsetTop;
+        target();
+        startY += row.offsetTop - before;
+        dy = moveEvt.clientY - startY;
+        row.style.transform = `translateY(${dy}px)`;
       }
     };
 
@@ -3559,12 +3791,16 @@ function wireQueueDragHandle(handle, row) {
       // based on each sibling's original render index only stays correct
       // for crossings in one direction, and goes wrong the moment a drag
       // reverses direction partway through.
-      const siblings = [...row.parentElement.querySelectorAll('.queue-row:not(.playing)')];
-      const toIdx = player.currentIndex + 1 + siblings.indexOf(row);
-      if (toIdx !== fromIdx) {
+      queueDragActive = false;
+      const siblings = row.parentElement ? [...row.parentElement.querySelectorAll('.queue-row:not(.playing)')] : [];
+      const toIdx = baseIndex + 1 + siblings.indexOf(row);
+      if (siblings.length && toIdx !== fromIdx) {
         hapticImpact('light');
         player.reorderQueueAt(fromIdx, toIdx);
       }
+      // Catch up on anything that changed while the drag held renders off
+      // (a no-op re-render if reorderQueueAt above already triggered one).
+      if (queueRenderPending) renderQueue();
     };
 
     handle.addEventListener('pointermove', onMove);
@@ -3573,7 +3809,17 @@ function wireQueueDragHandle(handle, row) {
   });
 }
 
+// Rebuilding the list mid-drag (e.g. on trackchange) would yank the dragged
+// row out from under the finger -- defer it until the drop instead.
+let queueDragActive = false;
+let queueRenderPending = false;
+
 function renderQueue() {
+  if (queueDragActive) {
+    queueRenderPending = true;
+    return;
+  }
+  queueRenderPending = false;
   queueBody.innerHTML = '';
   if (!player.queue.length) {
     queueBody.appendChild(el('div', 'queue-empty', 'Queue is empty.'));

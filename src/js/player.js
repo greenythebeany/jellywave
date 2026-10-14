@@ -25,11 +25,11 @@ export const EQ_PRESETS = {
   classical: [3, 2, 0, -2, 2]
 };
 
-// How soon before a track's natural end we start pre-buffering the next one
-// (gapless) — needs to be enough time for the network fetch to get ahead of
-// playback, but short enough not to waste bandwidth on tracks that get
-// skipped anyway.
-const PRELOAD_LEAD_SECONDS = 4;
+// How far into the current track we start pre-buffering the next one in the
+// spare <audio> element. Early (rather than just before the end) so a
+// manual skip can also start instantly, not only gapless auto-advance; the
+// short delay lets the current track's own buffering get ahead first.
+const PRELOAD_AFTER_SECONDS = 3;
 
 export class Player {
   constructor(jellyfin, getBitrateKbps = () => 0) {
@@ -50,7 +50,10 @@ export class Player {
     this.baseVolume = 0.25; // matches the 50% default on the (quadratic-taper) volume slider
     this.crossfadeSeconds = 0; // 0 = off, up to 12
     this.replayGainEnabled = false;
-    this._preloaded = false;
+    // Id of the track already loaded into the inactive element (a preloaded
+    // next track, or the one just skipped away from), or null. Lets
+    // next/previous/playAt swap to it instantly instead of a fresh fetch.
+    this._inactiveTrackId = null;
     this._transitioning = false;
     this._fadeRAF = null;
 
@@ -512,6 +515,9 @@ export class Player {
     this.queue.splice(toIndex, 0, moved);
     if (fromIndex < this.currentIndex && toIndex >= this.currentIndex) this.currentIndex -= 1;
     else if (fromIndex > this.currentIndex && toIndex <= this.currentIndex) this.currentIndex += 1;
+    // Unshuffled, the queue IS the original order -- keep it in sync so a
+    // later shuffle on/off round-trip doesn't undo the reorder.
+    if (!this.shuffle) this.originalQueue = [...this.queue];
     this._emit('queuechange');
   }
 
@@ -574,6 +580,7 @@ export class Player {
   playAt(index) {
     if (index < 0 || index >= this.queue.length) return;
     this._cancelTransition();
+    if (index !== this.currentIndex && this._swapToInactive(index)) return;
     this.currentIndex = index;
     this._loadCurrent(true);
   }
@@ -596,19 +603,23 @@ export class Player {
       if (this.repeat === RepeatMode.ALL) nextIndex = 0;
       else return this._stopAtEnd();
     }
+    if (this._swapToInactive(nextIndex)) return;
     this.currentIndex = nextIndex;
     this._loadCurrent(true);
   }
 
-  previous() {
+  // skipRestart: always go to the previous track (swipe gesture), instead
+  // of restarting the current one when it's more than 3s in (the button).
+  previous(skipRestart = false) {
     this._cancelTransition();
     if (this.queue.length === 0) return;
-    if (this.audio.currentTime > 3) {
+    if (!skipRestart && this.audio.currentTime > 3) {
       this.audio.currentTime = 0;
       return;
     }
     let prevIndex = this.currentIndex - 1;
     if (prevIndex < 0) prevIndex = this.repeat === RepeatMode.ALL ? this.queue.length - 1 : 0;
+    if (prevIndex !== this.currentIndex && this._swapToInactive(prevIndex)) return;
     this.currentIndex = prevIndex;
     this._loadCurrent(true);
   }
@@ -630,33 +641,12 @@ export class Player {
     // real, completed play (server-side PlayCount, stats, etc.).
     this._emit('trackended', this.currentTrack);
 
-    // If gapless pre-buffering already has the next track loaded and ready
-    // in the inactive element, swap to it instantly instead of doing a
-    // fresh network fetch — that's the whole point of gapless playback.
-    // _preloaded only means "we started a preload," not "it definitely
-    // succeeded" (a transient network hiccup during the ~4s preload window
-    // is entirely possible) — check for a real load error before trusting
-    // it, and treat this as best-effort rather than break its own promise.
-    if (this._preloaded && this.crossfadeSeconds === 0 && !this._inactiveAudio.error) {
-      this._advanceIndexForNext();
-      this._activeIsA = !this._activeIsA;
-      this._preloaded = false;
-      const el = this.audio;
-      el.currentTime = 0;
-      this._applyVolume(el);
-      el.play().catch((err) => {
-        this._logPlayError('_onEnded gapless swap', err);
-        // The "preloaded" element turned out not to actually be playable.
-        // currentIndex is already correctly advanced — just retry loading
-        // this same track fresh instead of leaving playback stopped dead.
-        this._loadCurrent(true);
-      });
-      this._updateMediaSessionMetadata();
-      this._setMediaSessionPlaybackState();
-      this._emit('trackchange');
-      return;
+    // If the next track is already buffered in the inactive element, swap
+    // to it instantly (gapless) instead of doing a fresh network fetch.
+    if (this.crossfadeSeconds === 0) {
+      const autoIndex = this._autoNextIndex();
+      if (autoIndex >= 0 && this._swapToInactive(autoIndex)) return;
     }
-    this._preloaded = false;
     this.next(false);
   }
 
@@ -689,34 +679,71 @@ export class Player {
     this.currentIndex = nextIndex;
   }
 
+  // Index auto-advance would move to (same rules as _peekNextTrack), or -1.
+  _autoNextIndex() {
+    if (this.repeat === RepeatMode.ONE) return this.currentIndex;
+    const nextIndex = this.currentIndex + 1;
+    if (nextIndex < this.queue.length) return nextIndex;
+    return this.repeat === RepeatMode.ALL && this.queue.length ? 0 : -1;
+  }
+
+  // Makes queue[index] current by swapping to the inactive element, if that
+  // track is what it already holds. The outgoing element keeps its track,
+  // so skipping straight back is instant too. Returns false (caller does a
+  // normal _loadCurrent) when there's nothing usable buffered.
+  _swapToInactive(index) {
+    const track = this.queue[index];
+    const incoming = this._inactiveAudio;
+    if (!track || this._inactiveTrackId !== track.Id || !incoming.src || incoming.error) return false;
+    const outgoing = this.audio;
+    this._inactiveTrackId = this.currentTrack?.Id || null;
+    this.currentIndex = index;
+    this._activeIsA = !this._activeIsA;
+    outgoing.pause();
+    if (incoming.currentTime) incoming.currentTime = 0;
+    this._applyVolume(incoming, track);
+    incoming.play().then(() => this._tryNativeLoudnessBoost()).catch((err) => {
+      this._logPlayError('_swapToInactive', err);
+      // Buffered element turned out not to be playable -- currentIndex is
+      // already right, so just load this track fresh.
+      if (this.audio === incoming) this._loadCurrent(true);
+    });
+    this._updateMediaSessionMetadata();
+    this._setMediaSessionPlaybackState();
+    this._emit('trackchange');
+    return true;
+  }
+
   _checkForTransition() {
     const el = this.audio;
     const duration = el.duration;
     if (!isFinite(duration) || duration <= 0 || el.paused) return;
     const remaining = duration - el.currentTime;
 
-    if (this.crossfadeSeconds > 0) {
-      if (remaining <= this.crossfadeSeconds && !this._transitioning) {
-        this._beginCrossfade();
-      }
-    } else if (remaining <= PRELOAD_LEAD_SECONDS && !this._preloaded) {
+    if (this._transitioning) return;
+    if (this.crossfadeSeconds > 0 && remaining <= this.crossfadeSeconds) {
+      this._beginCrossfade();
+    } else if (el.currentTime >= PRELOAD_AFTER_SECONDS) {
       this._preloadNext();
     }
   }
 
   _preloadNext() {
     const nextTrack = this._peekNextTrack();
-    if (!nextTrack) return;
-    this._preloaded = true;
     const inactive = this._inactiveAudio;
-    inactive.src = this.jellyfin.streamUrl(nextTrack, this.getBitrateKbps());
+    if (!nextTrack || (this._inactiveTrackId === nextTrack.Id && !inactive.error)) return;
+    // Downloaded tracks load from local storage near-instantly anyway.
+    if (isDownloaded(nextTrack.Id)) return;
+    const url = this.jellyfin.streamUrl(nextTrack, this.getBitrateKbps());
+    this._inactiveTrackId = nextTrack.Id;
+    inactive.preload = 'auto';
+    inactive.src = url;
     this._applyVolume(inactive, nextTrack);
     inactive.load();
-    // Clear the optimistic flag the moment we know the preload actually
-    // failed (network hiccup, etc.), rather than only discovering it later
-    // in _onEnded() when it's time to use it.
+    // Forget it the moment the preload fails (network hiccup, etc.), so a
+    // skip does a fresh load and the next timeupdate can retry.
     inactive.addEventListener('error', () => {
-      if (inactive.src === this.jellyfin.streamUrl(nextTrack, this.getBitrateKbps())) this._preloaded = false;
+      if (inactive.src === url && this._inactiveTrackId === nextTrack.Id) this._inactiveTrackId = null;
     }, { once: true });
   }
 
@@ -728,7 +755,11 @@ export class Player {
 
     const outgoing = this.audio;
     const incoming = this._inactiveAudio;
-    incoming.src = this.jellyfin.streamUrl(nextTrack, this.getBitrateKbps());
+    // Reuse the early preload if it's this track, rather than refetching.
+    if (this._inactiveTrackId !== nextTrack.Id || incoming.error || !incoming.src) {
+      incoming.src = this.jellyfin.streamUrl(nextTrack, this.getBitrateKbps());
+    }
+    this._inactiveTrackId = null;
     incoming.currentTime = 0;
     incoming.volume = 0;
     incoming.play().catch((err) => this._logPlayError('_beginCrossfade', err));
@@ -762,7 +793,7 @@ export class Player {
       this._advanceIndexForNext();
       this._activeIsA = !this._activeIsA;
       this._transitioning = false;
-      this._preloaded = false;
+      this._inactiveTrackId = outgoingTrack?.Id || null;
       this._fadeRAF = null;
       this._updateMediaSessionMetadata();
       this._setMediaSessionPlaybackState();
@@ -781,10 +812,11 @@ export class Player {
     this._fadeRAF = null;
     if (this._transitioning) {
       // A manual skip mid-crossfade: stop whichever element was fading in
-      // on the side that's about to become inactive again.
+      // on the side that's about to become inactive again. It's part-way
+      // into the next track, so don't treat it as a clean preload.
       this._inactiveAudio.pause();
+      this._inactiveTrackId = null;
     }
     this._transitioning = false;
-    this._preloaded = false;
   }
 }
