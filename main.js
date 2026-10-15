@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
 const { Client: DiscordRpcClient } = require('@xhayper/discord-rpc');
-const { checkForUpdates } = require('./update-checker');
+const { checkForUpdates, downloadUpdate, installAndQuit } = require('./update-checker');
 
 const CONFIG_PATH = path.join(app.getPath('userData'), 'session.dat');
 const DISCORD_CLIENT_ID = '1534197353056174180';
@@ -175,7 +175,39 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
+// Kills a running Import (Python/yt-dlp) along with any ffmpeg it spawned.
+// Child processes outlive the app on Windows, and a leftover python.exe
+// keeps files under app.asar.unpacked\downloader open -- the installer's
+// "close JellyWave" step only targets JellyWave.exe, so it would then fail
+// to replace those files.
+function killGrabProcess() {
+  if (!grabProcess) return;
+  const pid = grabProcess.pid;
+  grabProcess = null;
+  if (process.platform === 'win32' && pid) {
+    try {
+      spawn('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore', windowsHide: true });
+      return;
+    } catch (err) {
+      // fall through to a plain kill
+    }
+  }
+  try { process.kill(pid); } catch (err) { /* already gone */ }
+}
+
+// Fully closes JellyWave for the updater: children killed, Discord/SMTC
+// released (via will-quit), then a hard exit if a graceful quit is still
+// hanging on something (an open stream to the server, a native handle...)
+// a couple of seconds later.
+function shutdownForUpdate() {
+  killGrabProcess();
+  mainWindow?.webContents.send('app:shuttingDown');
+  setTimeout(() => app.exit(0), 2500);
+  app.quit();
+}
+
 app.on('will-quit', () => {
+  killGrabProcess();
   globalShortcut.unregisterAll();
   try {
     smtc?.detach();
@@ -197,6 +229,26 @@ ipcMain.handle('update:check', async () => {
     return await checkForUpdates();
   } catch (err) {
     return { status: 'error', error: err.message };
+  }
+});
+
+ipcMain.handle('update:download', async (event) => {
+  try {
+    const result = await downloadUpdate((progress) => {
+      if (!event.sender.isDestroyed()) event.sender.send('update:progress', progress);
+    });
+    return { ok: true, ...result };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});
+
+ipcMain.handle('update:install', (_event, file) => {
+  try {
+    installAndQuit(file, shutdownForUpdate);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
   }
 });
 

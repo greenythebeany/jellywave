@@ -40,15 +40,57 @@ function cleanedTitleForSearch(title) {
     .trim();
 }
 
+// lrclib intermittently answers 503 (and occasionally just hangs) under
+// load. Retry those, bounded by a per-attempt timeout, so a transient blip
+// doesn't read as "no lyrics" -- a real 404/empty result is not retried.
+const ATTEMPT_TIMEOUT_MS = 8000;
+const RETRY_DELAYS_MS = [600, 1600];
+
+// Thrown when lrclib couldn't be reached/answered after all retries --
+// distinct from a genuine "no lyrics for this track" (which returns null).
+export class LyricsUnavailableError extends Error {}
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function fetchWithRetry(url) {
+  let lastError = null;
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    if (attempt > 0) await sleep(RETRY_DELAYS_MS[attempt - 1]);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ATTEMPT_TIMEOUT_MS);
+    try {
+      const res = await fetch(url, { signal: controller.signal });
+      if (res.status >= 500 || res.status === 429) {
+        lastError = new Error(`lrclib responded ${res.status}`);
+        continue;
+      }
+      return res;
+    } catch (err) {
+      lastError = err; // network error or timeout
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw new LyricsUnavailableError(lastError?.message || 'Lyrics service unavailable');
+}
+
+function toResult(data) {
+  return {
+    synced: parseLrc(data.syncedLyrics),
+    plain: data.plainLyrics || null,
+    instrumental: !!data.instrumental
+  };
+}
+
 async function searchLyrics(title, artist) {
   const searchParams = new URLSearchParams({ track_name: title || '', artist_name: artist || '' });
-  const res = await fetch(`${LRCLIB_BASE}/search?${searchParams.toString()}`);
+  const res = await fetchWithRetry(`${LRCLIB_BASE}/search?${searchParams.toString()}`);
   if (!res.ok) return null;
   const results = await res.json();
   return results && results.length ? results[0] : null;
 }
 
-export async function fetchLyrics({ title, artist, album, durationSeconds }) {
+async function lookupLyrics({ title, artist, album, durationSeconds }) {
   const params = new URLSearchParams({
     track_name: title || '',
     artist_name: artist || ''
@@ -56,18 +98,14 @@ export async function fetchLyrics({ title, artist, album, durationSeconds }) {
   if (album) params.set('album_name', album);
   if (durationSeconds) params.set('duration', Math.round(durationSeconds));
 
+  // An exact /get miss isn't conclusive (search may still find it), so
+  // only a search that actually answered can say "no lyrics" -- any
+  // failure along the way surfaces as LyricsUnavailableError instead.
   try {
-    const res = await fetch(`${LRCLIB_BASE}/get?${params.toString()}`);
-    if (res.ok) {
-      const data = await res.json();
-      return {
-        synced: parseLrc(data.syncedLyrics),
-        plain: data.plainLyrics || null,
-        instrumental: !!data.instrumental
-      };
-    }
+    const res = await fetchWithRetry(`${LRCLIB_BASE}/get?${params.toString()}`);
+    if (res.ok) return toResult(await res.json());
   } catch (err) {
-    // fall through to search
+    if (!(err instanceof LyricsUnavailableError)) throw new LyricsUnavailableError(err?.message);
   }
 
   try {
@@ -76,13 +114,38 @@ export async function fetchLyrics({ title, artist, album, durationSeconds }) {
       const cleaned = cleanedTitleForSearch(title);
       if (cleaned && cleaned !== (title || '').trim()) best = await searchLyrics(cleaned, artist);
     }
-    if (!best) return null;
-    return {
-      synced: parseLrc(best.syncedLyrics),
-      plain: best.plainLyrics || null,
-      instrumental: !!best.instrumental
-    };
+    return best ? toResult(best) : null;
   } catch (err) {
-    return null;
+    throw err instanceof LyricsUnavailableError ? err : new LyricsUnavailableError(err?.message);
   }
+}
+
+// In-memory cache (this session only -- nothing is stored), keyed by the
+// lookup itself: found lyrics and confirmed "none" are kept, so revisiting
+// a track is instant; failures aren't, so the next view retries. Also
+// dedupes concurrent lookups of the same track (prefetch + display).
+const cache = new Map();
+const inFlight = new Map();
+
+function cacheKey({ title, artist, album, durationSeconds }) {
+  return [title, artist, album, Math.round(durationSeconds || 0)].map((v) => (v ?? '')).join('\u0001').toLowerCase();
+}
+
+export function getCachedLyrics(query) {
+  const key = cacheKey(query);
+  return cache.has(key) ? { hit: true, value: cache.get(key) } : { hit: false };
+}
+
+export async function fetchLyrics(query) {
+  const key = cacheKey(query);
+  if (cache.has(key)) return cache.get(key);
+  if (inFlight.has(key)) return inFlight.get(key);
+  const promise = lookupLyrics(query)
+    .then((result) => {
+      cache.set(key, result);
+      return result;
+    })
+    .finally(() => inFlight.delete(key));
+  inFlight.set(key, promise);
+  return promise;
 }

@@ -17,6 +17,7 @@ export const AUDIO_QUALITIES = {
 const DEFAULTS = {
   themeMode: 'dark', // 'dark' | 'light' | 'system'
   palette: 'jellyfin',
+  uiStyle: 'spotify', // 'spotify' | 'apple' -- see css/apple.css
   audioQuality: 'auto',
   artBackground: false,
   dynamicAccentColor: false,
@@ -128,7 +129,17 @@ function resolvedThemeMode() {
 export function applySettings() {
   const root = document.documentElement;
   root.setAttribute('data-theme', resolvedThemeMode());
-  root.setAttribute('data-palette', current.palette);
+  const apple = current.uiStyle === 'apple';
+  // Each interface style has one fixed accent: Spotify green, or Apple's
+  // red (apple.css; no palette rule matches "apple"). The old palette
+  // picker is gone. Community themes still recolor either style -- they
+  // target any :root[data-palette].
+  root.setAttribute('data-palette', apple ? 'apple' : 'spotify');
+  root.setAttribute('data-ui', apple ? 'apple' : 'spotify');
+  // Custom CSS that sets the app's colors (e.g. a theme from the README's
+  // list, @import-ed from src/themes) -- lets apple.css hand colors over.
+  const css = current.customCss || '';
+  root.toggleAttribute('data-custom-theme', /themes\/[\w.-]+\.css|--(bg|accent|text)\b/.test(css));
 }
 
 export function currentBitrateKbps() {

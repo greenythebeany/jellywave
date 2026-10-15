@@ -128,6 +128,37 @@ svg { fill: currentColor; width: 100%; height: 100%; }
   display: flex; align-items: center; justify-content: center;
   background: radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--accent) 22%, var(--bg-void)) 0%, var(--bg-void) 62%);
 }
+.boot-splash {
+  position: fixed; inset: var(--titlebar-h) 0 0 0; z-index: 1000;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px;
+  background: radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--accent) 22%, var(--bg-void)) 0%, var(--bg-void) 62%);
+  transition: opacity 0.25s ease;
+}
+.boot-splash.leaving { opacity: 0; pointer-events: none; }
+.boot-splash-icon { width: 84px; height: 84px; border-radius: 22px; animation: boot-pulse 1.6s ease-in-out infinite; }
+.view-loading { display: flex; justify-content: center; padding: 72px 0; }
+
+/* Pull-to-refresh indicator (phone layout): sits just under the sticky
+   header and is moved/rotated by JS while pulling, spins while refreshing. */
+.pull-refresh {
+  position: absolute; left: 50%; top: 0; z-index: 15;
+  width: 40px; height: 40px; margin-left: -20px; margin-top: -48px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-elevated); border-radius: 50%;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  opacity: 0; pointer-events: none;
+}
+.pull-refresh .loading-spinner { width: 20px; height: 20px; border-width: 2.5px; animation: none; }
+.pull-refresh.refreshing .loading-spinner { animation: download-spin 0.8s linear infinite; }
+.pull-refresh.settling { transition: transform 0.25s ease, opacity 0.25s ease; }
+/* Same ring as the boot splash, for pages that are still loading. */
+.boot-splash-spinner, .loading-spinner {
+  width: 26px; height: 26px; box-sizing: border-box;
+  border: 3px solid color-mix(in srgb, var(--accent) 30%, transparent); border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: download-spin 0.8s linear infinite;
+}
+@keyframes boot-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
 .login-card {
   width: 380px;
   padding: 40px 36px;
@@ -563,8 +594,16 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .track-add-btn.liked { color: var(--accent); opacity: 1; }
 .track-download-btn.downloaded { color: var(--accent); opacity: 1; }
 .track-download-btn.downloading { opacity: 1; }
-.track-download-spin { animation: track-download-spin 1s linear infinite; }
-@keyframes track-download-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+/* Centered by inset+margin (not a translate), so the rotation can't shift
+   it; used in every download button (track rows, album header, player). */
+.download-spinner {
+  position: absolute; inset: 0; margin: auto;
+  width: 15px; height: 15px; box-sizing: border-box;
+  border: 2px solid currentColor; border-right-color: transparent;
+  border-radius: 50%;
+  animation: download-spin 0.8s linear infinite;
+}
+@keyframes download-spin { to { transform: rotate(360deg); } }
 .track-row.offline-unavailable { opacity: 0.4; filter: grayscale(0.7); }
 .track-row.offline-unavailable .track-title-cell, .track-row.offline-unavailable .track-index { cursor: default; }
 .track-duration { text-align: right; width: 60px; font-variant-numeric: tabular-nums; }
@@ -677,13 +716,6 @@ svg { fill: currentColor; width: 100%; height: 100%; }
   flex-shrink: 0;
   position: relative; z-index: 1;
 }
-.panel-tabs { display: flex; gap: 4px; }
-.panel-tab {
-  padding: 7px 13px; border-radius: 999px; font-size: 13px; font-weight: 700;
-  color: var(--text-secondary);
-}
-.panel-tab:hover { color: var(--text-primary); }
-.panel-tab.active { color: var(--accent-contrast); background: var(--accent-bg); }
 .btn-icon-plain { color: var(--text-secondary); font-size: 17px; padding: 6px; border-radius: 6px; }
 .btn-icon-plain:hover { color: var(--text-primary); background: var(--bg-highlight); }
 .lyrics-header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
@@ -722,6 +754,24 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .now-playing-text { min-width: 0; text-align: center; }
 .now-playing-title { font-size: 17px; font-weight: 800; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .now-playing-artist { font-size: 13.5px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Scrolling long titles (see setMarqueeText in app.js). */
+.marquee-inner { display: inline-block; white-space: nowrap; }
+.now-playing-title.marquee, .now-playing-artist.marquee {
+  text-overflow: clip;
+  /* Soft edges so text slides in/out instead of being sliced. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+}
+.marquee .marquee-inner {
+  padding: 0 12px;
+  animation: np-marquee var(--marquee-duration, 6s) ease-in-out infinite alternate;
+}
+/* The 12px padding keeps both ends of the text clear of the faded edges:
+   the start sits just inside the left fade, the end just inside the right. */
+@keyframes np-marquee {
+  0%, 20% { transform: translateX(0); }
+  80%, 100% { transform: translateX(calc(var(--marquee-shift, 0px) - 24px)); }
+}
 .now-playing-like-btn, .now-playing-download-btn {
   display: none; flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
   align-items: center; justify-content: center; font-size: 17px; color: var(--text-secondary);
@@ -741,22 +791,29 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .lyric-line { color: var(--text-tertiary); font-weight: 600; transition: color 0.2s ease; cursor: pointer; }
 .lyric-line.active { color: var(--text-primary); font-size: 17px; }
 .lyrics-empty { color: var(--text-tertiary); font-size: 13.5px; text-align: center; margin-top: 30px; }
+.lyrics-retry-btn {
+  display: block; margin: 14px auto 0; padding: 8px 18px; border-radius: 999px;
+  background: var(--bg-highlight); color: var(--text-primary); font-size: 13px; font-weight: 700;
+}
+.lyrics-retry-btn:hover { background: var(--bg-card-hover); }
 
 .queue-body { flex: 1; overflow-y: auto; padding: 8px 12px 24px; position: relative; z-index: 1; }
 
-/* Queue bottom sheet (phone layout only, see the 820px media query). */
-.btn-queue-mobile, .queue-sheet, .queue-sheet-backdrop { display: none; }
+/* Queue bottom sheet, inside the player panel on every layout (absolute,
+   so it covers the side panel on desktop and the full screen on phones).
+   The lyrics button only exists on phones -- desktop always shows lyrics. */
+.lyrics-header-actions #btn-lyrics-mobile { display: none; }
 .queue-sheet-backdrop {
-  position: fixed; inset: 0; z-index: 160;
+  position: absolute; inset: 0; z-index: 160;
   background: rgba(0,0,0,0.5);
   opacity: 0; pointer-events: none;
   transition: opacity 0.25s ease;
 }
 .queue-sheet-backdrop.open { opacity: 1; pointer-events: auto; }
 .queue-sheet {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 161;
-  height: 78vh; height: 78dvh;
-  flex-direction: column;
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 161;
+  height: 78%;
+  display: flex; flex-direction: column;
   background: var(--bg-elevated);
   border-radius: 18px 18px 0 0;
   box-shadow: 0 -12px 40px rgba(0,0,0,0.45);
@@ -770,12 +827,13 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .queue-sheet-grabber { width: 40px; height: 4px; border-radius: 2px; background: var(--text-tertiary); opacity: 0.6; margin: 0 auto 12px; }
 .queue-sheet-title { font-size: 17px; font-weight: 800; }
 .queue-sheet .queue-body { padding-top: 0; }
+/* Full lyrics in the sheet: bigger lines, room to center the active one. */
+.queue-sheet .lyrics-body { flex: 1; padding: 4px 24px 45vh; gap: 20px; font-size: 22px; line-height: 1.35; }
+.queue-sheet .lyric-line { font-weight: 800; }
+.queue-sheet .lyric-line.active { font-size: 22px; }
 /* Phones/tablets always get the full-screen player (isPhoneLayout() in
    app.js), even wider than the 820px breakpoint below. */
-body.platform-mobile .panel-tabs { display: none; }
-body.platform-mobile .btn-queue-mobile { display: flex; }
-body.platform-mobile .queue-sheet { display: flex; }
-body.platform-mobile .queue-sheet-backdrop { display: block; }
+body.platform-mobile .lyrics-header-actions #btn-lyrics-mobile { display: flex; }
 .queue-section-title { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-tertiary); padding: 10px 10px 6px; }
 .queue-row {
   display: flex; align-items: center; gap: 12px;
@@ -918,7 +976,29 @@ input[type="range"].volume-bar { width: 110px; flex: none; }
   box-shadow: 0 12px 30px rgba(0,0,0,0.4);
   font-size: 13.5px; color: var(--text-primary);
 }
+/* What's new popup */
+.whats-new-card { width: 440px; max-width: calc(100vw - 32px); max-height: 86vh; display: flex; flex-direction: column; }
+.whats-new-hero { text-align: center; padding: 28px 28px 8px; }
+.whats-new-icon { width: 64px; height: 64px; border-radius: 16px; margin-bottom: 14px; }
+.whats-new-hero h2 { margin: 0; font-size: 22px; font-weight: 800; }
+.whats-new-subtitle { margin: 6px 0 0; color: var(--text-secondary); font-size: 13.5px; }
+.whats-new-list { list-style: none; margin: 0; padding: 12px 28px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+.whats-new-item { display: flex; gap: 14px; align-items: flex-start; }
+.whats-new-item-icon {
+  flex-shrink: 0; width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); font-size: 17px;
+}
+.whats-new-item-title { font-size: 14px; font-weight: 700; }
+.whats-new-item-desc { font-size: 13px; color: var(--text-secondary); margin-top: 2px; line-height: 1.4; }
+.whats-new-actions { padding: 14px 28px 24px; }
+.whats-new-actions .btn-primary { width: 100%; margin-top: 0; }
 .update-toast a { color: var(--accent); font-weight: 700; }
+.update-toast-install {
+  padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 700;
+  background: var(--accent-bg); color: var(--accent-contrast); white-space: nowrap;
+}
+.update-toast-install:disabled { opacity: 0.75; cursor: default; }
 .update-toast a:hover { color: var(--accent-hover); }
 
 .player-art-wrap { position: relative; flex-shrink: 0; }
@@ -1091,11 +1171,18 @@ body.platform-mobile .titlebar { display: none; }
      header, so it needed the same safe-area fix independently. */
   .lyrics-header { padding: 14px 16px 10px; padding-top: max(env(safe-area-inset-top, 0px), 24px); }
   .lyrics-header-actions .btn-icon-plain { width: 33px; height: 33px; }
+  /* Our own pull-to-refresh replaces the WebView's overscroll glow. */
+  .main { overscroll-behavior-y: contain; }
+  /* Cast + sleep timer on the left, lyrics + queue on the right, and the
+     collapse arrow centered between them. */
+  .lyrics-header-actions { flex: 1; justify-content: flex-start; }
+  #btn-lyrics-mobile { margin-left: auto; }
+  /* Pinned to the icon row's vertical center (header's 10px bottom padding
+     + half the 33px icon buttons), not the whole header, whose top padding
+     grows with the status-bar inset. */
+  .np-collapse-btn { position: absolute; left: 50%; top: auto; bottom: 26.5px; transform: translate(-50%, 50%); z-index: 1; }
   /* Lyrics stay in the full-screen player; the queue moves to a sheet. */
-  .panel-tabs { display: none; }
-  .btn-queue-mobile { display: flex; }
-  .queue-sheet { display: flex; }
-  .queue-sheet-backdrop { display: block; }
+  .lyrics-header-actions #btn-lyrics-mobile { display: flex; }
   .np-collapse-btn { font-size: 22px; }
 
   .now-playing-summary { padding: 12px 24px 8px; }
@@ -1149,13 +1236,14 @@ body.platform-mobile .titlebar { display: none; }
   .bottom-nav {
     grid-area: nav;
     display: flex; justify-content: space-around; align-items: center;
-    height: auto; min-height: 58px; flex-shrink: 0;
+    height: auto; flex-shrink: 0;
     background: var(--bg-elevated); border-top: 1px solid var(--border-subtle);
-    /* max() guarantees clearance from the gesture-nav pill even on WebView
-       versions where env(safe-area-inset-bottom) isn't actually supported
-       and just silently reports 0 — same fixed-height-vs-padding trap as
-       .main-header above (height had to become min-height too). */
-    padding-bottom: max(env(safe-area-inset-bottom, 0px), 14px);
+    /* Same breathing room above the icons as below the labels; the
+       gesture-nav inset (when the WebView reports one) is added on top.
+       max() still guarantees clearance on WebViews where
+       env(safe-area-inset-bottom) silently reports 0. */
+    padding-top: 10px;
+    padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 6px), 10px);
   }
   .bottom-nav-item {
     display: flex; flex-direction: column; align-items: center; gap: 3px;
@@ -1172,8 +1260,11 @@ body.platform-mobile .titlebar { display: none; }
     padding: 8px 16px;
     cursor: pointer;
   }
+  /* Mini-player keeps previous / play / next; shuffle and repeat live in
+     the full-screen player. */
   .player-bar .player-seek, .player-extra,
-  #btn-shuffle, #btn-prev, #btn-next, #btn-repeat { display: none; }
+  #btn-shuffle, #btn-repeat { display: none; }
+  .player-bar .player-controls { gap: 14px; }
   .player-art { width: 46px; height: 46px; }
 
   .track-add-btn, .card-play-btn { opacity: 1 !important; transform: none !important; }
