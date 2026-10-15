@@ -135,6 +135,8 @@
     "upNext": "Up Next",
     "lookingUpLyrics": "Looking up lyrics…",
     "noLyrics": "No lyrics found for this track.",
+    "lyricsFailed": "Couldn't load lyrics right now.",
+    "retry": "Retry",
     "queueEmpty": "Queue is empty.",
     "title": "Now Playing"
   },
@@ -148,13 +150,18 @@
     "repeat": "Repeat",
     "sleepTimer": "Sleep timer",
     "sleepEndOfTrack": "End of track",
-    "sleepOff": "Turn off"
+    "sleepOff": "Turn off",
+    "volume": "Volume"
   },
   "settings": {
     "title": "Settings",
     "appearance": "Appearance",
     "theme": "Theme",
     "themeDesc": "Light, dark, or match your system",
+    "uiStyle": "Interface style",
+    "uiStyleDesc": "Spotify-style or Apple Music-style look",
+    "uiSpotify": "Spotify",
+    "uiApple": "Apple Music",
     "dark": "Dark",
     "light": "Light",
     "system": "System",
@@ -240,7 +247,11 @@
   },
   "update": {
     "available": "JellyWave {version} is available.",
-    "view": "View"
+    "view": "View",
+    "install": "Update now",
+    "downloading": "Downloading… {percent}%",
+    "installing": "Starting installer…",
+    "failed": "Update failed: {error}"
   },
   "stats": {
     "title": "Your Stats",
@@ -301,5 +312,26 @@
     "progressStatus": "{done} of {total} done",
     "doneStatus": "Finished: {done} of {total} succeeded",
     "cancelled": "Cancelled."
+  },
+  "whatsNew": {
+    "title": "What's new in {version}",
+    "subtitle": "A big update — here are the highlights.",
+    "continue": "Continue",
+    "appleStyleTitle": "Apple Music style",
+    "appleStyleDesc": "Settings → Appearance → Interface style now lets you switch between the Spotify look and a new Apple Music look.",
+    "instantSkipTitle": "Instant skipping",
+    "instantSkipDesc": "The next song buffers in the background, so Next (and going back) starts right away.",
+    "sheetsTitle": "Queue and lyrics sheets",
+    "sheetsDesc": "On phones, the queue and full-size lyrics slide up from the bottom of the player.",
+    "gesturesTitle": "Swipe gestures",
+    "gesturesDesc": "Swipe the cover to change songs, swipe down to close the player, and pull down any page to refresh it.",
+    "phoneVolumeTitle": "Phone volume",
+    "phoneVolumeDesc": "On Android, the volume slider controls your phone's volume and follows the volume buttons.",
+    "updatesTitle": "One-click updates",
+    "updatesDesc": "On PC, new versions now download and install right from the app.",
+    "shortcutsTitle": "Keyboard shortcuts",
+    "shortcutsDesc": "Space plays and pauses, Ctrl + ← and Ctrl + → skip to the previous or next song.",
+    "polishTitle": "Smoother and more reliable",
+    "polishDesc": "New animations, a loading screen instead of the login flash, more reliable lyrics, faster loading and lots of fixes."
   }
 }

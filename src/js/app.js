@@ -1,6 +1,6 @@
-import { JellyfinClient, initClientVersion } from './jellyfin.js';
+import { JellyfinClient, initClientVersion, getClientVersion } from './jellyfin.js';
 import { Player, RepeatMode, EQ_PRESETS } from './player.js';
-import { fetchLyrics } from './lyrics.js';
+import { fetchLyrics, getCachedLyrics } from './lyrics.js';
 import { getSettings, updateSettings, applySettings, currentBitrateKbps, initRemoteSync, PALETTES, AUDIO_QUALITIES } from './settings.js';
 import { LOCALES, loadLocale, applyTranslations, t } from './i18n.js';
 import { platform, isDesktop, isMobile, isAndroid, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
@@ -11,6 +11,13 @@ import { getPinnedAlbums, isAlbumPinned, togglePinAlbum, onPinnedAlbumsChange } 
 
 // ---------- DOM refs ----------
 const loginScreen = document.getElementById('login-screen');
+const bootSplash = document.getElementById('boot-splash');
+
+function hideBootSplash() {
+  if (!bootSplash || bootSplash.hidden) return;
+  bootSplash.classList.add('leaving');
+  setTimeout(() => { bootSplash.hidden = true; }, 260);
+}
 const appRoot = document.getElementById('app');
 const loginForm = document.getElementById('login-form');
 const loginError = document.getElementById('login-error');
@@ -30,6 +37,8 @@ const queueBody = document.getElementById('queue-body');
 const tabLyrics = document.getElementById('tab-lyrics');
 const tabQueue = document.getElementById('tab-queue');
 const btnQueueMobile = document.getElementById('btn-queue-mobile');
+const btnLyricsMobile = document.getElementById('btn-lyrics-mobile');
+const queueSheetTitle = document.getElementById('queue-sheet-title');
 const queueSheet = document.getElementById('queue-sheet');
 const queueSheetHead = document.getElementById('queue-sheet-head');
 const queueSheetBackdrop = document.getElementById('queue-sheet-backdrop');
@@ -37,6 +46,37 @@ const nowPlayingArt = document.getElementById('now-playing-art');
 const nowPlayingArtWrap = document.querySelector('.now-playing-art-wrap');
 const nowPlayingTitle = document.getElementById('now-playing-title');
 const nowPlayingArtist = document.getElementById('now-playing-artist');
+
+// Title/artist in the full-screen player: text too long for its column
+// slides across to show the end, pauses, and slides back, instead of being
+// cut off with an ellipsis. Measured after layout, and again whenever the
+// player opens (it has no width while hidden) or the window resizes.
+function setMarqueeText(el, text) {
+  el.innerHTML = `<span class="marquee-inner">${escapeHtml(text || '')}</span>`;
+  el.title = text || '';
+  updateMarquee(el);
+}
+
+function updateMarquee(el) {
+  const inner = el.querySelector('.marquee-inner');
+  if (!inner) return;
+  el.classList.remove('marquee');
+  requestAnimationFrame(() => {
+    const overflow = inner.scrollWidth - el.clientWidth;
+    if (el.clientWidth > 0 && overflow > 2) {
+      el.style.setProperty('--marquee-shift', `${-overflow}px`);
+      // ~35px/s of travel, plus the pauses at each end (see the keyframes).
+      el.style.setProperty('--marquee-duration', `${Math.max(4, overflow / 35 / 0.6)}s`);
+      el.classList.add('marquee');
+    }
+  });
+}
+
+function refreshNowPlayingMarquees() {
+  updateMarquee(nowPlayingTitle);
+  updateMarquee(nowPlayingArtist);
+}
+window.addEventListener('resize', refreshNowPlayingMarquees);
 const nowPlayingBgArt = document.getElementById('now-playing-bg-art');
 const nowPlayingLikeBtn = document.getElementById('now-playing-like-btn');
 const nowPlayingDownloadBtn = document.getElementById('now-playing-download-btn');
@@ -54,6 +94,8 @@ const menuLogout = document.getElementById('menu-logout');
 const settingsOverlay = document.getElementById('settings-overlay');
 const btnCloseSettings = document.getElementById('btn-close-settings');
 const themeModeToggle = document.getElementById('theme-mode-toggle');
+const uiStyleToggle = document.getElementById('ui-style-toggle');
+const npVolumeBar = document.getElementById('np-volume-bar');
 const paletteGrid = document.getElementById('palette-grid');
 const audioQualitySelect = document.getElementById('audio-quality-select');
 const languageSelect = document.getElementById('language-select');
@@ -88,6 +130,70 @@ const updateToast = document.getElementById('update-toast');
 const updateToastText = document.getElementById('update-toast-text');
 const updateToastLink = document.getElementById('update-toast-link');
 const updateToastDismiss = document.getElementById('update-toast-dismiss');
+const updateToastInstall = document.getElementById('update-toast-install');
+const whatsNewOverlay = document.getElementById('whats-new-overlay');
+const whatsNewTitle = document.getElementById('whats-new-title');
+const whatsNewSubtitle = document.getElementById('whats-new-subtitle');
+const whatsNewList = document.getElementById('whats-new-list');
+const whatsNewClose = document.getElementById('whats-new-close');
+
+// ---------- What's new (first launch after an update) ----------
+// Highlights per release, as icon + i18n key pairs (whatsNew.<key>Title /
+// whatsNew.<key>Desc). Only versions listed here get a popup.
+const WHATS_NEW = {
+  '2.0.0': [
+    { icon: 'fi-br-palette', key: 'appleStyle' },
+    { icon: 'fi-br-forward', key: 'instantSkip' },
+    { icon: 'fi-br-list-music', key: 'sheets' },
+    { icon: 'fi-br-hand', key: 'gestures' },
+    { icon: 'fi-br-volume', key: 'phoneVolume' },
+    { icon: 'fi-br-download', key: 'updates' },
+    { icon: 'fi-br-keyboard', key: 'shortcuts' },
+    { icon: 'fi-br-sparkles', key: 'polish' }
+  ]
+};
+const LAST_SEEN_VERSION_KEY = 'jellywave:lastSeenVersion';
+// Captured at load, before this session writes anything: a fresh install
+// has none of these yet, so it shouldn't be told what's "new".
+const IS_RETURNING_USER = (() => {
+  try {
+    return ['jellywave:settings', 'jellywave:privacyNoticeSeen', LAST_SEEN_VERSION_KEY].some((k) => localStorage.getItem(k) !== null);
+  } catch (err) {
+    return false;
+  }
+})();
+
+function closeWhatsNew() {
+  whatsNewOverlay.hidden = true;
+}
+
+function maybeShowWhatsNew() {
+  const version = getClientVersion();
+  let lastSeen = null;
+  try { lastSeen = localStorage.getItem(LAST_SEEN_VERSION_KEY); } catch (err) { /* storage blocked */ }
+  if (lastSeen === version) return;
+  try { localStorage.setItem(LAST_SEEN_VERSION_KEY, version); } catch (err) { /* storage blocked */ }
+  const items = WHATS_NEW[version];
+  if (!IS_RETURNING_USER || !items) return;
+
+  whatsNewTitle.textContent = t('whatsNew.title', { version });
+  whatsNewSubtitle.textContent = t('whatsNew.subtitle');
+  whatsNewList.innerHTML = '';
+  items.forEach(({ icon, key }) => {
+    const li = el('li', 'whats-new-item');
+    li.innerHTML = `<div class="whats-new-item-icon"><i class="fi ${icon}"></i></div>
+      <div><div class="whats-new-item-title">${escapeHtml(t(`whatsNew.${key}Title`))}</div>
+      <div class="whats-new-item-desc">${escapeHtml(t(`whatsNew.${key}Desc`))}</div></div>`;
+    whatsNewList.appendChild(li);
+  });
+  whatsNewOverlay.hidden = false;
+  // Keyboard users land on Continue; no focus ring drawn for a popup that
+  // simply opened on its own.
+  whatsNewClose.focus({ focusVisible: false });
+}
+
+whatsNewClose.addEventListener('click', closeWhatsNew);
+whatsNewOverlay.addEventListener('click', (evt) => { if (evt.target === whatsNewOverlay) closeWhatsNew(); });
 const offlineToast = document.getElementById('offline-toast');
 const offlineToastDismiss = document.getElementById('offline-toast-dismiss');
 offlineToastDismiss.addEventListener('click', () => { offlineToast.hidden = true; });
@@ -96,6 +202,7 @@ const customCssStyle = document.getElementById('custom-css-style');
 const mainBgArt = document.getElementById('main-bg-art');
 const mainEl = document.querySelector('.main');
 const mainHeaderEl = document.querySelector('.main-header');
+const pullRefreshEl = document.getElementById('pull-refresh');
 // While a detail backdrop is showing and the page is scrolled to the top,
 // the sticky header goes see-through so the art runs up behind the arrows.
 function syncHeroHeader() {
@@ -362,7 +469,14 @@ async function init() {
   wireBackButton();
 
   await initClientVersion();
-  await tryRestoreSession();
+  try {
+    await tryRestoreSession();
+  } catch (err) {
+    // Never leave the boot splash up over a half-started app.
+    console.error('Session restore failed', err);
+    if (appRoot.hidden) showLogin();
+    else hideBootSplash();
+  }
 }
 
 // A stale/invalid token (401) genuinely needs a fresh login. Anything else —
@@ -381,6 +495,14 @@ async function tryRestoreSession() {
     return;
   }
   jellyfin = new JellyfinClient(saved);
+
+  // No network at all: don't spend seconds on retries that can't succeed --
+  // go straight in with the saved session (downloads still work offline).
+  if (navigator.onLine === false) {
+    await enterApp(saved.username);
+    offlineToast.hidden = false;
+    return;
+  }
 
   const attempts = 3;
   for (let i = 0; i < attempts; i++) {
@@ -412,6 +534,7 @@ async function tryRestoreSession() {
 function showLogin() {
   loginScreen.hidden = false;
   appRoot.hidden = true;
+  hideBootSplash();
 }
 
 async function enterApp(username) {
@@ -472,12 +595,18 @@ async function enterApp(username) {
     accountAvatar.textContent = initial;
   }
 
-  const libs = await libsPromise;
-  musicLibraryId = libs[0]?.Id;
+  // Offline/unreachable: there's no library to browse, so land on
+  // Downloads (which works without the server) instead of a failed Home.
+  let libs = null;
+  try { libs = await libsPromise; } catch (err) { /* offline */ }
+  musicLibraryId = libs?.[0]?.Id;
 
   loadPlaylistSidebar().catch(() => {});
   loadPinnedAlbumsSidebar();
-  navigateTo({ view: 'home' });
+  navigateTo({ view: libs ? 'home' : 'downloads' });
+  hideBootSplash();
+  // After the splash has faded, so it doesn't pop up mid-transition.
+  setTimeout(maybeShowWhatsNew, 500);
 }
 
 onPinnedAlbumsChange(loadPinnedAlbumsSidebar);
@@ -542,12 +671,36 @@ document.addEventListener('click', (evt) => {
 // would expect (innermost/most-recently-opened thing first).
 document.addEventListener('keydown', (evt) => {
   if (evt.key !== 'Escape') return;
+  if (!whatsNewOverlay.hidden) { closeWhatsNew(); return; }
   if (!legalOverlay.hidden) { closeLegal(); return; }
   if (!settingsOverlay.hidden) { closeSettings(); return; }
   if (!createPlaylistOverlay.hidden) { closeCreatePlaylist(); return; }
   if (!accountMenu.hidden) { accountMenu.hidden = true; btnAccount.focus(); return; }
   if (!sleepTimerMenu.hidden) { sleepTimerMenu.hidden = true; return; }
   if (!connectMenu.hidden) { connectMenu.hidden = true; }
+});
+
+// Player shortcuts: Space = play/pause, Ctrl+Left / Ctrl+Right = previous /
+// next (Cmd on a Mac keyboard). Go through the same ui* helpers as the
+// buttons, so they also drive a connected Connect device. Skipped while
+// typing in a text field or with a popup open, so Space still types a space
+// in search, Custom CSS, etc.
+document.addEventListener('keydown', (evt) => {
+  if (evt.defaultPrevented || evt.altKey || !player?.currentTrack || appRoot.hidden) return;
+  if (evt.target.closest?.('input:not([type="range"]):not([type="checkbox"]), textarea, select, [contenteditable="true"]')) return;
+  if (!whatsNewOverlay.hidden || !legalOverlay.hidden || !settingsOverlay.hidden || !createPlaylistOverlay.hidden) return;
+  const mod = evt.ctrlKey || evt.metaKey;
+  if (evt.code === 'Space' && !mod && !evt.shiftKey) {
+    // Also stops Space from "clicking" whichever button has focus.
+    evt.preventDefault();
+    uiTogglePlay();
+  } else if (mod && evt.key === 'ArrowLeft') {
+    evt.preventDefault();
+    uiPrevious();
+  } else if (mod && evt.key === 'ArrowRight') {
+    evt.preventDefault();
+    uiNext();
+  }
 });
 menuLogout.addEventListener('click', async () => {
   await sessionStore.clear();
@@ -592,6 +745,14 @@ function wireSettingsUI() {
     btn.addEventListener('click', () => {
       updateSettings({ themeMode: btn.dataset.value });
       refreshSettingsUI();
+    });
+  });
+
+  uiStyleToggle.querySelectorAll('button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      updateSettings({ uiStyle: btn.dataset.value });
+      refreshSettingsUI();
+      updateBgArt(); // Apple style always shows the blurred art behind the player
     });
   });
 
@@ -760,14 +921,19 @@ function populateLocalizedSettingsOptions() {
 function updateBgArt() {
   const s = getSettings();
   const track = player?.currentTrack;
+  // The Apple Music style's full-screen player is built around the blurred
+  // artwork, so it's always on there regardless of the main-page setting.
+  const npArt = track && (s.artBackground || s.uiStyle === 'apple');
   if (s.artBackground && track) {
-    const art = artUrl(track);
-    mainBgArt.style.backgroundImage = `url("${art}")`;
+    mainBgArt.style.backgroundImage = `url("${artUrl(track)}")`;
     mainBgArt.classList.add('visible');
-    nowPlayingBgArt.style.backgroundImage = `url("${art}")`;
-    nowPlayingBgArt.classList.add('visible');
   } else {
     mainBgArt.classList.remove('visible');
+  }
+  if (npArt) {
+    nowPlayingBgArt.style.backgroundImage = `url("${artUrl(track)}")`;
+    nowPlayingBgArt.classList.add('visible');
+  } else {
     nowPlayingBgArt.classList.remove('visible');
   }
 }
@@ -1193,10 +1359,37 @@ function isNewerVersion(a, b) {
   return false;
 }
 
-function showUpdateToast(version, url) {
+function showUpdateToast(version, url, canInstall = false) {
   updateToastText.textContent = t('update.available', { version });
   updateToastLink.href = url;
+  // Desktop installs in place (download -> run installer -> JellyWave quits
+  // itself, see update-checker.js); elsewhere it's just the release link.
+  updateToastInstall.hidden = !canInstall;
   updateToast.hidden = false;
+}
+
+async function installUpdateNow() {
+  const updates = window.api?.updates;
+  if (!updates?.download) return;
+  updateToastInstall.disabled = true;
+  updateToastDismiss.hidden = true;
+  updateToastInstall.textContent = t('update.downloading', { percent: 0 });
+  const result = await updates.download();
+  if (!result?.ok) {
+    updateToastInstall.disabled = false;
+    updateToastDismiss.hidden = false;
+    updateToastInstall.textContent = t('update.install');
+    updateToastText.textContent = t('update.failed', { error: result?.error || '' });
+    return;
+  }
+  updateToastInstall.textContent = t('update.installing');
+  const started = await updates.install(result.file);
+  if (!started?.ok) {
+    updateToastInstall.disabled = false;
+    updateToastDismiss.hidden = false;
+    updateToastInstall.textContent = t('update.install');
+    updateToastText.textContent = t('update.failed', { error: started?.error || '' });
+  }
 }
 
 // Desktop has this via update-checker.js running in Electron's main
@@ -1224,7 +1417,17 @@ async function checkForUpdatesOnMobile() {
 function wireUpdateToast() {
   updateToastDismiss.addEventListener('click', () => { updateToast.hidden = true; });
   if (window.api?.updates) {
-    window.api.updates.onAvailable((result) => showUpdateToast(result.version, result.url));
+    window.api.updates.onAvailable((result) => showUpdateToast(result.version, result.url, !!result.canInstall));
+    updateToastInstall.addEventListener('click', installUpdateNow);
+    window.api.updates.onProgress?.(({ received, total }) => {
+      if (!total) return;
+      updateToastInstall.textContent = t('update.downloading', { percent: Math.floor((received / total) * 100) });
+    });
+    // Quitting for the installer: stop playback first, so no audio stream
+    // to the server is left open while the app shuts down.
+    window.api.onShuttingDown?.(() => {
+      try { player?.audio.pause(); } catch (err) { /* nothing playing */ }
+    });
   } else if (isMobile) {
     checkForUpdatesOnMobile();
   }
@@ -1265,8 +1468,43 @@ function uiSeekPercent(pct) {
   player.seekTo((pct / 100) * duration);
 }
 
+// Android only: the volume slider drives the phone's real media volume
+// (see SystemVolumePlugin.java) and follows the hardware keys, like the
+// Spotify/Apple Music apps -- in-app volume stays at full so the phone's
+// level is the one that counts. Desktop and iOS keep the in-app volume.
+const systemVolume = isAndroid ? window.Capacitor?.Plugins?.JellyWaveSystemVolume : null;
+let systemVolumeDragging = false;
+
+function showVolumeLevel(pct) {
+  volumeBar.value = pct;
+  volumeBar.style.setProperty('--pct', rangeFillPercent(pct, volumeBar, 14));
+  updateVolumeIcon(pct);
+  npVolumeBar.value = pct;
+  npVolumeBar.style.setProperty('--pct', `${pct}%`);
+}
+
+function initSystemVolume() {
+  if (!systemVolume) return;
+  player.setVolume(1);
+  systemVolume.getVolume().then(({ level }) => showVolumeLevel(Math.round(level * 100))).catch(() => {});
+  systemVolume.addListener('volumeChange', ({ level }) => {
+    // Don't fight the finger while the slider itself is being dragged.
+    if (!systemVolumeDragging && !connect?.isConnected()) showVolumeLevel(Math.round(level * 100));
+  });
+  const endDrag = () => { systemVolumeDragging = false; };
+  [volumeBar, npVolumeBar].forEach((bar) => {
+    bar.addEventListener('pointerdown', () => { systemVolumeDragging = true; });
+    bar.addEventListener('pointerup', endDrag);
+    bar.addEventListener('pointercancel', endDrag);
+  });
+}
+
 function uiSetVolumePercent(pct) {
   if (connect?.isConnected()) { connect.remoteSetVolume(pct); return; }
+  if (systemVolume) {
+    systemVolume.setVolume({ level: pct / 100 }).catch(() => {});
+    return;
+  }
   player.setVolume(sliderToVolume(pct));
 }
 
@@ -1290,8 +1528,8 @@ function updateRemoteBarUI(session) {
       playerArtist.textContent = artistNames(track);
       nowPlayingArt.src = artUrl(track, 'album', 800);
       withOfflineArtFallback(nowPlayingArt, track);
-      nowPlayingTitle.textContent = track.Name;
-      nowPlayingArtist.textContent = artistNames(track);
+      setMarqueeText(nowPlayingTitle, track.Name);
+      setMarqueeText(nowPlayingArtist, artistNames(track));
       setArtAlt(track.Name, artistNames(track));
       nowPlayingLikeBtn.classList.toggle('liked', !!track.UserData?.IsFavorite);
       setDownloadButtonState(nowPlayingDownloadBtn, isDownloaded(track.Id) ? 'downloaded' : 'idle');
@@ -1311,6 +1549,11 @@ function updateRemoteBarUI(session) {
       mobileTimeCurrent.textContent = formatTime(current);
       if (duration) { timeTotal.textContent = formatTime(duration); mobileTimeTotal.textContent = formatTime(duration); }
     }
+    if (systemVolume) {
+      // Back to local: show the phone's actual media volume again.
+      systemVolume.getVolume().then(({ level }) => showVolumeLevel(Math.round(level * 100))).catch(() => {});
+      return;
+    }
     const volPct = Math.round(Math.sqrt(player.baseVolume) * 100);
     volumeBar.value = volPct;
     volumeBar.style.setProperty('--pct', rangeFillPercent(volPct, volumeBar, 14));
@@ -1329,8 +1572,8 @@ function updateRemoteBarUI(session) {
     playerTitle.textContent = item.Name || '';
     playerArtist.textContent = artistNames(item);
     nowPlayingArt.src = jellyfin.imageUrl(item, 'Primary', 800) || art;
-    nowPlayingTitle.textContent = item.Name || '';
-    nowPlayingArtist.textContent = artistNames(item);
+    setMarqueeText(nowPlayingTitle, item.Name || '');
+    setMarqueeText(nowPlayingArtist, artistNames(item));
     setArtAlt(item.Name, artistNames(item));
     nowPlayingLikeBtn.classList.toggle('liked', !!item.UserData?.IsFavorite);
     const posSeconds = (playState.PositionTicks || 0) / 10000000;
@@ -1398,6 +1641,9 @@ function refreshSettingsUI() {
   if (document.activeElement !== customCssInput) customCssInput.value = s.customCss || '';
   themeModeToggle.querySelectorAll('button').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.value === s.themeMode);
+  });
+  uiStyleToggle.querySelectorAll('button').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.value === (s.uiStyle || 'spotify'));
   });
   paletteGrid.querySelectorAll('.palette-swatch').forEach((swatch) => {
     swatch.classList.toggle('active', swatch.dataset.value === s.palette);
@@ -1503,11 +1749,12 @@ function wireBackButton() {
   if (!isMobile) return;
   wireHardwareBackButton(() => {
     // Close whatever's on top first, in the order a user would expect.
+    if (!whatsNewOverlay.hidden) { closeWhatsNew(); return; }
     if (!settingsOverlay.hidden) { closeSettings(); return; }
     if (!createPlaylistOverlay.hidden) { closeCreatePlaylist(); return; }
     if (!accountMenu.hidden) { accountMenu.hidden = true; return; }
     if (activeAddMenu) { closeAddToPlaylistMenu(); return; }
-    if (queueSheetOpen) { closeQueueSheet(); return; }
+    if (queueSheetOpen || lyricsSheetOpen) { closeQueueSheet(); return; }
     if (!lyricsPanel.hidden) { closeNowPlaying(); return; }
 
     if (viewHistory.length > 1) { goBack(); return; }
@@ -1577,6 +1824,74 @@ function navigateTo(state, pushHistory = true) {
   if (state.view === 'search') globalSearchInput.focus();
 }
 
+// Reloads whatever page is showing with fresh server data -- the full-
+// library cache and the playlist sidebar included, since those are what
+// would otherwise keep serving stale results.
+async function refreshCurrentView() {
+  const state = viewHistory[viewHistory.length - 1] || { view: 'home' };
+  allSongsCache = null;
+  loadPlaylistSidebar().catch(() => {});
+  await renderView(state);
+}
+
+// Pull-to-refresh on the main page (phone layout, touch only): pull down
+// while scrolled to the very top, let go past the threshold to reload.
+function wirePullToRefresh() {
+  const THRESHOLD = 70;
+  const MAX = 110;
+  let startY = 0, startX = 0, pull = 0, tracking = false, axis = null, busy = false;
+
+  const place = (distance, settle) => {
+    pullRefreshEl.classList.toggle('settling', !!settle);
+    const top = mainHeaderEl.offsetHeight;
+    pullRefreshEl.style.transform = `translateY(${top + distance}px) rotate(${distance * 3}deg)`;
+    pullRefreshEl.style.opacity = distance > 4 ? String(Math.min(1, distance / THRESHOLD)) : '0';
+  };
+
+  mainEl.addEventListener('touchstart', (evt) => {
+    if (busy || evt.touches.length !== 1 || !isPhoneLayout() || mainEl.scrollTop > 0) return;
+    tracking = true;
+    axis = null;
+    pull = 0;
+    startY = evt.touches[0].clientY;
+    startX = evt.touches[0].clientX;
+  }, { passive: true });
+
+  mainEl.addEventListener('touchmove', (evt) => {
+    if (!tracking) return;
+    const dy = evt.touches[0].clientY - startY;
+    const dx = evt.touches[0].clientX - startX;
+    if (!axis) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      axis = Math.abs(dy) > Math.abs(dx) && dy > 0 && mainEl.scrollTop <= 0 ? 'pull' : 'other';
+    }
+    if (axis !== 'pull') { tracking = false; return; }
+    evt.preventDefault(); // stop the page itself from scrolling/bouncing
+    pull = Math.min(MAX, dy * 0.5); // rubber-band resistance
+    place(pull, false);
+  }, { passive: false });
+
+  const end = async () => {
+    if (!tracking) return;
+    tracking = false;
+    if (axis !== 'pull') return;
+    if (pull < THRESHOLD) { place(0, true); return; }
+    busy = true;
+    hapticImpact('light');
+    place(THRESHOLD * 0.8, true);
+    pullRefreshEl.classList.add('refreshing');
+    try {
+      await refreshCurrentView();
+    } finally {
+      pullRefreshEl.classList.remove('refreshing');
+      place(0, true);
+      busy = false;
+    }
+  };
+  mainEl.addEventListener('touchend', end);
+  mainEl.addEventListener('touchcancel', end);
+}
+
 function goBack() {
   if (viewHistory.length < 2) return;
   viewFuture.push(viewHistory.pop());
@@ -1605,7 +1920,7 @@ window.addEventListener('mouseup', (evt) => {
 });
 
 async function renderView(state) {
-  viewRoot.innerHTML = '<div class="empty-state">Loading…</div>';
+  viewRoot.innerHTML = '<div class="view-loading" role="status" aria-label="Loading"><div class="loading-spinner"></div></div>';
   mainEl.classList.remove('has-hero', 'hero-top');
   playAllBtn = null;
   playAllTrackIds = [];
@@ -2674,7 +2989,9 @@ function buildDetailHeader({ kind, title, sub, art, logo, backdrop, round, onPla
 // ---------- Offline downloads ----------
 
 function downloadButtonIcon(state) {
-  if (state === 'downloading') return '<i class="fi fi-br-spinner track-download-spin"></i>';
+  // A CSS ring rather than the icon font's spinner glyph -- the glyph isn't
+  // centered in its own box, so it visibly wobbled off-center while rotating.
+  if (state === 'downloading') return '<span class="download-spinner" aria-hidden="true"></span>';
   if (state === 'downloaded') return '<i class="fi fi-br-check"></i>';
   return '<i class="fi fi-br-download"></i>';
 }
@@ -3058,7 +3375,9 @@ function wirePlayer() {
   // Tapping the mini-player (but not its play button) opens the full-screen panel.
   playerBar.addEventListener('click', (evt) => {
     if (!document.body.classList.contains('platform-mobile') && window.innerWidth > 820) return;
-    if (evt.target.closest('#btn-play')) return;
+    // Its own transport buttons (play, plus prev/next in the Apple style)
+    // shouldn't also open the full-screen player.
+    if (evt.target.closest('#btn-play, #btn-prev, #btn-next')) return;
     openNowPlaying();
   });
 
@@ -3076,7 +3395,17 @@ function wirePlayer() {
     uiSetVolumePercent(val);
     volumeBar.style.setProperty('--pct', rangeFillPercent(val, volumeBar, 14));
     updateVolumeIcon(val);
+    npVolumeBar.value = val;
+    npVolumeBar.style.setProperty('--pct', `${val}%`);
   });
+  // The full-screen player's volume row (Apple style) just drives the main
+  // volume slider, so both stay in sync through the one code path.
+  npVolumeBar.addEventListener('input', () => {
+    volumeBar.value = npVolumeBar.value;
+    volumeBar.dispatchEvent(new Event('input'));
+  });
+  npVolumeBar.value = volumeBar.value;
+  npVolumeBar.style.setProperty('--pct', `${volumeBar.value}%`);
 
   btnLyrics.addEventListener('click', () => {
     if (!lyricsPanel.hidden) { closeNowPlaying(); return; }
@@ -3122,6 +3451,16 @@ function wirePlayer() {
   tabLyrics.addEventListener('click', () => showPanelTab('lyrics'));
   tabQueue.addEventListener('click', () => showPanelTab('queue'));
   btnQueueMobile.addEventListener('click', openQueueSheet);
+  btnLyricsMobile.addEventListener('click', openLyricsSheet);
+  // On phones, tapping the lyrics preview under the controls expands it
+  // into the sheet (like Spotify); inside the sheet, tapping a line seeks.
+  lyricsBody.addEventListener('click', (evt) => {
+    if (!isPhoneLayout() || lyricsBody.parentElement === queueSheet) return;
+    evt.stopPropagation();
+    openLyricsSheet();
+  }, true);
+  wirePullToRefresh();
+  initSystemVolume();
   // Crossing the phone-layout breakpoint moves the cat between its spots.
   window.matchMedia('(max-width: 820px)').addEventListener('change', syncCatJamVisibility);
   wireQueueSheet();
@@ -3149,8 +3488,8 @@ function wirePlayer() {
 
     nowPlayingArt.src = artUrl(track, 'album', 800);
     withOfflineArtFallback(nowPlayingArt, track);
-    nowPlayingTitle.textContent = track.Name;
-    nowPlayingArtist.textContent = artistNames(track);
+    setMarqueeText(nowPlayingTitle, track.Name);
+    setMarqueeText(nowPlayingArtist, artistNames(track));
     setArtAlt(track.Name, artistNames(track));
     nowPlayingLikeBtn.classList.toggle('liked', !!track.UserData?.IsFavorite);
     setDownloadButtonState(nowPlayingDownloadBtn, isDownloaded(track.Id) ? 'downloaded' : 'idle');
@@ -3195,6 +3534,7 @@ function wirePlayer() {
 
   player.on('playstate', () => {
     const playing = !player.audio.paused;
+    lyricsPanel.classList.toggle('is-paused', !playing);
     setHidden(iconPlay, playing);
     setHidden(iconPause, !playing);
     setHidden(mobileIconPlay, playing);
@@ -3466,30 +3806,75 @@ function isPhoneLayout() {
   return document.body.classList.contains('platform-mobile') || window.innerWidth <= 820;
 }
 
+// The phone's bottom sheet shows either the queue or the full lyrics.
+// Both move their existing body element in rather than duplicating it, so
+// rendering/syncing code keeps working on the same node.
 let queueSheetOpen = false;
+let lyricsSheetOpen = false;
+let lyricsReturnTimer = null;
+// Where #lyrics-body lives in the full-screen player, to put it back.
+const lyricsBodyHome = { parent: lyricsBody.parentElement, next: lyricsBody.nextSibling };
 
-function openQueueSheet() {
-  if (queueSheetOpen) return;
-  queueSheetOpen = true;
-  queueSheet.appendChild(queueBody);
-  setHidden(queueBody, false);
+function showSheet(titleKey) {
+  queueSheetTitle.dataset.i18n = titleKey;
+  queueSheetTitle.textContent = t(titleKey);
   queueSheet.style.transform = '';
   queueSheet.classList.add('open');
   queueSheet.setAttribute('aria-hidden', 'false');
   queueSheetBackdrop.classList.add('open');
+}
+
+function hideSheet() {
+  queueSheet.style.transform = '';
+  queueSheet.classList.remove('open', 'lyrics-mode');
+  queueSheet.setAttribute('aria-hidden', 'true');
+  queueSheetBackdrop.classList.remove('open');
+}
+
+function returnLyricsBody() {
+  clearTimeout(lyricsReturnTimer);
+  if (lyricsBody.parentElement !== lyricsBodyHome.parent) {
+    lyricsBodyHome.parent.insertBefore(lyricsBody, lyricsBodyHome.next);
+  }
+}
+
+function openQueueSheet() {
+  if (queueSheetOpen) return;
+  if (lyricsSheetOpen) { lyricsSheetOpen = false; returnLyricsBody(); }
+  queueSheetOpen = true;
+  queueSheet.classList.remove('lyrics-mode');
+  queueSheet.appendChild(queueBody);
+  setHidden(queueBody, false);
+  showSheet('nowPlaying.queueTab');
   renderQueue();
   // Start with what plays next in view rather than the top of a long list.
   const playing = queueBody.querySelector('.queue-row.playing');
   queueBody.scrollTop = playing ? Math.max(0, playing.offsetTop - 40) : 0;
 }
 
+function openLyricsSheet() {
+  if (lyricsSheetOpen) return;
+  if (queueSheetOpen) { queueSheetOpen = false; setHidden(queueBody, true); }
+  lyricsSheetOpen = true;
+  clearTimeout(lyricsReturnTimer);
+  queueSheet.appendChild(lyricsBody);
+  setHidden(lyricsBody, false);
+  queueSheet.classList.add('lyrics-mode');
+  showSheet('nowPlaying.lyricsTab');
+  loadLyricsForCurrentTrack();
+  const activeLine = lyricsBody.querySelector('.lyric-line.active');
+  if (activeLine) centerLyricLine(activeLine, false);
+}
+
 function closeQueueSheet() {
-  if (!queueSheetOpen) return;
+  if (!queueSheetOpen && !lyricsSheetOpen) return;
   queueSheetOpen = false;
-  queueSheet.style.transform = '';
-  queueSheet.classList.remove('open');
-  queueSheet.setAttribute('aria-hidden', 'true');
-  queueSheetBackdrop.classList.remove('open');
+  if (lyricsSheetOpen) {
+    lyricsSheetOpen = false;
+    // Back into the player once the sheet has slid away, not mid-slide.
+    lyricsReturnTimer = setTimeout(returnLyricsBody, 300);
+  }
+  hideSheet();
 }
 
 // Drag the sheet's header down to dismiss it, like a native bottom sheet.
@@ -3538,7 +3923,9 @@ function openNowPlaying() {
   lyricsPanel.style.transition = '';
   lyricsPanel.style.transform = '';
   lyricsPanel.hidden = false;
+  lyricsPanel.scrollTop = 0; // undo any shift an older build's scrollIntoView left behind
   showPanelTab(activePanelTab);
+  refreshNowPlayingMarquees();
 }
 
 // Slides the phone's full-screen player down before hiding it (desktop's
@@ -3849,24 +4236,57 @@ function highlightPlayingRow(trackId) {
   });
 }
 
+function lyricsQueryFor(track) {
+  return {
+    title: track.Name,
+    artist: artistNames(track),
+    album: track.Album,
+    durationSeconds: ticksToSeconds(track.RunTimeTicks)
+  };
+}
+
+// Warms the lyrics cache for whatever plays next, so skipping ahead shows
+// them immediately. Best-effort; failures just mean a normal lookup later.
+function prefetchNextLyrics() {
+  const next = player?.queue?.[player.currentIndex + 1];
+  if (next) fetchLyrics(lyricsQueryFor(next)).catch(() => {});
+}
+
 async function loadLyricsForCurrentTrack() {
   const track = player.currentTrack;
   if (!track) return;
   if (lyricsTrackId === track.Id && currentLyrics) return;
   lyricsTrackId = track.Id;
-  lyricsBody.innerHTML = '<div class="lyrics-empty">Looking up lyrics…</div>';
-  const result = await fetchLyrics({
-    title: track.Name,
-    artist: artistNames(track),
-    album: track.Album,
-    durationSeconds: ticksToSeconds(track.RunTimeTicks)
-  });
+  const query = lyricsQueryFor(track);
+  // Already looked up this session: render straight away, no spinner text.
+  if (!getCachedLyrics(query).hit) {
+    lyricsBody.innerHTML = `<div class="lyrics-empty">${escapeHtml(t('nowPlaying.lookingUpLyrics'))}</div>`;
+  }
+
+  let result;
+  try {
+    result = await fetchLyrics(query);
+  } catch (err) {
+    if (lyricsTrackId !== track.Id) return;
+    // lrclib didn't answer (after retries) -- not the same as "no lyrics".
+    currentLyrics = null;
+    lyricsTrackId = null; // so reopening the panel tries again
+    lyricsBody.innerHTML = '';
+    const box = el('div', 'lyrics-empty', escapeHtml(t('nowPlaying.lyricsFailed')));
+    const retry = el('button', 'lyrics-retry-btn', escapeHtml(t('nowPlaying.retry')));
+    retry.type = 'button';
+    retry.addEventListener('click', () => loadLyricsForCurrentTrack());
+    box.appendChild(retry);
+    lyricsBody.appendChild(box);
+    return;
+  }
 
   if (lyricsTrackId !== track.Id) return; // track changed while fetching
   currentLyrics = result;
+  prefetchNextLyrics();
 
   if (!result || (!result.synced && !result.plain)) {
-    lyricsBody.innerHTML = '<div class="lyrics-empty">No lyrics found for this track.</div>';
+    lyricsBody.innerHTML = `<div class="lyrics-empty">${escapeHtml(t('nowPlaying.noLyrics'))}</div>`;
     return;
   }
 
@@ -3895,9 +4315,19 @@ function updateActiveLyricLine(currentTime) {
     if (!isNaN(t) && t <= currentTime) activeIdx = i;
   });
   lines.forEach((line, i) => line.classList.toggle('active', i === activeIdx));
-  if (activeIdx >= 0) {
-    lines[activeIdx].scrollIntoView({ block: 'center', behavior: 'smooth' });
-  }
+  if (activeIdx >= 0) centerLyricLine(lines[activeIdx], true);
 }
 
-init();
+// Scrolls only the lyrics list itself. scrollIntoView() would also scroll
+// every ancestor -- including the overflow:hidden full-screen player --
+// shoving the whole player (header icons and all) up off the screen.
+function centerLyricLine(line, smooth) {
+  const top = line.offsetTop - (lyricsBody.clientHeight - line.offsetHeight) / 2;
+  lyricsBody.scrollTo({ top: Math.max(0, top), behavior: smooth ? 'smooth' : 'auto' });
+}
+
+init().catch((err) => {
+  console.error('Startup failed', err);
+  if (appRoot.hidden) showLogin();
+  else hideBootSplash();
+});

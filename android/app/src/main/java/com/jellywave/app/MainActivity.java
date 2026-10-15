@@ -10,6 +10,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(LoudnessPlugin.class);
+        registerPlugin(SystemVolumePlugin.class);
         super.onCreate(savedInstanceState);
 
         // The WebView's <audio> playback otherwise runs without ever

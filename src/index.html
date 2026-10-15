@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="vendor/poppins/latin-ext-700.css" />
   <link rel="stylesheet" href="vendor/uicons/rounded.css" />
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/apple.css" />
   <style id="custom-css-style"></style>
 </head>
 <body>
@@ -51,7 +52,15 @@
   </div>
 
   <!-- Login screen -->
-  <div id="login-screen" class="login-screen">
+  <!-- Shown while a saved session reconnects (or while offline-starting),
+       so the login form only ever appears when there's no saved session or
+       the saved one was rejected. -->
+  <div id="boot-splash" class="boot-splash">
+    <img src="assets/icon.png" alt="" class="boot-splash-icon" />
+    <div class="boot-splash-spinner" aria-hidden="true"></div>
+  </div>
+
+  <div id="login-screen" class="login-screen" hidden>
     <div class="login-card">
       <div class="login-logo">
         <img id="login-icon" src="assets/icon.png" alt="" />
@@ -168,6 +177,7 @@
         </div>
       </header>
 
+      <div id="pull-refresh" class="pull-refresh" aria-hidden="true"><div class="loading-spinner"></div></div>
       <div id="view-root" class="view-root"></div>
     </main>
 
@@ -182,6 +192,7 @@
         <div class="lyrics-header-actions">
           <button id="btn-connect-mobile" class="btn-icon-plain" type="button" data-i18n-title="connect.title" title="Connect"><i class="fi fi-br-screencast"></i></button>
           <button id="btn-sleep-timer-mobile" class="btn-icon-plain" type="button" data-i18n-title="player.sleepTimer" title="Sleep timer"><i class="fi fi-br-moon"></i></button>
+          <button id="btn-lyrics-mobile" class="btn-icon-plain btn-queue-mobile" type="button" data-i18n-title="nowPlaying.lyricsTab" title="Lyrics"><i class="fi fi-br-quote-right"></i></button>
           <button id="btn-queue-mobile" class="btn-icon-plain btn-queue-mobile" type="button" data-i18n-title="nowPlaying.queueTab" title="Queue"><i class="fi fi-br-list-music"></i></button>
         </div>
       </div>
@@ -219,6 +230,12 @@
           <button id="mobile-btn-next" class="ctrl-btn" data-i18n-title="player.next" title="Next"><i class="fi fi-br-forward"></i></button>
           <button id="mobile-btn-repeat" class="ctrl-btn" data-i18n-title="player.repeat" title="Repeat"><i id="mobile-icon-repeat" class="fi fi-br-arrows-repeat"></i></button>
         </div>
+        <!-- Apple Music style only (hidden otherwise, see apple.css). -->
+        <div class="np-volume-row">
+          <i class="fi fi-br-volume-mute" aria-hidden="true"></i>
+          <input type="range" id="np-volume-bar" class="np-volume-bar" min="0" max="100" value="50" data-i18n-title="player.volume" title="Volume" />
+          <i class="fi fi-br-volume" aria-hidden="true"></i>
+        </div>
       </div>
 
       <div id="lyrics-body" class="lyrics-body"></div>
@@ -231,7 +248,7 @@
     <section id="queue-sheet" class="queue-sheet" aria-hidden="true">
       <div id="queue-sheet-head" class="queue-sheet-head">
         <div class="queue-sheet-grabber"></div>
-        <div class="queue-sheet-title" data-i18n="nowPlaying.queueTab">Queue</div>
+        <div id="queue-sheet-title" class="queue-sheet-title" data-i18n="nowPlaying.queueTab">Queue</div>
       </div>
     </section>
 
@@ -355,11 +372,23 @@
           </div>
           <div class="settings-row">
             <div>
+              <div class="settings-row-label" data-i18n="settings.uiStyle">Interface style</div>
+              <div class="settings-row-desc" data-i18n="settings.uiStyleDesc">Spotify-style or Apple Music-style look</div>
+            </div>
+            <div class="segmented" id="ui-style-toggle">
+              <button data-value="spotify" type="button" data-i18n="settings.uiSpotify">Spotify</button>
+              <button data-value="apple" type="button" data-i18n="settings.uiApple">Apple Music</button>
+            </div>
+          </div>
+          <!-- Accent palette picker: retired (each interface style has its
+               own fixed accent, see applySettings), kept hidden. -->
+          <div class="settings-row" id="accent-color-row" hidden>
+            <div>
               <div class="settings-row-label" data-i18n="settings.accentColor">Accent color</div>
               <div class="settings-row-desc" data-i18n="settings.accentColorDesc">Pick the app's color scheme</div>
             </div>
           </div>
-          <div class="palette-grid" id="palette-grid"></div>
+          <div class="palette-grid" id="palette-grid" hidden></div>
           <div class="settings-row">
             <div>
               <div class="settings-row-label" data-i18n="settings.blurBg">Blurred cover art background</div>
@@ -567,6 +596,21 @@
   </div>
 
   <!-- Legal & Privacy overlay -->
+  <!-- Shown once on the first launch after an update (see whatsnew in app.js). -->
+  <div id="whats-new-overlay" class="modal-overlay" hidden>
+    <div class="modal-card whats-new-card" role="dialog" aria-modal="true" aria-labelledby="whats-new-title">
+      <div class="whats-new-hero">
+        <img src="assets/icon.png" alt="" class="whats-new-icon" />
+        <h2 id="whats-new-title"></h2>
+        <p id="whats-new-subtitle" class="whats-new-subtitle"></p>
+      </div>
+      <ul id="whats-new-list" class="whats-new-list"></ul>
+      <div class="whats-new-actions">
+        <button id="whats-new-close" class="btn-primary" type="button" data-i18n="whatsNew.continue">Continue</button>
+      </div>
+    </div>
+  </div>
+
   <div id="legal-overlay" class="modal-overlay" hidden>
     <div class="modal-card modal-card-legal" role="dialog" aria-modal="true" aria-labelledby="legal-overlay-title">
       <div class="modal-header">
@@ -671,6 +715,7 @@
 
   <div id="update-toast" class="update-toast" hidden>
     <span id="update-toast-text" data-i18n="update.available">A new version is available.</span>
+    <button id="update-toast-install" class="update-toast-install" type="button" data-i18n="update.install" hidden>Update now</button>
     <a id="update-toast-link" href="#" target="_blank" rel="noopener noreferrer" data-i18n="update.view">View</a>
     <button id="update-toast-dismiss" class="btn-icon-plain" type="button" data-i18n-title="common.close" title="Close"><i class="fi fi-br-cross-small"></i></button>
   </div>

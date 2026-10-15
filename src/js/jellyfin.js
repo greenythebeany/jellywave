@@ -31,7 +31,11 @@ const CLIENT_NAME = 'JellyWave';
 // literal below is only the fallback for the brief window before that
 // resolves (or if neither bridge is available, e.g. running in a plain
 // browser during development).
-let CLIENT_VERSION = '1.0.8';
+let CLIENT_VERSION = '2.0.0';
+
+export function getClientVersion() {
+  return CLIENT_VERSION;
+}
 
 export async function initClientVersion() {
   try {
@@ -173,8 +177,22 @@ export class JellyfinClient {
   // Hits an authenticated endpoint so a stale/invalid saved token is caught
   // here and sent back to the login screen, instead of silently proceeding
   // into a half-logged-in app that breaks on the first real request.
-  async ping() {
-    return this._get('/Users/Me');
+  // Bounded, so an unreachable server (e.g. Tailscale down) fails fast
+  // instead of hanging on the OS's TCP timeout while the splash is up.
+  async ping(timeoutMs = 6000) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => {
+        const err = new Error('Server did not respond in time.');
+        err.isNetworkError = true;
+        reject(err);
+      }, timeoutMs);
+    });
+    try {
+      return await Promise.race([this._get('/Users/Me'), timeout]);
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   async getMusicLibraries() {

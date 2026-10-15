@@ -1,0 +1,317 @@
+/* ==========================================================================
+   "Apple Music" interface style.
+   Everything here is scoped to :root[data-ui="apple"] (set by settings.js
+   from the uiStyle setting), so the default Spotify-style look in
+   styles.css is untouched when it's off. Only restyles existing markup;
+   the one Apple-only element is the full-screen player's volume row.
+   ========================================================================== */
+
+/* ---------- Tokens ---------- */
+/* Shape/material tokens apply always. Apple's own colors only apply when no
+   community theme is active (data-custom-theme, set by settings.js when the
+   Custom CSS defines colors) -- with a theme, this style keeps its shapes,
+   glass and layout but takes every color from the theme instead. */
+:root[data-ui="apple"] {
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --apple-blur: saturate(180%) blur(30px);
+  /* Derived from the active colors, so they follow light/dark and themes. */
+  --apple-glass: color-mix(in srgb, var(--bg-elevated) 74%, transparent);
+  --apple-track: color-mix(in srgb, var(--text-primary) 18%, transparent);
+  /* Apple's sliders fill in the text color, not the accent. */
+  --seek-start: var(--text-primary);
+  --seek-end: var(--text-primary);
+}
+:root[data-ui="apple"]:not([data-custom-theme]) {
+  --accent: #fa2d48;
+  --accent-hover: #ff4a62;
+  --accent-bg: #fa2d48;
+  --accent-contrast: #ffffff;
+}
+:root[data-ui="apple"][data-theme="dark"]:not([data-custom-theme]) {
+  --bg-void: #000000;
+  --bg-base: #1c1c1e;
+  --bg-elevated: #232325;
+  --bg-highlight: rgba(255, 255, 255, 0.08);
+  --bg-card: #2c2c2e;
+  --bg-card-hover: rgba(255, 255, 255, 0.12);
+  --text-secondary: rgba(235, 235, 245, 0.62);
+  --text-tertiary: rgba(235, 235, 245, 0.45);
+  --border-subtle: rgba(255, 255, 255, 0.1);
+}
+:root[data-ui="apple"][data-theme="light"]:not([data-custom-theme]) {
+  --accent: #fa233b;
+  --accent-bg: #fa233b;
+  --bg-void: #f5f5f7;
+  --bg-base: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-highlight: rgba(0, 0, 0, 0.05);
+  --bg-card: #f2f2f7;
+  --bg-card-hover: rgba(0, 0, 0, 0.07);
+  --text-secondary: rgba(60, 60, 67, 0.72);
+  --text-tertiary: rgba(60, 60, 67, 0.55);
+  --border-subtle: rgba(0, 0, 0, 0.1);
+}
+/* ---------- Typography ---------- */
+:root[data-ui="apple"] body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+:root[data-ui="apple"] .view-title { font-size: 32px; font-weight: 700; letter-spacing: -0.6px; }
+:root[data-ui="apple"] .section-title { font-size: 21px; font-weight: 700; letter-spacing: -0.3px; }
+:root[data-ui="apple"] .detail-title { font-weight: 700; letter-spacing: -0.8px; }
+:root[data-ui="apple"] .detail-kind { color: var(--text-secondary); letter-spacing: 0; text-transform: none; font-weight: 600; }
+
+/* ---------- Background / main ---------- */
+:root[data-ui="apple"] .main { background: var(--bg-base); }
+:root[data-ui="apple"] .main-header {
+  background: color-mix(in srgb, var(--bg-base) 72%, transparent);
+  backdrop-filter: var(--apple-blur);
+  border-bottom: 1px solid var(--border-subtle);
+}
+:root[data-ui="apple"] .main.hero-top .main-header { border-bottom-color: transparent; }
+:root[data-ui="apple"] .nav-arrow { background: var(--bg-highlight); }
+
+/* ---------- Sidebar ---------- */
+:root[data-ui="apple"] .sidebar {
+  background: var(--apple-glass);
+  backdrop-filter: var(--apple-blur);
+  border-right: 1px solid var(--border-subtle);
+}
+:root[data-ui="apple"] .nav-item {
+  padding: 7px 10px; font-size: 14px; font-weight: 500; border-radius: 8px;
+  color: var(--text-primary);
+}
+:root[data-ui="apple"] .nav-item .fi { color: var(--accent); font-size: 18px; }
+:root[data-ui="apple"] .nav-item.active { background: var(--bg-highlight); }
+:root[data-ui="apple"] .playlist-item { border-radius: 8px; font-weight: 500; }
+
+/* ---------- Cards: bare artwork, no tile behind it ---------- */
+:root[data-ui="apple"] .card { background: transparent; padding: 0; border-radius: 0; }
+:root[data-ui="apple"] .card:hover { background: transparent; }
+:root[data-ui="apple"] .card.playing { box-shadow: none; }
+:root[data-ui="apple"] .card-art-wrap {
+  margin-bottom: 8px; border-radius: var(--radius-sm);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+}
+:root[data-ui="apple"] .card-art { box-shadow: none; }
+:root[data-ui="apple"] .card:hover .card-art { filter: brightness(0.82); }
+:root[data-ui="apple"] .card-title { font-size: 13.5px; font-weight: 500; margin-bottom: 2px; }
+:root[data-ui="apple"] .card-subtitle { font-size: 13px; }
+:root[data-ui="apple"] .card.artist-card { text-align: center; }
+:root[data-ui="apple"] .card.artist-card .card-art-wrap { border-radius: 50%; }
+/* Small frosted play button in the artwork's bottom-left corner. */
+:root[data-ui="apple"] .card-play-btn {
+  left: 8px; right: auto; bottom: 8px;
+  width: 34px; height: 34px;
+  background: rgba(0, 0, 0, 0.45); color: #fff;
+  backdrop-filter: blur(12px);
+  box-shadow: none;
+}
+:root[data-ui="apple"] .card-play-btn svg { width: 15px; height: 15px; }
+:root[data-ui="apple"] .genre-card { border-radius: var(--radius-md); background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 35%, #5856d6) 100%); color: #fff; }
+
+/* ---------- Track lists: zebra rows like Apple Music's song lists ---------- */
+:root[data-ui="apple"] .track-table thead th { border-bottom: 1px solid var(--border-subtle); }
+:root[data-ui="apple"] .track-row td { font-size: 13.5px; padding: 9px 12px; }
+:root[data-ui="apple"] .track-row td:first-child { border-radius: 8px 0 0 8px; }
+:root[data-ui="apple"] .track-row td:last-child { border-radius: 0 8px 8px 0; }
+:root[data-ui="apple"] .track-table tbody .track-row:nth-child(odd) td { background: var(--bg-highlight); }
+:root[data-ui="apple"] .track-row:hover td { background: var(--bg-card-hover) !important; }
+:root[data-ui="apple"] .track-row.playing td { color: var(--accent); }
+
+/* ---------- Detail header: Apple's red pill Play button ---------- */
+:root[data-ui="apple"] .detail-art { border-radius: var(--radius-md); }
+:root[data-ui="apple"] .detail-art.round { border-radius: 50%; }
+:root[data-ui="apple"] .play-all-btn {
+  width: 104px; height: 40px; border-radius: 10px;
+  background: var(--accent); color: #fff;
+  box-shadow: none;
+}
+:root[data-ui="apple"] .play-all-btn:hover { transform: none; filter: brightness(1.08); }
+:root[data-ui="apple"] .play-all-btn svg { width: 20px; height: 20px; fill: currentColor; }
+:root[data-ui="apple"] .detail-download-btn, :root[data-ui="apple"] .detail-pin-btn { border-radius: 10px; }
+
+/* ---------- Sliders: slim capsule, no knob, thickens while in use ---------- */
+:root[data-ui="apple"] input[type="range"].seek-bar,
+:root[data-ui="apple"] input[type="range"].volume-bar {
+  height: 4px; border-radius: 999px;
+  background-color: var(--apple-track);
+  background-image: linear-gradient(to right, var(--text-primary) 0%, var(--text-primary) var(--pct, 0%), transparent var(--pct, 0%));
+  opacity: 0.85;
+  transition: height 0.15s ease, opacity 0.15s ease;
+}
+:root[data-ui="apple"] input[type="range"].seek-bar:hover,
+:root[data-ui="apple"] input[type="range"].seek-bar:active,
+:root[data-ui="apple"] input[type="range"].volume-bar:hover,
+:root[data-ui="apple"] input[type="range"].volume-bar:active { height: 7px; opacity: 1; }
+:root[data-ui="apple"] input[type="range"].seek-bar::-webkit-slider-thumb,
+:root[data-ui="apple"] input[type="range"].volume-bar::-webkit-slider-thumb {
+  width: 0; height: 0; box-shadow: none; background: transparent;
+}
+:root[data-ui="apple"] .time-label { font-size: 11px; color: var(--text-secondary); }
+
+/* ---------- Desktop player bar: frosted, monochrome controls ---------- */
+:root[data-ui="apple"] .player-bar {
+  background: var(--apple-glass);
+  backdrop-filter: var(--apple-blur);
+  border-top: 1px solid var(--border-subtle);
+}
+:root[data-ui="apple"] .player-art { border-radius: 6px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25); }
+:root[data-ui="apple"] .player-title { font-weight: 500; }
+:root[data-ui="apple"] .ctrl-btn { color: var(--text-primary); }
+:root[data-ui="apple"] .ctrl-btn.active { color: var(--accent); }
+:root[data-ui="apple"] .ctrl-btn-play { color: var(--text-primary); top: 0; }
+:root[data-ui="apple"] .ctrl-btn-play:hover { color: var(--text-primary); transform: scale(1.08); }
+:root[data-ui="apple"] .ctrl-btn-play svg { fill: currentColor; }
+:root[data-ui="apple"] .volume-icon { color: var(--text-secondary); font-size: 16px; }
+:root[data-ui="apple"] input[type="range"].volume-bar { width: 96px; }
+
+/* ---------- Controls: iOS switches, red pill buttons ---------- */
+:root[data-ui="apple"] .switch input:checked + .switch-track { background: var(--accent); }
+:root[data-ui="apple"] .segmented { border-radius: 9px; padding: 2px; }
+:root[data-ui="apple"] .segmented button { border-radius: 7px; font-weight: 500; }
+:root[data-ui="apple"] .segmented button.active { background: var(--bg-elevated); color: var(--text-primary); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25); }
+:root[data-ui="apple"] .btn-primary { background: var(--accent); color: #fff; border-radius: 10px; }
+
+/* ---------- Modals, menus, sheets: frosted glass ---------- */
+:root[data-ui="apple"] .modal-card {
+  background: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
+  backdrop-filter: var(--apple-blur);
+  border-radius: var(--radius-lg);
+}
+:root[data-ui="apple"] .modal-header { background: color-mix(in srgb, var(--bg-elevated) 92%, transparent); backdrop-filter: var(--apple-blur); }
+:root[data-ui="apple"] .account-menu,
+:root[data-ui="apple"] .context-menu {
+  /* Mostly opaque -- lighter glass let the page text behind bleed through. */
+  background: color-mix(in srgb, var(--bg-elevated) 94%, transparent);
+  backdrop-filter: var(--apple-blur);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+:root[data-ui="apple"] .queue-sheet { background: var(--apple-glass); backdrop-filter: var(--apple-blur); }
+:root[data-ui="apple"] .queue-row.playing .queue-row-title { color: var(--accent); }
+
+/* ---------- Side panel (desktop) ---------- */
+:root[data-ui="apple"] .lyrics-panel { background: var(--bg-elevated); border-left: 1px solid var(--border-subtle); }
+:root[data-ui="apple"] .panel-tab.active { background: var(--bg-highlight); color: var(--text-primary); }
+:root[data-ui="apple"] .lyric-line { font-weight: 700; }
+
+/* Volume row in the full-screen player -- Apple-only. */
+.np-volume-row { display: none; }
+
+/* ==========================================================================
+   Phone layout
+   ========================================================================== */
+@media (max-width: 820px) {
+  /* Floating mini-player card above the tab bar. The page runs underneath
+     it (main spans the player's grid row too), so content scrolls behind
+     the glass instead of a solid strip around the card. */
+  :root[data-ui="apple"] .main { grid-row: 1 / 3; grid-column: 1; }
+  :root[data-ui="apple"] .app.has-track .view-root { padding-bottom: 96px; }
+  :root[data-ui="apple"] .player-bar {
+    grid-row: 2; grid-column: 1; align-self: end;
+    position: relative; z-index: 30;
+    margin: 0 8px 6px; border-radius: 14px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    min-height: 60px; padding: 7px 12px;
+    grid-template-columns: 1fr auto auto;
+  }
+  :root[data-ui="apple"] .player-bar .player-center { width: auto; }
+  :root[data-ui="apple"] .player-bar .player-controls { gap: 14px; }
+  :root[data-ui="apple"] .player-bar #btn-prev,
+  :root[data-ui="apple"] .player-bar #btn-next { display: flex; }
+  :root[data-ui="apple"] .player-art { width: 44px; height: 44px; border-radius: 8px; }
+  :root[data-ui="apple"] .bottom-nav {
+    background: var(--apple-glass);
+    backdrop-filter: var(--apple-blur);
+  }
+  :root[data-ui="apple"] .bottom-nav-item { font-weight: 500; font-size: 10px; }
+  :root[data-ui="apple"] .bottom-nav-item.active { color: var(--accent); }
+
+  /* Full-screen player: blurred artwork fills the whole screen. */
+  :root[data-ui="apple"] .lyrics-panel { background: #1c1c1e; }
+  :root[data-ui="apple"] .now-playing-bg-art { filter: blur(60px) saturate(1.6) brightness(0.75); transform: scale(1.3); }
+  :root[data-ui="apple"] .now-playing-bg-art::after { background: rgba(0, 0, 0, 0.28); }
+  :root[data-ui="apple"] .lyrics-panel,
+  :root[data-ui="apple"] .lyrics-panel .btn-icon-plain,
+  :root[data-ui="apple"] .lyrics-panel .ctrl-btn { color: #fff; }
+  :root[data-ui="apple"] .lyrics-panel .now-playing-artist,
+  :root[data-ui="apple"] .lyrics-panel .time-label { color: rgba(255, 255, 255, 0.62); }
+  :root[data-ui="apple"] .lyrics-panel .lyric-line { color: rgba(255, 255, 255, 0.4); }
+  :root[data-ui="apple"] .lyrics-panel .lyric-line.active { color: #fff; }
+  /* Grabber centered at the top, like iOS sheets. */
+  :root[data-ui="apple"] .lyrics-header { position: relative; justify-content: flex-end; }
+  :root[data-ui="apple"] .np-collapse-btn {
+    width: 64px; height: 28px; display: flex; align-items: center; justify-content: center;
+  }
+  :root[data-ui="apple"] .np-collapse-btn:hover { background: transparent; }
+  /* Cast + sleep timer on the left, lyrics + queue on the right, with the
+     grabber centered between them. */
+  :root[data-ui="apple"] .lyrics-header-actions { width: 100%; justify-content: flex-start; margin-left: 0; }
+  :root[data-ui="apple"] #btn-lyrics-mobile { margin-left: auto; }
+  :root[data-ui="apple"] .np-collapse-btn::before {
+    /* Apple's grabber pill instead of a chevron. */
+    content: ''; display: block; width: 38px; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.45);
+  }
+  :root[data-ui="apple"] .np-collapse-btn .fi { display: none; }
+
+  /* Artwork shrinks while paused, springs back on play. */
+  :root[data-ui="apple"] .now-playing-art-wrap {
+    border-radius: 12px; box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45);
+    transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.25);
+  }
+  :root[data-ui="apple"] .lyrics-panel.is-paused .now-playing-art-wrap { transform: scale(0.84); }
+  :root[data-ui="apple"] .now-playing-art { border-radius: 12px; box-shadow: none; }
+
+  /* Title/artist left-aligned, actions to the right. */
+  :root[data-ui="apple"] .now-playing-info-row { grid-template-columns: minmax(0, 1fr) 36px 36px; }
+  :root[data-ui="apple"] .now-playing-text { order: 0; text-align: left; }
+  :root[data-ui="apple"] .now-playing-download-btn { order: 1; justify-self: end; }
+  :root[data-ui="apple"] .now-playing-like-btn { order: 2; }
+  :root[data-ui="apple"] .now-playing-title { font-size: 21px; font-weight: 600; }
+  :root[data-ui="apple"] .now-playing-like-btn,
+  :root[data-ui="apple"] .now-playing-download-btn { color: #fff; background: rgba(255, 255, 255, 0.14); }
+  :root[data-ui="apple"] .now-playing-like-btn.liked { color: var(--accent); }
+
+  :root[data-ui="apple"] .mobile-now-playing-controls { background: transparent; }
+  /* The column-flex seek row would otherwise squash the knob-less slider
+     to 0px tall (the knob was what held its height open). */
+  :root[data-ui="apple"] .mobile-now-playing-controls input[type="range"].seek-bar { flex: none; height: 5px; }
+  :root[data-ui="apple"] .mobile-now-playing-controls input[type="range"].seek-bar:active { height: 9px; }
+  :root[data-ui="apple"] .queue-sheet.lyrics-mode .lyric-line { color: var(--text-tertiary); }
+  :root[data-ui="apple"] .queue-sheet.lyrics-mode .lyric-line.active { color: var(--text-primary); }
+  :root[data-ui="apple"] .lyrics-panel input[type="range"].seek-bar,
+  :root[data-ui="apple"] .lyrics-panel input[type="range"].np-volume-bar {
+    --track: rgba(255, 255, 255, 0.25);
+    background-color: var(--track);
+    background-image: linear-gradient(to right, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.85) var(--pct, 0%), transparent var(--pct, 0%));
+  }
+  /* Plain glyphs, no white disc behind play/pause. */
+  :root[data-ui="apple"] .mobile-now-playing-controls .player-controls { justify-content: space-evenly; }
+  :root[data-ui="apple"] .mobile-now-playing-controls .ctrl-btn-play {
+    background: transparent; color: #fff; width: 64px; height: 64px;
+  }
+  :root[data-ui="apple"] .mobile-now-playing-controls .ctrl-btn-play:hover { color: #fff; }
+  :root[data-ui="apple"] .mobile-now-playing-controls .ctrl-btn-play svg { width: 44px; height: 44px; }
+  :root[data-ui="apple"] .mobile-now-playing-controls #mobile-btn-prev,
+  :root[data-ui="apple"] .mobile-now-playing-controls #mobile-btn-next { font-size: 30px; color: #fff; }
+  :root[data-ui="apple"] .mobile-now-playing-controls #mobile-btn-shuffle,
+  :root[data-ui="apple"] .mobile-now-playing-controls #mobile-btn-repeat { color: rgba(255, 255, 255, 0.62); }
+  :root[data-ui="apple"] .mobile-now-playing-controls .ctrl-btn.active { color: #fff; }
+
+  :root[data-ui="apple"] .np-volume-row {
+    display: flex; align-items: center; gap: 12px; margin-top: 8px;
+    color: rgba(255, 255, 255, 0.62); font-size: 13px;
+  }
+  :root[data-ui="apple"] .np-volume-row input[type="range"] {
+    flex: 1; height: 5px; border-radius: 999px;
+    transition: height 0.15s ease;
+  }
+  :root[data-ui="apple"] .np-volume-row input[type="range"]:active { height: 9px; }
+  :root[data-ui="apple"] .np-volume-row input[type="range"]::-webkit-slider-thumb { width: 0; height: 0; box-shadow: none; background: transparent; }
+}
+/* Phones/tablets wider than the breakpoint still get the full-screen player. */
+:root[data-ui="apple"] body.platform-mobile .np-volume-row { display: flex; }

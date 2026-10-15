@@ -132,6 +132,8 @@
     "upNext": "Ako ďalšie",
     "lookingUpLyrics": "Hľadám text piesne…",
     "noLyrics": "Pre túto skladbu sa nenašiel žiadny text.",
+    "lyricsFailed": "Text sa teraz nepodarilo načítať.",
+    "retry": "Skúsiť znova",
     "queueEmpty": "Fronta je prázdna.",
     "title": "Práve sa prehráva"
   },
@@ -144,13 +146,18 @@
     "repeat": "Opakovať",
     "sleepTimer": "Časovač spánku",
     "sleepEndOfTrack": "Koniec skladby",
-    "sleepOff": "Vypnúť"
+    "sleepOff": "Vypnúť",
+    "volume": "Hlasitosť"
   },
   "settings": {
     "title": "Nastavenia",
     "appearance": "Vzhľad",
     "theme": "Motív",
     "themeDesc": "Svetlý, tmavý, alebo podľa systému",
+    "uiStyle": "Štýl rozhrania",
+    "uiStyleDesc": "Vzhľad v štýle Spotify alebo Apple Music",
+    "uiSpotify": "Spotify",
+    "uiApple": "Apple Music",
     "dark": "Tmavý",
     "light": "Svetlý",
     "system": "Systémový",
@@ -210,7 +217,11 @@
   },
   "update": {
     "available": "JellyWave {version} je dostupný.",
-    "view": "Zobraziť"
+    "view": "Zobraziť",
+    "install": "Aktualizovať",
+    "downloading": "Sťahujem… {percent}%",
+    "installing": "Spúšťam inštalátor…",
+    "failed": "Aktualizácia zlyhala: {error}"
   },
   "stats": {
     "title": "Tvoje štatistiky",
@@ -271,5 +282,26 @@
     "progressStatus": "{done} z {total} hotových",
     "doneStatus": "Dokončené: {done} z {total} úspešných",
     "cancelled": "Zrušené."
+  },
+  "whatsNew": {
+    "title": "Čo je nové vo verzii {version}",
+    "subtitle": "Veľká aktualizácia — tu sú hlavné novinky.",
+    "continue": "Pokračovať",
+    "appleStyleTitle": "Štýl Apple Music",
+    "appleStyleDesc": "V Nastavenia → Vzhľad → Štýl rozhrania si môžeš prepnúť medzi vzhľadom Spotify a novým vzhľadom Apple Music.",
+    "instantSkipTitle": "Okamžité preskakovanie",
+    "instantSkipDesc": "Ďalšia skladba sa načítava na pozadí, takže Ďalšia (aj návrat späť) začne hneď.",
+    "sheetsTitle": "Fronta a texty ako panel",
+    "sheetsDesc": "Na telefóne sa fronta a texty piesní vysunú zospodu prehrávača.",
+    "gesturesTitle": "Gestá potiahnutím",
+    "gesturesDesc": "Potiahni obal pre zmenu skladby, potiahni nadol pre zatvorenie prehrávača a potiahni stránku nadol pre obnovenie.",
+    "phoneVolumeTitle": "Hlasitosť telefónu",
+    "phoneVolumeDesc": "Na Androide ovláda posuvník hlasitosť telefónu a reaguje na tlačidlá hlasitosti.",
+    "updatesTitle": "Aktualizácie jedným klikom",
+    "updatesDesc": "Na PC sa nové verzie stiahnu a nainštalujú priamo z aplikácie.",
+    "shortcutsTitle": "Klávesové skratky",
+    "shortcutsDesc": "Medzerník spustí alebo pozastaví, Ctrl + ← a Ctrl + → prepnú na predchádzajúcu alebo ďalšiu skladbu.",
+    "polishTitle": "Plynulejšie a spoľahlivejšie",
+    "polishDesc": "Nové animácie, načítavacia obrazovka namiesto bliknutia prihlásenia, spoľahlivejšie texty, rýchlejšie načítanie a množstvo opráv."
   }
 }

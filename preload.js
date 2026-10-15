@@ -29,7 +29,15 @@ contextBridge.exposeInMainWorld('api', {
     onAvailable: (callback) => {
       ipcRenderer.on('update:available', (_event, result) => callback(result));
     },
-    setAutoCheckEnabled: (enabled) => ipcRenderer.send('update:setAutoCheckEnabled', enabled)
+    setAutoCheckEnabled: (enabled) => ipcRenderer.send('update:setAutoCheckEnabled', enabled),
+    download: () => ipcRenderer.invoke('update:download'),
+    onProgress: (callback) => {
+      ipcRenderer.on('update:progress', (_event, progress) => callback(progress));
+    },
+    install: (file) => ipcRenderer.invoke('update:install', file)
+  },
+  onShuttingDown: (callback) => {
+    ipcRenderer.on('app:shuttingDown', () => callback());
   },
   mediaKeys: {
     onKey: (callback) => {
