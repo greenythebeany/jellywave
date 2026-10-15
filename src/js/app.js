@@ -171,10 +171,21 @@ function maybeShowWhatsNew() {
   try { lastSeen = localStorage.getItem(LAST_SEEN_VERSION_KEY); } catch (err) { /* storage blocked */ }
   if (lastSeen === version) return;
   try { localStorage.setItem(LAST_SEEN_VERSION_KEY, version); } catch (err) { /* storage blocked */ }
-  const items = WHATS_NEW[version];
+  // The newest notes this user hasn't seen yet, not only an exact match --
+  // someone jumping straight from 1.0.11 to 2.0.1 should still get 2.0.0's
+  // big-update notes even though 2.0.1 itself has no entry.
+  const current = parseSemver(version);
+  const seen = parseSemver(lastSeen);
+  const notesVersion = Object.keys(WHATS_NEW)
+    .filter((v) => {
+      const pv = parseSemver(v);
+      return pv && current && !isNewerVersion(pv, current) && (!seen || isNewerVersion(pv, seen));
+    })
+    .sort((a, b) => (isNewerVersion(parseSemver(a), parseSemver(b)) ? -1 : 1))[0];
+  const items = notesVersion && WHATS_NEW[notesVersion];
   if (!IS_RETURNING_USER || !items) return;
 
-  whatsNewTitle.textContent = t('whatsNew.title', { version });
+  whatsNewTitle.textContent = t('whatsNew.title', { version: notesVersion });
   whatsNewSubtitle.textContent = t('whatsNew.subtitle');
   whatsNewList.innerHTML = '';
   items.forEach(({ icon, key }) => {
@@ -1478,7 +1489,7 @@ function showVolumeLevel(pct) {
   volumeBar.style.setProperty('--pct', rangeFillPercent(pct, volumeBar, 14));
   updateVolumeIcon(pct);
   npVolumeBar.value = pct;
-  npVolumeBar.style.setProperty('--pct', `${pct}%`);
+  npVolumeBar.style.setProperty('--pct', rangeFillPercent(pct, npVolumeBar, 14));
 }
 
 function initSystemVolume() {
@@ -3394,7 +3405,7 @@ function wirePlayer() {
     volumeBar.style.setProperty('--pct', rangeFillPercent(val, volumeBar, 14));
     updateVolumeIcon(val);
     npVolumeBar.value = val;
-    npVolumeBar.style.setProperty('--pct', `${val}%`);
+    npVolumeBar.style.setProperty('--pct', rangeFillPercent(val, npVolumeBar, 14));
   });
   // The full-screen player's volume row (Apple style) just drives the main
   // volume slider, so both stay in sync through the one code path.
@@ -3403,7 +3414,7 @@ function wirePlayer() {
     volumeBar.dispatchEvent(new Event('input'));
   });
   npVolumeBar.value = volumeBar.value;
-  npVolumeBar.style.setProperty('--pct', `${volumeBar.value}%`);
+  npVolumeBar.style.setProperty('--pct', rangeFillPercent(Number(volumeBar.value), npVolumeBar, 14));
 
   btnLyrics.addEventListener('click', () => {
     if (!lyricsPanel.hidden) { closeNowPlaying(); return; }
@@ -3922,6 +3933,9 @@ function openNowPlaying() {
   lyricsPanel.scrollTop = 0; // undo any shift an older build's scrollIntoView left behind
   showPanelTab(activePanelTab);
   refreshNowPlayingMarquees();
+  // Its fill depends on the slider's width, which is 0 while the player
+  // is closed -- recompute now that it's laid out.
+  npVolumeBar.style.setProperty('--pct', rangeFillPercent(Number(npVolumeBar.value), npVolumeBar, 14));
 }
 
 // Slides the phone's full-screen player down before hiding it (desktop's

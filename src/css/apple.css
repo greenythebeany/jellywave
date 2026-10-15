@@ -70,8 +70,10 @@
   backdrop-filter: var(--apple-blur);
   border-bottom: 1px solid var(--border-subtle);
 }
-:root[data-ui="apple"] .main.hero-top .main-header { border-bottom-color: transparent; }
-:root[data-ui="apple"] .nav-arrow { background: var(--bg-highlight); }
+/* Over an artist backdrop at the top of the page the bar goes fully
+   see-through, so the banner runs up behind the arrows uncut. */
+:root[data-ui="apple"] .main.hero-top .main-header { background: transparent; backdrop-filter: none; border-bottom-color: transparent; }
+:root[data-ui="apple"] .main:not(.hero-top) .nav-arrow { background: var(--bg-highlight); }
 
 /* ---------- Sidebar ---------- */
 :root[data-ui="apple"] .sidebar {
@@ -112,12 +114,11 @@
 :root[data-ui="apple"] .card-play-btn svg { width: 15px; height: 15px; }
 :root[data-ui="apple"] .genre-card { border-radius: var(--radius-md); background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 35%, #5856d6) 100%); color: #fff; }
 
-/* ---------- Track lists: zebra rows like Apple Music's song lists ---------- */
+/* ---------- Track lists ---------- */
 :root[data-ui="apple"] .track-table thead th { border-bottom: 1px solid var(--border-subtle); }
 :root[data-ui="apple"] .track-row td { font-size: 13.5px; padding: 9px 12px; }
 :root[data-ui="apple"] .track-row td:first-child { border-radius: 8px 0 0 8px; }
 :root[data-ui="apple"] .track-row td:last-child { border-radius: 0 8px 8px 0; }
-:root[data-ui="apple"] .track-table tbody .track-row:nth-child(odd) td { background: var(--bg-highlight); }
 :root[data-ui="apple"] .track-row:hover td { background: var(--bg-card-hover) !important; }
 :root[data-ui="apple"] .track-row.playing td { color: var(--accent); }
 
@@ -133,22 +134,29 @@
 :root[data-ui="apple"] .play-all-btn svg { width: 20px; height: 20px; fill: currentColor; }
 :root[data-ui="apple"] .detail-download-btn, :root[data-ui="apple"] .detail-pin-btn { border-radius: 10px; }
 
-/* ---------- Sliders: slim capsule, no knob, thickens while in use ---------- */
+/* ---------- Sliders: slim capsule, no visible knob, thickens while in use ---------- */
+/* The knob keeps its normal size but is invisible: the fill (--pct, set by
+   rangeFillPercent in app.js) is computed for that size, so a zero-width
+   knob left the fill several px off the pointer. Thickening uses scaleY,
+   not height, so dragging never re-lays out the row. */
 :root[data-ui="apple"] input[type="range"].seek-bar,
-:root[data-ui="apple"] input[type="range"].volume-bar {
+:root[data-ui="apple"] input[type="range"].volume-bar,
+:root[data-ui="apple"] input[type="range"].np-volume-bar {
   height: 4px; border-radius: 999px;
   background-color: var(--apple-track);
   background-image: linear-gradient(to right, var(--text-primary) 0%, var(--text-primary) var(--pct, 0%), transparent var(--pct, 0%));
   opacity: 0.85;
-  transition: height 0.15s ease, opacity 0.15s ease;
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 :root[data-ui="apple"] input[type="range"].seek-bar:hover,
 :root[data-ui="apple"] input[type="range"].seek-bar:active,
 :root[data-ui="apple"] input[type="range"].volume-bar:hover,
-:root[data-ui="apple"] input[type="range"].volume-bar:active { height: 7px; opacity: 1; }
+:root[data-ui="apple"] input[type="range"].volume-bar:active,
+:root[data-ui="apple"] input[type="range"].np-volume-bar:active { transform: scaleY(1.75); opacity: 1; }
 :root[data-ui="apple"] input[type="range"].seek-bar::-webkit-slider-thumb,
-:root[data-ui="apple"] input[type="range"].volume-bar::-webkit-slider-thumb {
-  width: 0; height: 0; box-shadow: none; background: transparent;
+:root[data-ui="apple"] input[type="range"].volume-bar::-webkit-slider-thumb,
+:root[data-ui="apple"] input[type="range"].np-volume-bar::-webkit-slider-thumb {
+  opacity: 0; box-shadow: none;
 }
 :root[data-ui="apple"] .time-label { font-size: 11px; color: var(--text-secondary); }
 
@@ -279,7 +287,6 @@
   /* The column-flex seek row would otherwise squash the knob-less slider
      to 0px tall (the knob was what held its height open). */
   :root[data-ui="apple"] .mobile-now-playing-controls input[type="range"].seek-bar { flex: none; height: 5px; }
-  :root[data-ui="apple"] .mobile-now-playing-controls input[type="range"].seek-bar:active { height: 9px; }
   :root[data-ui="apple"] .queue-sheet.lyrics-mode .lyric-line { color: var(--text-tertiary); }
   :root[data-ui="apple"] .queue-sheet.lyrics-mode .lyric-line.active { color: var(--text-primary); }
   :root[data-ui="apple"] .lyrics-panel input[type="range"].seek-bar,
@@ -305,12 +312,7 @@
     display: flex; align-items: center; gap: 12px; margin-top: 8px;
     color: rgba(255, 255, 255, 0.62); font-size: 13px;
   }
-  :root[data-ui="apple"] .np-volume-row input[type="range"] {
-    flex: 1; height: 5px; border-radius: 999px;
-    transition: height 0.15s ease;
-  }
-  :root[data-ui="apple"] .np-volume-row input[type="range"]:active { height: 9px; }
-  :root[data-ui="apple"] .np-volume-row input[type="range"]::-webkit-slider-thumb { width: 0; height: 0; box-shadow: none; background: transparent; }
+  :root[data-ui="apple"] .np-volume-row input[type="range"] { flex: 1; height: 5px; }
 }
 /* Phones/tablets wider than the breakpoint still get the full-screen player. */
 :root[data-ui="apple"] body.platform-mobile .np-volume-row { display: flex; }
