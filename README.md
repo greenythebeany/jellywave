@@ -39,12 +39,12 @@ JellyWave is a personal music client for a self-hosted Jellyfin server. It logs 
 - Full library browsing: Home, Search, All Songs, Liked Songs, Genres, Albums, Artists, and Playlists
 - Gapless playback with optional crossfade (0-12 seconds) between tracks
 - ReplayGain-based volume normalization, using loudness data from your server
-- Lyrics lookup for the currently playing track
+- Lyrics for the currently playing track, from lrclib.net, your own Jellyfin server, or lyrics.ovh
 - Queue view with shuffle and repeat modes
 - Native lock-screen and notification media controls on Android, including playback that survives the app going to the background
 - Discord Rich Presence on desktop: shows what you're currently listening to, with cover art
 - Custom CSS support for further tweaking the look of the app, including a set of ready-made community color schemes (see [Themes](#themes) below)
-- Two interface styles (Spotify or Apple Music), light and dark themes, plus a blurred cover-art background option
+- Two interface styles (Spotify or Apple Music), light and dark themes, a choice of accent colors, plus a blurred cover-art background option
 - "Jam on paw level": an optional cat that bounces along with the actual bass of whatever's playing
 - 15 language translations (English, French, German, Slovak, Czech, Spanish, Polish, Russian, Ukrainian, Norwegian, Swedish, Finnish, Danish, Dutch, Italian) with more welcome via contribution
 - Desktop app built with Electron, Android app built with Capacitor, with one-click in-app updates on desktop
@@ -103,6 +103,17 @@ npm run dist        # build a Windows installer
 
 The Android project lives in `android/` and is a standard Capacitor project — open it in Android Studio, or build from the command line with `./gradlew assembleRelease` after setting up your own signing keystore in `android/keystore/keystore.properties`.
 
+## What's new in 2.0.2
+
+- Accent colors are back, for both interface styles: Default (Spotify green / Apple red), Blue, Green, Red, Magenta, Purple, Pink, Orange, Yellow, Teal, Brown and Monochrome
+- More lyrics sources: if lrclib.net doesn't have a song, JellyWave now also checks your own Jellyfin server's lyrics (`.lrc` files / embedded lyrics) and then lyrics.ovh
+- Phone volume: the slider now follows the volume buttons instantly on Android, and controls and follows the iPhone's volume on iOS
+- iPhone: logging in with a server IP address (e.g. a Tailscale `100.x` address) now works, not just a hostname
+- Library is now a clean list (icon, name, chevron) in both styles, and genre tiles lose their gradient
+- Apple Music style: shuffle and repeat clearly show when they're on
+- Tap the top of the phone's full-screen player to close it
+- Fixed the language dropdown showing white-on-white, a hidden switch knob with Monochrome, and the like heart sitting slightly high
+
 ## What's new in 2.0.1
 
 - Artist pages: the banner now runs up behind the top bar in the Apple Music style too, and the back/forward and profile buttons get a dark backing over the photo so they stay readable
@@ -117,7 +128,7 @@ A big one. Highlights:
 
 **New look**
 - Interface style setting (Settings → Appearance): the existing Spotify look, or a new Apple Music look with frosted glass, bare rounded artwork, slim pill sliders, a floating mini-player and a full-screen player built around the blurred cover
-- Each style has one fixed accent (Spotify green / Apple red), replacing the old accent palette picker; the community [Themes](#themes) recolor either style
+- Each style has its own default accent (Spotify green / Apple red); the community [Themes](#themes) recolor either style
 - Open animations for popups, menus, pages and the player, and a loading screen on start instead of the login form flashing up
 
 **Player**

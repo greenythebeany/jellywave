@@ -10,6 +10,10 @@
 
 /* ---------- Theme modes ---------- */
 :root[data-theme="dark"] {
+  /* Native widgets (dropdown lists, scrollbars, date pickers) follow the
+     app's theme instead of the OS default -- the language dropdown's list
+     rendered white with the app's white text on it. */
+  color-scheme: dark;
   --bg-void: #000000;
   --bg-base: #0a0a0a;
   --bg-elevated: #121212;
@@ -27,6 +31,7 @@
   --danger: #f15e6c;
 }
 :root[data-theme="light"] {
+  color-scheme: light;
   --bg-void: #ffffff;
   --bg-base: #f6f6f8;
   --bg-elevated: #ffffff;
@@ -49,10 +54,19 @@
    reaches ~2.9:1 / ~4.2:1 against WCAG AA's 4.5:1 for normal text, so
    those two use a dark near-black instead, same as spotify/mono already
    did for their own bright accents. */
-:root[data-palette="jellyfin"] { --accent: #00a4dc; --accent-hover: #2bb9ec; --accent-contrast: #0a0a0a; --seek-start: #00a4dc; --seek-end: #aa5cc3; --accent-bg: linear-gradient(135deg, #00a4dc 0%, #aa5cc3 100%); }
-:root[data-palette="spotify"]  { --accent: #1ed760; --accent-hover: #3be275; --accent-contrast: #04140a; --seek-start: #1ed760; --seek-end: #1ed760; --accent-bg: #1ed760; }
-:root[data-palette="purple"]   { --accent: #aa5cc3; --accent-hover: #bd74d4; --accent-contrast: #0a0a0a; --seek-start: #aa5cc3; --seek-end: #aa5cc3; --accent-bg: #aa5cc3; }
-:root[data-palette="mono"]     { --accent: #e6e6e6; --accent-hover: #ffffff; --accent-contrast: #0a0a0a; --seek-start: #e6e6e6; --seek-end: #e6e6e6; --accent-bg: #e6e6e6; }
+:root[data-palette="spotify"] { --accent: #1ed760; --accent-hover: #3be275; --accent-contrast: #04140a; --seek-start: #1ed760; --seek-end: #1ed760; --accent-bg: #1ed760; }
+:root[data-palette="blue"] { --accent: #3b82f6; --accent-hover: #60a5fa; --accent-contrast: #0a0a0a; --seek-start: #3b82f6; --seek-end: #3b82f6; --accent-bg: #3b82f6; }
+:root[data-palette="green"] { --accent: #1ed760; --accent-hover: #3be275; --accent-contrast: #0a0a0a; --seek-start: #1ed760; --seek-end: #1ed760; --accent-bg: #1ed760; }
+:root[data-palette="red"] { --accent: #ef4444; --accent-hover: #f87171; --accent-contrast: #0a0a0a; --seek-start: #ef4444; --seek-end: #ef4444; --accent-bg: #ef4444; }
+:root[data-palette="magenta"] { --accent: #d946ef; --accent-hover: #e879f9; --accent-contrast: #0a0a0a; --seek-start: #d946ef; --seek-end: #d946ef; --accent-bg: #d946ef; }
+:root[data-palette="purple"] { --accent: #a855f7; --accent-hover: #c084fc; --accent-contrast: #0a0a0a; --seek-start: #a855f7; --seek-end: #a855f7; --accent-bg: #a855f7; }
+:root[data-palette="pink"] { --accent: #f472b6; --accent-hover: #f9a8d4; --accent-contrast: #0a0a0a; --seek-start: #f472b6; --seek-end: #f472b6; --accent-bg: #f472b6; }
+:root[data-palette="orange"] { --accent: #f97316; --accent-hover: #fb923c; --accent-contrast: #0a0a0a; --seek-start: #f97316; --seek-end: #f97316; --accent-bg: #f97316; }
+:root[data-palette="yellow"] { --accent: #facc15; --accent-hover: #fde047; --accent-contrast: #0a0a0a; --seek-start: #facc15; --seek-end: #facc15; --accent-bg: #facc15; }
+:root[data-palette="teal"] { --accent: #14b8a6; --accent-hover: #2dd4bf; --accent-contrast: #0a0a0a; --seek-start: #14b8a6; --seek-end: #14b8a6; --accent-bg: #14b8a6; }
+:root[data-palette="brown"] { --accent: #b07a4f; --accent-hover: #c49167; --accent-contrast: #0a0a0a; --seek-start: #b07a4f; --seek-end: #b07a4f; --accent-bg: #b07a4f; }
+/* Monochrome follows the theme: white-ish on dark, near-black on light. */
+:root[data-palette="mono"] { --accent: var(--text-primary); --accent-hover: var(--text-secondary); --accent-contrast: var(--bg-base); --seek-start: var(--text-primary); --seek-end: var(--text-primary); --accent-bg: var(--text-primary); }
 
 * { box-sizing: border-box; }
 
@@ -201,6 +215,9 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 }
 .switch input:checked + .switch-track { background: var(--accent-bg); border-color: transparent; }
 .switch input:checked + .switch-track::before { transform: translateX(18px); background: #fff; }
+/* Monochrome's track is the text color (white in dark mode), so a white
+   knob vanished on it -- use the background color for the knob instead. */
+:root[data-palette="mono"] .switch input:checked + .switch-track::before { background: var(--bg-base); }
 .btn-primary {
   margin-top: 6px;
   background: var(--accent);
@@ -526,8 +543,21 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .card-art-wrap { position: relative; margin-bottom: 12px; overflow: hidden; border-radius: var(--radius-sm); }
 .card-art-wrap::before { content: ''; display: block; padding-top: 100%; }
 
-.genre-card { display: flex; align-items: center; justify-content: center; aspect-ratio: 1/1; text-align: center; background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 55%, var(--bg-card)) 0%, var(--bg-card) 100%); }
+.genre-card { display: flex; align-items: center; justify-content: center; aspect-ratio: 1/1; text-align: center; background: var(--bg-card); }
+.genre-card:hover { background: var(--bg-card-hover); }
 .genre-card-title { font-size: 16px; font-weight: 800; padding: 0 12px; }
+/* Library shortcuts: a list -- accent icon, name, chevron, hairline
+   separators -- in both styles (apple.css only adjusts type/sizes). */
+.library-grid { display: flex; flex-direction: column; gap: 0; }
+.library-tile {
+  aspect-ratio: auto; flex-direction: row; justify-content: flex-start; gap: 16px;
+  background: none; border-radius: 0; padding: 13px 4px;
+  border-bottom: 1px solid var(--border-subtle); text-align: left;
+}
+.library-tile:hover { background: var(--bg-highlight); }
+.library-tile-icon { font-size: 21px; width: 26px; text-align: center; line-height: 1; color: var(--accent); }
+.library-tile-label { flex: 1; padding: 0; font-size: 15.5px; font-weight: 600; }
+.library-tile-chevron { display: block; color: var(--text-tertiary); font-size: 18px; line-height: 1; }
 .card-art {
   position: absolute; inset: 0;
   width: 100%; height: 100%; object-fit: cover;
@@ -793,6 +823,10 @@ svg { fill: currentColor; width: 100%; height: 100%; }
    in a round button (same approach as .ctrl-btn .fi). */
 .now-playing-download-btn .fi,
 .now-playing-like-btn .fi { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); line-height: 1; display: block; }
+/* Optical correction: the heart is wide at the top and pointed at the
+   bottom, so with its box centered its visual mass still sits ~0.05em high
+   (measured from the glyph's ink) -- nudge it down to look centered. */
+.now-playing-like-btn .fi { transform: translate(-50%, calc(-50% + 0.07em)); }
 
 .lyrics-body {
   flex: 1; overflow-y: auto; padding: 12px 20px 24px;
@@ -1144,6 +1178,8 @@ input[type="range"].volume-bar { width: 110px; flex: none; }
 .palette-swatch .dot { width: 28px; height: 28px; border-radius: 50%; }
 .palette-swatch span { font-size: 11.5px; color: var(--text-secondary); }
 
+/* Explicit colors too, for WebViews that ignore color-scheme on the list. */
+select option { background: var(--bg-elevated); color: var(--text-primary); }
 select.settings-select {
   background: var(--bg-highlight); border: 1px solid var(--border-subtle);
   color: var(--text-primary); padding: 8px 10px; border-radius: var(--radius-sm);
@@ -1193,6 +1229,9 @@ body.platform-mobile .titlebar { display: none; }
      + half the 33px icon buttons), not the whole header, whose top padding
      grows with the status-bar inset. */
   .np-collapse-btn { position: absolute; left: 50%; top: auto; bottom: 26.5px; transform: translate(-50%, 50%); z-index: 1; }
+  /* The whole top strip closes the player on tap (see app.js). */
+  .lyrics-header { cursor: pointer; }
+  .lyrics-header .btn-icon-plain { cursor: pointer; }
   /* Lyrics stay in the full-screen player; the queue moves to a sheet. */
   .lyrics-header-actions #btn-lyrics-mobile { display: flex; }
   .np-collapse-btn { font-size: 22px; }

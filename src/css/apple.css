@@ -23,11 +23,21 @@
   --seek-start: var(--text-primary);
   --seek-end: var(--text-primary);
 }
-:root[data-ui="apple"]:not([data-custom-theme]) {
+:root[data-ui="apple"][data-palette="apple"]:not([data-custom-theme]) {
   --accent: #fa2d48;
   --accent-hover: #ff4a62;
   --accent-bg: #fa2d48;
   --accent-contrast: #ffffff;
+}
+:root[data-ui="apple"][data-theme="light"][data-palette="apple"]:not([data-custom-theme]) {
+  --accent: #fa233b;
+  --accent-bg: #fa233b;
+}
+/* A picked accent color keeps Apple's sliders in the text color, like
+   Apple's own; the rest of the palette vars come from styles.css. */
+:root[data-ui="apple"]:not([data-custom-theme]) {
+  --seek-start: var(--text-primary);
+  --seek-end: var(--text-primary);
 }
 :root[data-ui="apple"][data-theme="dark"]:not([data-custom-theme]) {
   --bg-void: #000000;
@@ -41,8 +51,6 @@
   --border-subtle: rgba(255, 255, 255, 0.1);
 }
 :root[data-ui="apple"][data-theme="light"]:not([data-custom-theme]) {
-  --accent: #fa233b;
-  --accent-bg: #fa233b;
   --bg-void: #f5f5f7;
   --bg-base: #ffffff;
   --bg-elevated: #ffffff;
@@ -112,7 +120,14 @@
   box-shadow: none;
 }
 :root[data-ui="apple"] .card-play-btn svg { width: 15px; height: 15px; }
-:root[data-ui="apple"] .genre-card { border-radius: var(--radius-md); background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 35%, #5856d6) 100%); color: #fff; }
+/* Genre tiles: plain cards, no gradient. */
+:root[data-ui="apple"] .genre-card { border-radius: var(--radius-md); background: var(--bg-card); padding: 14px; }
+:root[data-ui="apple"] .genre-card:hover { background: var(--bg-card-hover); }
+/* Library list (layout lives in styles.css): Apple's lighter, larger type,
+   and no tile padding/background from the Apple .genre-card rule above. */
+:root[data-ui="apple"] .library-tile { background: none; border-radius: 0; padding: 13px 4px; }
+:root[data-ui="apple"] .library-tile:hover { background: var(--bg-highlight); }
+:root[data-ui="apple"] .library-tile-label { font-size: 17px; font-weight: 400; }
 
 /* ---------- Track lists ---------- */
 :root[data-ui="apple"] .track-table thead th { border-bottom: 1px solid var(--border-subtle); }
@@ -127,7 +142,7 @@
 :root[data-ui="apple"] .detail-art.round { border-radius: 50%; }
 :root[data-ui="apple"] .play-all-btn {
   width: 104px; height: 40px; border-radius: 10px;
-  background: var(--accent); color: #fff;
+  background: var(--accent); color: var(--accent-contrast);
   box-shadow: none;
 }
 :root[data-ui="apple"] .play-all-btn:hover { transform: none; filter: brightness(1.08); }
@@ -170,6 +185,13 @@
 :root[data-ui="apple"] .player-title { font-weight: 500; }
 :root[data-ui="apple"] .ctrl-btn { color: var(--text-primary); }
 :root[data-ui="apple"] .ctrl-btn.active { color: var(--accent); }
+/* Shuffle/repeat on: Apple shows the icon on a rounded highlight, so the
+   on/off state reads at a glance (the color change alone was too subtle). */
+:root[data-ui="apple"] .player-bar #btn-shuffle.active,
+:root[data-ui="apple"] .player-bar #btn-repeat.active {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-radius: 8px;
+}
 :root[data-ui="apple"] .ctrl-btn-play { color: var(--text-primary); top: 0; }
 :root[data-ui="apple"] .ctrl-btn-play:hover { color: var(--text-primary); transform: scale(1.08); }
 :root[data-ui="apple"] .ctrl-btn-play svg { fill: currentColor; }
@@ -181,7 +203,7 @@
 :root[data-ui="apple"] .segmented { border-radius: 9px; padding: 2px; }
 :root[data-ui="apple"] .segmented button { border-radius: 7px; font-weight: 500; }
 :root[data-ui="apple"] .segmented button.active { background: var(--bg-elevated); color: var(--text-primary); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25); }
-:root[data-ui="apple"] .btn-primary { background: var(--accent); color: #fff; border-radius: 10px; }
+:root[data-ui="apple"] .btn-primary { background: var(--accent); color: var(--accent-contrast); border-radius: 10px; }
 
 /* ---------- Modals, menus, sheets: frosted glass ---------- */
 :root[data-ui="apple"] .modal-card {
@@ -306,7 +328,17 @@
   :root[data-ui="apple"] .mobile-now-playing-controls #mobile-btn-next { font-size: 30px; color: #fff; }
   :root[data-ui="apple"] .mobile-now-playing-controls #mobile-btn-shuffle,
   :root[data-ui="apple"] .mobile-now-playing-controls #mobile-btn-repeat { color: rgba(255, 255, 255, 0.62); }
-  :root[data-ui="apple"] .mobile-now-playing-controls .ctrl-btn.active { color: #fff; }
+  /* Needs the ids too: the dimmed off-state rule above is id-specific, so a
+     plain .active never won and on/off looked identical. */
+  :root[data-ui="apple"] .mobile-now-playing-controls #mobile-btn-shuffle,
+  :root[data-ui="apple"] .mobile-now-playing-controls #mobile-btn-repeat {
+    width: 36px; height: 36px; border-radius: 9px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  :root[data-ui="apple"] .mobile-now-playing-controls #mobile-btn-shuffle.active,
+  :root[data-ui="apple"] .mobile-now-playing-controls #mobile-btn-repeat.active {
+    color: #fff; background: rgba(255, 255, 255, 0.24);
+  }
 
   :root[data-ui="apple"] .np-volume-row {
     display: flex; align-items: center; gap: 12px; margin-top: 8px;

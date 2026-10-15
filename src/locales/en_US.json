@@ -231,9 +231,17 @@
     "low": "Low — 96 kbps"
   },
   "palette": {
-    "jellyfin": "Jellyfin",
-    "spotify": "Spotify",
+    "default": "Default",
+    "blue": "Blue",
+    "green": "Green",
+    "red": "Red",
+    "magenta": "Magenta",
     "purple": "Purple",
+    "pink": "Pink",
+    "orange": "Orange",
+    "yellow": "Yellow",
+    "teal": "Teal",
+    "brown": "Brown",
     "mono": "Monochrome"
   },
   "errors": {

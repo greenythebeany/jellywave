@@ -1,7 +1,14 @@
-// Fetches lyrics at runtime from lrclib.net, a free, open lyrics lookup API.
-// Nothing is bundled or stored — this only looks up what the user is currently playing.
+// Looks up lyrics for what's currently playing, trying several sources in
+// order until one has them:
+//   1. lrclib.net -- free, open lyrics API (synced when available)
+//   2. the user's own Jellyfin server -- .lrc files / embedded lyrics
+//      (Jellyfin 10.9+), so nothing leaves the user's own setup
+//   3. lyrics.ovh -- free public lyrics API (plain text only)
+// Nothing is bundled or stored on disk; results are only cached in memory
+// for the session.
 
 const LRCLIB_BASE = 'https://lrclib.net/api';
+const LYRICS_OVH_BASE = 'https://api.lyrics.ovh/v1';
 
 function parseLrc(lrc) {
   if (!lrc) return null;
@@ -90,7 +97,7 @@ async function searchLyrics(title, artist) {
   return results && results.length ? results[0] : null;
 }
 
-async function lookupLyrics({ title, artist, album, durationSeconds }) {
+async function lookupLrclib({ title, artist, album, durationSeconds }) {
   const params = new URLSearchParams({
     track_name: title || '',
     artist_name: artist || ''
@@ -118,6 +125,60 @@ async function lookupLyrics({ title, artist, album, durationSeconds }) {
   } catch (err) {
     throw err instanceof LyricsUnavailableError ? err : new LyricsUnavailableError(err?.message);
   }
+}
+
+const hasLyrics = (r) => !!(r && ((r.synced && r.synced.length) || r.plain));
+
+// Jellyfin's /Audio/{id}/Lyrics shape: Lyrics[{ Text, Start }], Start in
+// 100ns ticks (absent/null for unsynced lyrics).
+function fromJellyfin(data) {
+  const lines = (data && data.Lyrics) || [];
+  if (!lines.length) return null;
+  const synced = lines.every((l) => l.Start != null);
+  if (synced) {
+    return {
+      synced: lines.map((l) => ({ time: l.Start / 1e7, text: (l.Text || '').trim() })),
+      plain: null,
+      instrumental: false
+    };
+  }
+  return { synced: null, plain: lines.map((l) => l.Text || '').join('\n'), instrumental: false };
+}
+
+// lyrics.ovh matches on one artist, and is literal about the title -- use
+// the first credited artist and the cleaned-up title.
+async function lookupLyricsOvh({ title, artist }) {
+  const firstArtist = (artist || '').split(/\s*[,;&/]\s*|\s+(?:feat\.?|ft\.?|with|x)\s+/i)[0].trim();
+  const cleanTitle = cleanedTitleForSearch(title).replace(/\s*[([](?:feat|ft|with)\b[^)\]]*[)\]]/gi, '').trim();
+  if (!firstArtist || !cleanTitle) return null;
+  const res = await fetchWithRetry(`${LYRICS_OVH_BASE}/${encodeURIComponent(firstArtist)}/${encodeURIComponent(cleanTitle)}`);
+  if (!res.ok) return null;
+  const data = await res.json();
+  const plain = (data && data.lyrics || '').replace(/\r\n/g, '\n').trim();
+  return plain ? { synced: null, plain, instrumental: false } : null;
+}
+
+// Tries each source in turn. Returns the first hit; null only when every
+// source genuinely answered "none"; throws LyricsUnavailableError when
+// nothing was found and at least one source couldn't be reached (so the
+// UI offers Retry instead of a possibly-false "no lyrics").
+async function lookupLyrics(query) {
+  const providers = [
+    () => lookupLrclib(query),
+    query.fromServer ? async () => fromJellyfin(await query.fromServer()) : null,
+    () => lookupLyricsOvh(query)
+  ].filter(Boolean);
+  let anyFailed = false;
+  for (const provider of providers) {
+    try {
+      const result = await provider();
+      if (hasLyrics(result) || result?.instrumental) return result;
+    } catch (err) {
+      anyFailed = true;
+    }
+  }
+  if (anyFailed) throw new LyricsUnavailableError('A lyrics source could not be reached');
+  return null;
 }
 
 // In-memory cache (this session only -- nothing is stored), keyed by the

@@ -66,5 +66,23 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<!-- A self-hosted Jellyfin server is very often plain http on a raw IP
+	     (LAN or Tailscale 100.x). With no exceptions, App Transport Security
+	     blocks those (only hostnames/https got through), so allow arbitrary
+	     loads, for the WebView's fetch()/<audio> too, which ATS treats as
+	     "web content" with its own switch. -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<!-- iOS asks before an app talks to devices on the local network (a
+	     server at 192.168.x.x etc.); this is the text shown in that prompt. -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>JellyWave connects to your own Jellyfin server, which may be on your local network.</string>
 </dict>
 </plist>

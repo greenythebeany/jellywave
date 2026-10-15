@@ -1,6 +1,9 @@
 package com.jellywave.app;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.ContentObserver;
 import android.media.AudioManager;
 import android.os.Handler;
@@ -13,6 +16,8 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
+import androidx.core.content.ContextCompat;
+
 // Lets the in-app volume slider drive the phone's real media volume
 // (STREAM_MUSIC, the same stream the hardware keys control here -- see
 // MainActivity's setVolumeControlStream) instead of a separate in-app
@@ -23,24 +28,41 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 public class SystemVolumePlugin extends Plugin {
     private AudioManager audioManager;
     private ContentObserver observer;
+    private BroadcastReceiver receiver;
     private int lastVolume = -1;
+
+    // Called from both sources below; only reports real changes.
+    private void reportIfChanged() {
+        int current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        if (current == lastVolume) return;
+        lastVolume = current;
+        notifyListeners("volumeChange", levelPayload(current));
+    }
 
     @Override
     public void load() {
         audioManager = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
         if (audioManager == null) return;
         lastVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-        // Volume changes are persisted to Settings.System, so observing it
-        // catches hardware keys, the system volume panel and Bluetooth
-        // remote volume alike -- without the hidden VOLUME_CHANGED_ACTION
-        // broadcast or any extra permission.
+        // Primary: the system's volume-changed broadcast, sent the instant
+        // the hardware keys / volume panel / Bluetooth change the level.
+        // (Watching Settings.System alone lagged 1-2s behind, since Android
+        // persists volume there lazily.)
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int stream = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_TYPE", -1);
+                if (stream != -1 && stream != AudioManager.STREAM_MUSIC) return;
+                reportIfChanged();
+            }
+        };
+        ContextCompat.registerReceiver(getContext(), receiver,
+            new IntentFilter("android.media.VOLUME_CHANGED_ACTION"), ContextCompat.RECEIVER_EXPORTED);
+        // Fallback for devices/ROMs that don't send that broadcast.
         observer = new ContentObserver(new Handler(Looper.getMainLooper())) {
             @Override
             public void onChange(boolean selfChange) {
-                int current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-                if (current == lastVolume) return;
-                lastVolume = current;
-                notifyListeners("volumeChange", levelPayload(current));
+                reportIfChanged();
             }
         };
         getContext().getContentResolver().registerContentObserver(Settings.System.CONTENT_URI, true, observer);
@@ -48,6 +70,10 @@ public class SystemVolumePlugin extends Plugin {
 
     @Override
     protected void handleOnDestroy() {
+        if (receiver != null) {
+            try { getContext().unregisterReceiver(receiver); } catch (IllegalArgumentException ignored) { }
+            receiver = null;
+        }
         if (observer != null) {
             getContext().getContentResolver().unregisterContentObserver(observer);
             observer = null;

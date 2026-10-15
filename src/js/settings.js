@@ -1,10 +1,19 @@
 const STORAGE_KEY = 'jellywave:settings';
 
 export const PALETTES = {
-  jellyfin: { label: 'Jellyfin', accent: '#00a4dc', accentHover: '#22b8ec' },
-  spotify: { label: 'Spotify', accent: '#1ed760', accentHover: '#3be275' },
-  purple: { label: 'Purple', accent: '#aa5cc3', accentHover: '#bd74d4' },
-  mono: { label: 'Monochrome', accent: '#e6e6e6', accentHover: '#ffffff' }
+  // Each interface style's own accent (Spotify green / Apple red).
+  default: { label: 'Default', accent: 'linear-gradient(135deg, #1ed760 50%, #fa2d48 50%)' },
+  blue: { label: 'Blue', accent: '#3b82f6', accentHover: '#60a5fa' },
+  green: { label: 'Green', accent: '#1ed760', accentHover: '#3be275' },
+  red: { label: 'Red', accent: '#ef4444', accentHover: '#f87171' },
+  magenta: { label: 'Magenta', accent: '#d946ef', accentHover: '#e879f9' },
+  purple: { label: 'Purple', accent: '#a855f7', accentHover: '#c084fc' },
+  pink: { label: 'Pink', accent: '#f472b6', accentHover: '#f9a8d4' },
+  orange: { label: 'Orange', accent: '#f97316', accentHover: '#fb923c' },
+  yellow: { label: 'Yellow', accent: '#facc15', accentHover: '#fde047' },
+  teal: { label: 'Teal', accent: '#14b8a6', accentHover: '#2dd4bf' },
+  brown: { label: 'Brown', accent: '#b07a4f', accentHover: '#c49167' },
+  mono: { label: 'Monochrome', accent: 'linear-gradient(135deg, #f2f2f2 50%, #1a1a1a 50%)' }
 };
 
 export const AUDIO_QUALITIES = {
@@ -16,7 +25,7 @@ export const AUDIO_QUALITIES = {
 
 const DEFAULTS = {
   themeMode: 'dark', // 'dark' | 'light' | 'system'
-  palette: 'jellyfin',
+  palette: 'default', // a PALETTES key; 'default' = the interface style's own accent
   uiStyle: 'spotify', // 'spotify' | 'apple' -- see css/apple.css
   audioQuality: 'auto',
   artBackground: false,
@@ -130,11 +139,14 @@ export function applySettings() {
   const root = document.documentElement;
   root.setAttribute('data-theme', resolvedThemeMode());
   const apple = current.uiStyle === 'apple';
-  // Each interface style has one fixed accent: Spotify green, or Apple's
-  // red (apple.css; no palette rule matches "apple"). The old palette
-  // picker is gone. Community themes still recolor either style -- they
-  // target any :root[data-palette].
-  root.setAttribute('data-palette', apple ? 'apple' : 'spotify');
+  // A picked accent applies to either style; 'default' (or a palette from
+  // an older version that no longer exists) uses the style's own accent:
+  // "spotify" (styles.css) or "apple" (apple.css). Community themes still
+  // recolor everything -- they target any :root[data-palette].
+  const palette = PALETTES[current.palette] && current.palette !== 'default'
+    ? current.palette
+    : (apple ? 'apple' : 'spotify');
+  root.setAttribute('data-palette', palette);
   root.setAttribute('data-ui', apple ? 'apple' : 'spotify');
   // Custom CSS that sets the app's colors (e.g. a theme from the README's
   // list, @import-ed from src/themes) -- lets apple.css hand colors over.
