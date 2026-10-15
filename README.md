@@ -40,10 +40,10 @@ JellyWave is a personal music client for a self-hosted Jellyfin server. It logs 
 - Native lock-screen and notification media controls on Android, including playback that survives the app going to the background
 - Discord Rich Presence on desktop: shows what you're currently listening to, with cover art
 - Custom CSS support for further tweaking the look of the app, including a set of ready-made community color schemes (see [Themes](#themes) below)
-- Light and dark themes with multiple accent color palettes, plus a blurred cover-art background option
+- Two interface styles (Spotify or Apple Music), light and dark themes, plus a blurred cover-art background option
 - "Jam on paw level": an optional cat that bounces along with the actual bass of whatever's playing
 - 15 language translations (English, French, German, Slovak, Czech, Spanish, Polish, Russian, Ukrainian, Norwegian, Swedish, Finnish, Danish, Dutch, Italian) with more welcome via contribution
-- Desktop app built with Electron, Android app built with Capacitor, with a built-in check for new releases on desktop
+- Desktop app built with Electron, Android app built with Capacitor, with one-click in-app updates on desktop
 
 ## Installation
 
@@ -98,6 +98,30 @@ npm run dist        # build a Windows installer
 ```
 
 The Android project lives in `android/` and is a standard Capacitor project — open it in Android Studio, or build from the command line with `./gradlew assembleRelease` after setting up your own signing keystore in `android/keystore/keystore.properties`.
+
+## What's new in 2.0.0
+
+A big one. Highlights:
+
+**New look**
+- Interface style setting (Settings → Appearance): the existing Spotify look, or a new Apple Music look with frosted glass, bare rounded artwork, slim pill sliders, a floating mini-player and a full-screen player built around the blurred cover
+- Each style has one fixed accent (Spotify green / Apple red), replacing the old accent palette picker; the community [Themes](#themes) recolor either style
+- Open animations for popups, menus, pages and the player, and a loading screen on start instead of the login form flashing up
+
+**Player**
+- Instant skipping: the next song buffers in the background, so Next (and going straight back) starts immediately
+- The queue slides up as a sheet from the bottom of the player on desktop and phones; the desktop side panel always shows lyrics, and phones get a full-size lyrics sheet
+- Phone gestures: swipe the cover for next/previous, swipe down to close the player, pull down any page to refresh it
+- Long song titles scroll instead of being cut off, and the mini-player has previous/next buttons
+- Android: the volume slider controls the phone's media volume and follows the volume buttons
+- Desktop keyboard shortcuts: Space to play/pause, Ctrl + ← / → for previous/next
+
+**Updates and reliability**
+- One-click updates on desktop: new versions download, get verified and install from inside the app, which closes itself cleanly for the installer
+- Starting offline goes straight to Downloads instead of an empty Home
+- Lyrics retry when the lyrics service is flaky, are remembered for the session, and show a Retry button instead of a false "No lyrics found"
+- A "What's new" popup on the first launch after an update
+- Fixed the track menu opening while scrolling, queue drag-to-reorder dropping songs in the wrong place, the off-center download spinner, Android's blue tap highlight, and more
 
 ## What's new in 1.0.2
 
