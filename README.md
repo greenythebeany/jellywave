@@ -18,16 +18,20 @@ JellyWave is a personal music client for a self-hosted Jellyfin server. It logs 
 ## Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/desktop-home.png" width="800" alt="JellyWave desktop, Home view" />
+  <img src="docs/screenshots/desktop-home.png" width="800" alt="JellyWave desktop, Home view (Spotify style)" />
+</p>
+<p align="center">
+  <img src="docs/screenshots/desktop-apple.png" width="800" alt="JellyWave desktop, Home view with the player panel (Apple Music style)" />
 </p>
 <p align="center">
   <img src="docs/screenshots/desktop-settings.png" width="380" alt="JellyWave desktop, Settings" />
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/mobile-home.png" width="220" alt="JellyWave Android, Home view" />
-  <img src="docs/screenshots/mobile-library.png" width="220" alt="JellyWave Android, Library view" />
-  <img src="docs/screenshots/mobile-nowplaying.png" width="220" alt="JellyWave Android, Now Playing view" />
+  <img src="docs/screenshots/mobile-home.png" width="200" alt="JellyWave Android, Home view" />
+  <img src="docs/screenshots/mobile-library.png" width="200" alt="JellyWave Android, Library view" />
+  <img src="docs/screenshots/mobile-nowplaying.png" width="200" alt="JellyWave Android, Now Playing view (Spotify style)" />
+  <img src="docs/screenshots/mobile-nowplaying-apple.png" width="200" alt="JellyWave Android, Now Playing view (Apple Music style)" />
 </p>
 
 ## Features
@@ -98,6 +102,14 @@ npm run dist        # build a Windows installer
 ```
 
 The Android project lives in `android/` and is a standard Capacitor project — open it in Android Studio, or build from the command line with `./gradlew assembleRelease` after setting up your own signing keystore in `android/keystore/keystore.properties`.
+
+## What's new in 2.0.1
+
+- Artist pages: the banner now runs up behind the top bar in the Apple Music style too, and the back/forward and profile buttons get a dark backing over the photo so they stay readable
+- Apple Music style: smoother volume and seek sliders (the fill now tracks your finger exactly), and song lists without the alternating row stripes
+- Centered the like icon in the full-screen player
+- The "What's new" popup now also shows when updating straight from 1.0.x to a later 2.x version
+- Updated screenshots
 
 ## What's new in 2.0.0
 
