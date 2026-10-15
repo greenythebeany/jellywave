@@ -377,15 +377,13 @@
               <button data-value="apple" type="button" data-i18n="settings.uiApple">Apple Music</button>
             </div>
           </div>
-          <!-- Accent palette picker: retired (each interface style has its
-               own fixed accent, see applySettings), kept hidden. -->
-          <div class="settings-row" id="accent-color-row" hidden>
+          <div class="settings-row" id="accent-color-row">
             <div>
               <div class="settings-row-label" data-i18n="settings.accentColor">Accent color</div>
               <div class="settings-row-desc" data-i18n="settings.accentColorDesc">Pick the app's color scheme</div>
             </div>
           </div>
-          <div class="palette-grid" id="palette-grid" hidden></div>
+          <div class="palette-grid" id="palette-grid"></div>
           <div class="settings-row">
             <div>
               <div class="settings-row-label" data-i18n="settings.blurBg">Blurred cover art background</div>
@@ -641,6 +639,7 @@
             <li><strong>Your own Jellyfin server</strong> — the app talks to it directly with your credentials to stream your library. This is infrastructure you control.</li>
             <li><strong>GitHub (api.github.com)</strong> — a background check for a newer JellyWave release. Sends a generic app identifier, nothing that identifies you. Can be turned off in Settings → Privacy.</li>
             <li><strong>Deezer (api.deezer.com)</strong> — when your server has no cover art for a track, the current artist/album/track name is sent to Deezer's public search to find one. No account or personal identifier is sent. Can be turned off in Settings → Privacy.</li>
+            <li><strong>Lyrics: lrclib.net, then lyrics.ovh</strong> — when you view lyrics, the current track's title, artist, album and length are sent to lrclib.net's public lyrics API to find them. If lrclib and your own Jellyfin server don't have them, the title and first artist are also sent to lyrics.ovh. No account or personal identifier is sent; lyrics are only kept in memory while the app is open.</li>
             <li><strong>Discord</strong> — only if you explicitly connect it in Settings → Audio → Discord Rich Presence. While connected, the currently playing track/artist and its cover art URL are sent to your local Discord client so it can show on your Discord profile. Off by default; disconnect any time.</li>
             <li><strong>YouTube / YouTube Music / SoundCloud</strong> — only if you use the "Import" feature to paste a link, which fetches that specific media directly to your device. See the Terms of Service section below for the responsibility that comes with this feature.</li>
           </ul>
@@ -655,7 +654,7 @@
           <ul>
             <li>JellyWave is provided <strong>as-is, free of charge, under the MIT license</strong> (see the repository's <code>LICENSE</code>/README) — no warranty of any kind, to the extent the law allows.</li>
             <li>You need your own Jellyfin server and account; JellyWave is an independent, unofficial client and is not affiliated with, endorsed by, or supported by the Jellyfin project.</li>
-            <li>Discord, Deezer, GitHub, YouTube, YouTube Music, and SoundCloud are third-party services referenced only to describe how JellyWave integrates with them. JellyWave is not affiliated with or endorsed by any of them, and each remains governed by its own terms.</li>
+            <li>Discord, Deezer, GitHub, lrclib.net, lyrics.ovh, YouTube, YouTube Music, and SoundCloud are third-party services referenced only to describe how JellyWave integrates with them. JellyWave is not affiliated with or endorsed by any of them, and each remains governed by its own terms.</li>
             <li>The "Import" feature downloads media from a URL you provide, using the open-source <code>yt-dlp</code> engine. <strong>You are solely responsible</strong> for having the right to download that media and for complying with the source platform's terms of service and applicable copyright law in your country. The developer does not host, index, or distribute any third-party media.</li>
             <li>You're responsible for the security of your own Jellyfin server and account credentials.</li>
           </ul>
@@ -696,7 +695,7 @@
             <li><strong>Uicons by Flaticon</strong> — the app's icon set, used and credited per Flaticon's license (see the credit in Settings → About, and in the README).</li>
             <li><strong>yt-dlp</strong> and <strong>Pillow</strong> — used by the optional "Import" feature's Python helper script to fetch and process media. yt-dlp is released into the public domain (Unlicense). Neither is bundled inside the app — the Import feature requires a separate Python installation on your system.</li>
             <li><strong>"Cat Jam" animation</strong> (the optional "Jam on paw level" easter egg) — adapted from <a href="https://github.com/BlafKing/spicetify-cat-jam-synced" target="_blank" rel="noopener noreferrer">BlafKing's spicetify-cat-jam-synced</a>.</li>
-            <li><strong>Deezer</strong>, <strong>Discord</strong>, <strong>GitHub</strong>, <strong>YouTube</strong>, <strong>YouTube Music</strong>, and <strong>SoundCloud</strong> — third-party services JellyWave can optionally talk to (see Privacy Policy above). Their names and logos belong to their respective owners; JellyWave is not affiliated with or endorsed by any of them.</li>
+            <li><strong>Deezer</strong>, <strong>Discord</strong>, <strong>GitHub</strong>, <strong>lrclib.net</strong>, <strong>lyrics.ovh</strong>, <strong>YouTube</strong>, <strong>YouTube Music</strong>, and <strong>SoundCloud</strong> — third-party services JellyWave can optionally talk to (see Privacy Policy above). Their names and logos belong to their respective owners; JellyWave is not affiliated with or endorsed by any of them.</li>
           </ul>
         </section>
 

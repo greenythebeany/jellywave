@@ -201,9 +201,17 @@
     "low": "Nízka — 96 kb/s"
   },
   "palette": {
-    "jellyfin": "Jellyfin",
-    "spotify": "Spotify",
+    "default": "Predvolená",
+    "blue": "Modrá",
+    "green": "Zelená",
+    "red": "Červená",
+    "magenta": "Purpurová",
     "purple": "Fialová",
+    "pink": "Ružová",
+    "orange": "Oranžová",
+    "yellow": "Žltá",
+    "teal": "Tyrkysová",
+    "brown": "Hnedá",
     "mono": "Monochromatická"
   },
   "errors": {

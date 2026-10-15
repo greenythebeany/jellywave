@@ -20,6 +20,7 @@ This document is also available inside the app itself, under **Settings → Abou
 - **Your own Jellyfin server** — the app talks to it directly with your credentials to stream your library. This is infrastructure you control.
 - **GitHub (api.github.com)** — a background check for a newer JellyWave release. Sends a generic app identifier, nothing that identifies you. Can be turned off in Settings → Privacy.
 - **Deezer (api.deezer.com)** — when your server has no cover art for a track, the current artist/album/track name is sent to Deezer's public search to find one. No account or personal identifier is sent. Can be turned off in Settings → Privacy.
+- **Lyrics: lrclib.net, then lyrics.ovh** — when you view lyrics, the current track's title, artist, album and length are sent to lrclib.net's public lyrics API to find them. If lrclib and your own Jellyfin server don't have them, the title and first artist are also sent to lyrics.ovh. No account or personal identifier is sent; lyrics are only kept in memory while the app is open.
 - **Discord** — only if you explicitly connect it in Settings → Audio → Discord Rich Presence. While connected, the currently playing track/artist and its cover art URL are sent to your local Discord client so it can show on your Discord profile. Off by default; disconnect any time.
 - **YouTube / YouTube Music / SoundCloud** — only if you use the "Import" feature to paste a link, which fetches that specific media directly to your device. See the [Terms of Service](TERMS.md) for the responsibility that comes with this feature.
 

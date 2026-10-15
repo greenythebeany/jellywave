@@ -31,7 +31,7 @@ const CLIENT_NAME = 'JellyWave';
 // literal below is only the fallback for the brief window before that
 // resolves (or if neither bridge is available, e.g. running in a plain
 // browser during development).
-let CLIENT_VERSION = '2.0.1';
+let CLIENT_VERSION = '2.0.2';
 
 export function getClientVersion() {
   return CLIENT_VERSION;
@@ -314,6 +314,17 @@ export class JellyfinClient {
       Fields: 'PrimaryImageAspectRatio'
     });
     return data.Items || [];
+  }
+
+  // Lyrics the server itself has for a track (.lrc files / embedded tags,
+  // Jellyfin 10.9+). null when the track has none (404).
+  async getLyrics(itemId) {
+    try {
+      return await this._get(`/Audio/${itemId}/Lyrics`);
+    } catch (err) {
+      if (err.status === 404) return null;
+      throw err;
+    }
   }
 
   async getItem(itemId) {

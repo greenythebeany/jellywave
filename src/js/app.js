@@ -1477,11 +1477,12 @@ function uiSeekPercent(pct) {
   player.seekTo((pct / 100) * duration);
 }
 
-// Android only: the volume slider drives the phone's real media volume
-// (see SystemVolumePlugin.java) and follows the hardware keys, like the
-// Spotify/Apple Music apps -- in-app volume stays at full so the phone's
-// level is the one that counts. Desktop and iOS keep the in-app volume.
-const systemVolume = isAndroid ? window.Capacitor?.Plugins?.JellyWaveSystemVolume : null;
+// Phones: the volume slider drives the phone's real media volume (Android:
+// SystemVolumePlugin.java, iOS: JellyWaveViewController.swift) and follows
+// the hardware buttons, like the Spotify/Apple Music apps -- in-app volume
+// stays at full so the phone's level is the one that counts. Desktop keeps
+// the in-app volume.
+const systemVolume = isMobile ? window.Capacitor?.Plugins?.JellyWaveSystemVolume : null;
 let systemVolumeDragging = false;
 
 function showVolumeLevel(pct) {
@@ -2528,7 +2529,7 @@ async function renderArtists() {
 function renderLibrary() {
   viewRoot.innerHTML = '';
   viewRoot.appendChild(el('div', 'view-title', t('nav.library')));
-  const grid = el('div', 'card-grid');
+  const grid = el('div', 'card-grid library-grid');
   const entries = [
     { view: 'songs', icon: 'fi-br-list-music', label: t('nav.songs') },
     { view: 'liked', icon: 'fi-br-heart', label: t('nav.liked') },
@@ -2539,8 +2540,8 @@ function renderLibrary() {
     { view: 'stats', icon: 'fi-br-stats', label: t('nav.stats') }
   ];
   entries.forEach(({ view, icon, label }) => {
-    const card = el('div', 'card genre-card');
-    card.innerHTML = `<i class="fi ${icon}" style="font-size:28px"></i><div class="genre-card-title" style="margin-top:10px">${escapeHtml(label)}</div>`;
+    const card = el('div', 'card genre-card library-tile');
+    card.innerHTML = `<i class="fi ${icon} library-tile-icon"></i><div class="genre-card-title library-tile-label">${escapeHtml(label)}</div><i class="fi fi-br-angle-small-right library-tile-chevron"></i>`;
     card.addEventListener('click', () => navigateTo({ view }));
     grid.appendChild(card);
   });
@@ -3421,6 +3422,13 @@ function wirePlayer() {
     openNowPlaying();
   });
   btnCloseLyrics.addEventListener('click', () => closeNowPlaying());
+  // Phones: tapping anywhere on the empty top strip closes the full-screen
+  // player too, not just the small arrow/grabber (its own buttons -- cast,
+  // sleep, lyrics, queue -- still do their own thing).
+  document.querySelector('.lyrics-header').addEventListener('click', (evt) => {
+    if (!isPhoneLayout() || evt.target.closest('button')) return;
+    closeNowPlaying();
+  });
   wireNowPlayingGestures();
 
   nowPlayingLikeBtn.addEventListener('click', async () => {
@@ -4241,7 +4249,9 @@ function lyricsQueryFor(track) {
     title: track.Name,
     artist: artistNames(track),
     album: track.Album,
-    durationSeconds: ticksToSeconds(track.RunTimeTicks)
+    durationSeconds: ticksToSeconds(track.RunTimeTicks),
+    // Second source, after lrclib: the server's own lyrics for this track.
+    fromServer: jellyfin ? () => jellyfin.getLyrics(track.Id) : null
   };
 }
 
