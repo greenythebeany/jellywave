@@ -185,10 +185,6 @@
       <div id="now-playing-bg-art" class="now-playing-bg-art"></div>
       <div class="lyrics-header">
         <button id="btn-close-lyrics" class="btn-icon-plain np-collapse-btn" data-i18n-title="nowPlaying.title" title="Now Playing"><i class="fi fi-br-angle-small-down"></i></button>
-        <div class="panel-tabs">
-          <button id="tab-lyrics" class="panel-tab active" data-tab="lyrics" type="button" data-i18n="nowPlaying.lyricsTab">Lyrics</button>
-          <button id="tab-queue" class="panel-tab" data-tab="queue" type="button" data-i18n="nowPlaying.queueTab">Queue</button>
-        </div>
         <div class="lyrics-header-actions">
           <button id="btn-connect-mobile" class="btn-icon-plain" type="button" data-i18n-title="connect.title" title="Connect"><i class="fi fi-br-screencast"></i></button>
           <button id="btn-sleep-timer-mobile" class="btn-icon-plain" type="button" data-i18n-title="player.sleepTimer" title="Sleep timer"><i class="fi fi-br-moon"></i></button>
@@ -240,17 +236,18 @@
 
       <div id="lyrics-body" class="lyrics-body"></div>
       <div id="queue-body" class="queue-body" hidden></div>
-    </aside>
 
-    <!-- Phone layout only: the queue opens as a bottom sheet over the
-         full-screen player instead of a tab (queue-body is moved in here). -->
-    <div id="queue-sheet-backdrop" class="queue-sheet-backdrop"></div>
-    <section id="queue-sheet" class="queue-sheet" aria-hidden="true">
-      <div id="queue-sheet-head" class="queue-sheet-head">
-        <div class="queue-sheet-grabber"></div>
-        <div id="queue-sheet-title" class="queue-sheet-title" data-i18n="nowPlaying.queueTab">Queue</div>
-      </div>
-    </section>
+      <!-- The queue (and, on phones, full lyrics) slide up as a sheet from
+           the bottom of the player: the full-screen player on phones, the
+           side panel on desktop. queue-body/lyrics-body get moved in here. -->
+      <div id="queue-sheet-backdrop" class="queue-sheet-backdrop"></div>
+      <section id="queue-sheet" class="queue-sheet" aria-hidden="true">
+        <div id="queue-sheet-head" class="queue-sheet-head">
+          <div class="queue-sheet-grabber"></div>
+          <div id="queue-sheet-title" class="queue-sheet-title" data-i18n="nowPlaying.queueTab">Queue</div>
+        </div>
+      </section>
+    </aside>
 
     <video id="cat-jam" class="cat-jam" src="assets/catjam.webm" muted loop playsinline hidden></video>
 
@@ -302,7 +299,7 @@
           <i class="fi fi-br-screencast"></i>
         </button>
         <button id="btn-lyrics" class="ctrl-btn" data-i18n-title="nowPlaying.title" title="Now Playing">
-          <i class="fi fi-br-list-music"></i>
+          <i class="fi fi-br-sidebar-flip"></i>
         </button>
         <i id="volume-icon" class="fi fi-br-volume volume-icon"></i>
         <input type="range" id="volume-bar" class="volume-bar" min="0" max="100" value="50" />

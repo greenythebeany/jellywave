@@ -195,7 +195,6 @@
 
 /* ---------- Side panel (desktop) ---------- */
 :root[data-ui="apple"] .lyrics-panel { background: var(--bg-elevated); border-left: 1px solid var(--border-subtle); }
-:root[data-ui="apple"] .panel-tab.active { background: var(--bg-highlight); color: var(--text-primary); }
 :root[data-ui="apple"] .lyric-line { font-weight: 700; }
 
 /* Volume row in the full-screen player -- Apple-only. */

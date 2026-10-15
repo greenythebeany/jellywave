@@ -34,8 +34,6 @@ const globalSearchInput = document.getElementById('global-search');
 const lyricsPanel = document.getElementById('lyrics-panel');
 const lyricsBody = document.getElementById('lyrics-body');
 const queueBody = document.getElementById('queue-body');
-const tabLyrics = document.getElementById('tab-lyrics');
-const tabQueue = document.getElementById('tab-queue');
 const btnQueueMobile = document.getElementById('btn-queue-mobile');
 const btnLyricsMobile = document.getElementById('btn-lyrics-mobile');
 const queueSheetTitle = document.getElementById('queue-sheet-title');
@@ -3448,8 +3446,6 @@ function wirePlayer() {
     }
   });
 
-  tabLyrics.addEventListener('click', () => showPanelTab('lyrics'));
-  tabQueue.addEventListener('click', () => showPanelTab('queue'));
   btnQueueMobile.addEventListener('click', openQueueSheet);
   btnLyricsMobile.addEventListener('click', openLyricsSheet);
   // On phones, tapping the lyrics preview under the controls expands it
@@ -4040,24 +4036,14 @@ function wireNowPlayingGestures() {
   target.addEventListener('pointercancel', end);
 }
 
+// The player panel always shows lyrics; the queue opens as a sheet over it
+// (openQueueSheet), on desktop and phones alike. 'queue' is still accepted
+// so older callers just open that sheet.
 function showPanelTab(tab) {
-  // Phone layout has no tabs: lyrics always show in the player and the
-  // queue opens as its own sheet.
-  if (isPhoneLayout()) {
-    if (tab === 'queue') openQueueSheet();
-    tab = 'lyrics';
-  } else if (queueBody.parentElement !== lyricsPanel) {
-    closeQueueSheet();
-    lyricsPanel.appendChild(queueBody);
-  }
-  activePanelTab = tab;
-  tabLyrics.classList.toggle('active', tab === 'lyrics');
-  tabQueue.classList.toggle('active', tab === 'queue');
-  setHidden(lyricsBody, tab !== 'lyrics');
-  // In the sheet (phone layout) the queue's visibility is the sheet's own.
-  if (queueBody.parentElement === lyricsPanel) setHidden(queueBody, tab !== 'queue');
-  if (tab === 'lyrics') loadLyricsForCurrentTrack();
-  else renderQueue();
+  if (tab === 'queue') openQueueSheet();
+  activePanelTab = 'lyrics';
+  setHidden(lyricsBody, false);
+  loadLyricsForCurrentTrack();
 }
 
 function buildQueueRow(track, idx, isPlaying) {
