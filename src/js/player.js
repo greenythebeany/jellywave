@@ -25,11 +25,11 @@ export const EQ_PRESETS = {
   classical: [3, 2, 0, -2, 2]
 };
 
-// How far into the current track we start pre-buffering the next one in the
-// spare <audio> element. Early (rather than just before the end) so a
-// manual skip can also start instantly, not only gapless auto-advance; the
-// short delay lets the current track's own buffering get ahead first.
-const PRELOAD_AFTER_SECONDS = 3;
+// When to start pre-buffering the next track in the spare <audio> element:
+// once the current one is fully downloaded (so the two never compete for a
+// slow connection -- a relayed Tailscale link especially), or at the latest
+// this many seconds before the end, so gapless playback still has time.
+const PRELOAD_DEADLINE_SECONDS = 25;
 
 export class Player {
   constructor(jellyfin, getBitrateKbps = () => 0) {
@@ -454,6 +454,9 @@ export class Player {
   }
 
   _emit(event, payload) {
+    // A queued song that starts playing has been "used up": drop its mark,
+    // or a later shuffle could land it back among the pending ones.
+    if (event === 'trackchange' && this.currentTrack?.__queued) delete this.currentTrack.__queued;
     this.listeners[event]?.forEach((cb) => cb(payload));
   }
 
@@ -463,13 +466,46 @@ export class Player {
 
   setQueue(tracks, startIndex = 0, sourceId = null) {
     this._cancelTransition();
+    // Songs the user queued and hasn't heard yet carry over to the new
+    // album/playlist, still next in line (like Spotify).
+    const pending = this.pendingQueued();
     this.originalQueue = [...tracks];
     this.queue = this.shuffle ? this._shuffled(tracks) : [...tracks];
     const startTrackId = tracks[startIndex]?.Id;
     this.currentIndex = this.shuffle ? this.queue.findIndex((t) => t.Id === startTrackId) : startIndex;
+    if (pending.length && this.currentIndex >= 0) {
+      this.queue.splice(this.currentIndex + 1, 0, ...pending);
+      this.originalQueue.splice(startIndex + 1, 0, ...pending);
+    }
     this.queueSourceId = sourceId;
     this._emit('queuechange');
     this._loadCurrent(true);
+  }
+
+  // ---------- "Add to queue" ----------
+  // Songs added with "Add to queue" are their own entries, marked
+  // `__queued`, and form a block right after the current song. New ones
+  // join the END of that block, so they play in the order they were added,
+  // before the rest of the album/playlist ("Next up").
+
+  // Index just past the queued block (= currentIndex + 1 when it's empty).
+  _queuedBlockEnd() {
+    let i = this.currentIndex + 1;
+    while (i < this.queue.length && this.queue[i]?.__queued) i++;
+    return i;
+  }
+
+  pendingQueued() {
+    if (this.currentIndex < 0) return [];
+    return this.queue.slice(this.currentIndex + 1, this._queuedBlockEnd());
+  }
+
+  clearQueued() {
+    const pending = this.pendingQueued();
+    if (!pending.length) return;
+    this.queue.splice(this.currentIndex + 1, pending.length);
+    this.originalQueue = this.originalQueue.filter((e) => !pending.includes(e));
+    this._emit('queuechange');
   }
 
   // Puts back a queue saved from a previous session (see the resume code in
@@ -499,14 +535,17 @@ export class Player {
   // equivalent position, so it stays right after the same track if the
   // user later turns shuffle off.
   enqueue(track) {
+    // A copy, so the flag never leaks onto the shared library track object.
+    const entry = { ...track, __queued: true };
     if (this.currentIndex < 0 || !this.queue.length) {
-      this.setQueue([track], 0);
+      this.setQueue([entry], 0);
       return;
     }
-    this.queue.splice(this.currentIndex + 1, 0, track);
-    const currentTrack = this.queue[this.currentIndex];
-    const originalIdx = this.originalQueue.indexOf(currentTrack);
-    this.originalQueue.splice(originalIdx >= 0 ? originalIdx + 1 : this.originalQueue.length, 0, track);
+    const at = this._queuedBlockEnd();
+    const before = this.queue[at - 1];
+    this.queue.splice(at, 0, entry);
+    const originalIdx = this.originalQueue.indexOf(before);
+    this.originalQueue.splice(originalIdx >= 0 ? originalIdx + 1 : this.originalQueue.length, 0, entry);
     this._emit('queuechange');
   }
 
@@ -532,7 +571,19 @@ export class Player {
       fromIndex === toIndex ||
       fromIndex === this.currentIndex || toIndex === this.currentIndex
     ) return;
-    const [moved] = this.queue.splice(fromIndex, 1);
+    let [moved] = this.queue.splice(fromIndex, 1);
+    // Dropped inside the "Next in queue" block -> becomes a queued song;
+    // dragged out of it -> a normal one.
+    const blockEnd = this._queuedBlockEnd() - (fromIndex < this.currentIndex ? 1 : 0);
+    const intoBlock = toIndex > this.currentIndex - (fromIndex < this.currentIndex ? 1 : 0) && toIndex <= blockEnd;
+    if (intoBlock && !moved.__queued) {
+      const copy = { ...moved, __queued: true };
+      const oi = this.originalQueue.indexOf(moved);
+      if (oi >= 0) this.originalQueue[oi] = copy;
+      moved = copy;
+    } else if (!intoBlock && moved.__queued) {
+      delete moved.__queued;
+    }
     this.queue.splice(toIndex, 0, moved);
     if (fromIndex < this.currentIndex && toIndex >= this.currentIndex) this.currentIndex -= 1;
     else if (fromIndex > this.currentIndex && toIndex <= this.currentIndex) this.currentIndex += 1;
@@ -553,14 +604,15 @@ export class Player {
 
   toggleShuffle() {
     this._cancelTransition();
-    const currentId = this.currentTrack?.Id;
+    const current = this.currentTrack;
+    // Queued songs aren't shuffled in -- they stay next, in order.
+    const pending = this.pendingQueued();
+    const base = this.originalQueue.filter((e) => !pending.includes(e));
     this.shuffle = !this.shuffle;
-    if (this.shuffle) {
-      this.queue = this._shuffled(this.originalQueue);
-    } else {
-      this.queue = [...this.originalQueue];
-    }
-    this.currentIndex = currentId ? this.queue.findIndex((t) => t.Id === currentId) : -1;
+    this.queue = this.shuffle ? this._shuffled(base) : [...base];
+    this.currentIndex = current ? this.queue.indexOf(current) : -1;
+    if (this.currentIndex < 0 && current) this.currentIndex = this.queue.findIndex((t) => t.Id === current.Id);
+    if (pending.length && this.currentIndex >= 0) this.queue.splice(this.currentIndex + 1, 0, ...pending);
     this._emit('queuechange');
   }
 
@@ -601,6 +653,14 @@ export class Player {
   playAt(index) {
     if (index < 0 || index >= this.queue.length) return;
     this._cancelTransition();
+    // Jumping past the queued songs (tapping something further down "Next
+    // up") keeps them next in line instead of leaving them behind.
+    const blockEnd = this._queuedBlockEnd();
+    if (index >= blockEnd && blockEnd > this.currentIndex + 1) {
+      const pending = this.queue.splice(this.currentIndex + 1, blockEnd - this.currentIndex - 1);
+      index -= pending.length;
+      this.queue.splice(index + 1, 0, ...pending);
+    }
     if (index !== this.currentIndex && this._swapToInactive(index)) return;
     this.currentIndex = index;
     this._loadCurrent(true);
@@ -744,9 +804,19 @@ export class Player {
     if (this._transitioning) return;
     if (this.crossfadeSeconds > 0 && remaining <= this.crossfadeSeconds) {
       this._beginCrossfade();
-    } else if (el.currentTime >= PRELOAD_AFTER_SECONDS) {
+    } else if (this._isFullyBuffered(el) || remaining <= PRELOAD_DEADLINE_SECONDS) {
       this._preloadNext();
     }
+  }
+
+  _isFullyBuffered(el) {
+    const ranges = el.buffered;
+    if (!ranges || !ranges.length || !isFinite(el.duration)) return false;
+    // The range holding the playhead reaches (nearly) the end of the file.
+    for (let i = 0; i < ranges.length; i++) {
+      if (ranges.start(i) <= el.currentTime + 0.5 && ranges.end(i) >= el.duration - 0.5) return true;
+    }
+    return false;
   }
 
   _preloadNext() {

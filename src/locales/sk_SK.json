@@ -131,13 +131,15 @@
     "lyricsTab": "Text piesne",
     "queueTab": "Fronta",
     "nowPlayingSection": "Práve sa prehráva",
-    "upNext": "Ako ďalšie",
+    "upNext": "Potom",
     "lookingUpLyrics": "Hľadám text piesne…",
     "noLyrics": "Pre túto skladbu sa nenašiel žiadny text.",
     "lyricsFailed": "Text sa teraz nepodarilo načítať.",
     "retry": "Skúsiť znova",
     "queueEmpty": "Fronta je prázdna.",
-    "title": "Práve sa prehráva"
+    "title": "Práve sa prehráva",
+    "nextInQueue": "Ďalej vo fronte",
+    "clearQueue": "Vymazať"
   },
   "player": {
     "shuffle": "Náhodné prehrávanie",
@@ -201,10 +203,13 @@
     "clearDownloads": "Odstrániť všetky",
     "clearDownloadsConfirm": "Odstrániť všetkých {count} stiahnutých skladieb z tohto zariadenia? V knižnici zostanú a môžeš si ich stiahnuť znova.",
     "haptics": "Haptická odozva",
-    "hapticsDesc": "Krátke vibrácie pri potiahnutí, dlhom podržaní a obnovení stránky"
+    "hapticsDesc": "Krátke vibrácie pri potiahnutí, dlhom podržaní a obnovení stránky",
+    "qualityNow": "Teraz: {level} · tvoje pripojenie ≈ {speed} Mbit/s",
+    "qualityKbps": "{kbps} kbps",
+    "qualityOriginal": "pôvodná kvalita"
   },
   "audioQuality": {
-    "auto": "Automaticky (najlepšia dostupná kvalita)",
+    "auto": "Automaticky (podľa pripojenia)",
     "high": "Vysoká — 320 kb/s",
     "medium": "Stredná — 192 kb/s",
     "low": "Nízka — 96 kb/s"
@@ -331,7 +336,13 @@
     "listenTimeTitle": "Skutočný čas počúvania",
     "listenTimeDesc": "Štatistiky teraz počítajú čas, ktorý naozaj počúvaš, na všetkých zariadeniach, nie odhad z prehratí.",
     "storageTitle": "Úložisko a haptika",
-    "storageDesc": "Pozri, koľko miesta zaberajú stiahnuté skladby, odstráň ich a zapni alebo vypni vibrácie."
+    "storageDesc": "Pozri, koľko miesta zaberajú stiahnuté skladby, odstráň ich a zapni alebo vypni vibrácie.",
+    "queueOrderTitle": "Fronta v správnom poradí",
+    "queueOrderDesc": "Skladby, ktoré pridáš, sa prehrajú v poradí, v akom si ich pridal, ešte pred zvyškom albumu. Vo fronte sú zvlášť pod „Ďalej vo fronte\".",
+    "adaptiveQualityTitle": "Automatická kvalita, ktorá sa prispôsobí",
+    "adaptiveQualityDesc": "Automatická kvalita streamovania teraz meria tvoje pripojenie a na pomalom či mobilnom pripojení zníži bitrate.",
+    "fasterLoadingTitle": "Rýchlejšie na pomalom pripojení",
+    "fasterLoadingDesc": "Obaly sa načítavajú vo veľkosti pre tvoju obrazovku a ďalšia skladba sa prednačíta až keď je aktuálna stiahnutá."
   },
   "wrapped": {
     "bannerTitle": "Tvoj rok {year} v hudbe",

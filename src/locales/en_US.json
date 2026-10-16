@@ -134,13 +134,15 @@
     "lyricsTab": "Lyrics",
     "queueTab": "Queue",
     "nowPlayingSection": "Now Playing",
-    "upNext": "Up Next",
+    "upNext": "Next up",
     "lookingUpLyrics": "Looking up lyrics…",
     "noLyrics": "No lyrics found for this track.",
     "lyricsFailed": "Couldn't load lyrics right now.",
     "retry": "Retry",
     "queueEmpty": "Queue is empty.",
-    "title": "Now Playing"
+    "title": "Now Playing",
+    "nextInQueue": "Next in queue",
+    "clearQueue": "Clear"
   },
   "player": {
     "coverArtAlt": "Cover art for {name} by {artist}",
@@ -216,7 +218,10 @@
     "clearDownloads": "Remove all",
     "clearDownloadsConfirm": "Remove all {count} downloaded songs from this device? They stay in your library and can be downloaded again.",
     "haptics": "Haptic feedback",
-    "hapticsDesc": "Short vibrations on swipes, long-press menus and pull-to-refresh"
+    "hapticsDesc": "Short vibrations on swipes, long-press menus and pull-to-refresh",
+    "qualityNow": "Right now: {level} · your connection ≈ {speed} Mbit/s",
+    "qualityKbps": "{kbps} kbps",
+    "qualityOriginal": "original quality"
   },
   "privacyNotice": {
     "text": "JellyWave keeps everything on your own device and your own Jellyfin server. A couple of background lookups (album art, update checks) talk to outside services — see the Privacy Policy for exactly what's sent, and turn them off any time in Settings.",
@@ -234,7 +239,7 @@
     "navAccessibility": "Accessibility Statement"
   },
   "audioQuality": {
-    "auto": "Automatic (best available)",
+    "auto": "Automatic (adapts to your connection)",
     "high": "High — 320 kbps",
     "medium": "Medium — 192 kbps",
     "low": "Low — 96 kbps"
@@ -361,7 +366,13 @@
     "listenTimeTitle": "Real listening time",
     "listenTimeDesc": "Stats now count the time you actually listen, across all your devices, instead of estimating from plays.",
     "storageTitle": "Storage and haptics settings",
-    "storageDesc": "See how much space downloads use and remove them, and turn vibration feedback on or off."
+    "storageDesc": "See how much space downloads use and remove them, and turn vibration feedback on or off.",
+    "queueOrderTitle": "A queue that keeps your order",
+    "queueOrderDesc": "Songs you add play in the order you added them, before the rest of the album. The queue shows them separately under \"Next in queue\".",
+    "adaptiveQualityTitle": "Automatic quality that adapts",
+    "adaptiveQualityDesc": "Automatic streaming quality now measures your connection and lowers the bitrate on slow or mobile connections.",
+    "fasterLoadingTitle": "Faster on slow connections",
+    "fasterLoadingDesc": "Cover images are sized for your screen, and the next song only preloads once the current one is downloaded."
   },
   "wrapped": {
     "bannerTitle": "Your {year} Wrapped",

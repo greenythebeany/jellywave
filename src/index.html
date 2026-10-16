@@ -430,6 +430,7 @@
             <div>
               <div class="settings-row-label" data-i18n="settings.quality">Streaming quality</div>
               <div class="settings-row-desc" data-i18n="settings.qualityDesc">Lower quality uses less bandwidth</div>
+              <div class="settings-row-desc quality-status" id="quality-status" hidden></div>
             </div>
             <select id="audio-quality-select" class="settings-select"></select>
           </div>
@@ -533,7 +534,7 @@
             <a id="discord-connect-link" href="https://discord.com/oauth2/authorize?client_id=1534197353056174180" target="_blank" rel="noopener noreferrer" class="attribution-link" data-i18n="settings.discordConnect">Connect</a>
           </div>
         </section>
-        <section class="settings-section">
+        <section class="settings-section" id="privacy-section">
           <h3 data-i18n="settings.privacy">Privacy</h3>
           <div class="settings-row" id="album-art-lookup-row">
             <div>

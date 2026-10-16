@@ -103,6 +103,14 @@ npm run dist        # build a Windows installer
 
 The Android project lives in `android/` and is a standard Capacitor project — open it in Android Studio, or build from the command line with `./gradlew assembleRelease` after setting up your own signing keystore in `android/keystore/keystore.properties`.
 
+## What's new in 2.0.4
+
+- A Spotify-style queue: songs you add play in the order you added them, before the rest of the album or playlist, shown separately under "Next in queue" (with a Clear button). They survive starting a new album, shuffling and jumping ahead. While you drag a song to reorder, the other upcoming songs dim
+- Automatic streaming quality now actually adapts: it measures your connection and picks original quality or 320/192/96 kbps, re-checking every few minutes and when the network changes (Settings shows what it's using)
+- Faster on slow connections: cover images are requested at the size they're shown on your screen, and the next song only preloads once the current one is fully downloaded
+- Phones: the "Automatic update check" switch now shows and is respected; Settings no longer shows empty section headings
+- Settings layout fixes (long dropdown options, the About credits)
+
 ## What's new in 2.0.3
 
 - Pick up where you left off: the queue, song and position are restored (paused) the next time you open JellyWave
