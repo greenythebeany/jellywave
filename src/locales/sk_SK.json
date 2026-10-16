@@ -54,12 +54,14 @@
     "greeting": "Vitajte späť",
     "recentlyPlayed": "Nedávno prehrané",
     "yourPlaylists": "Vaše playlisty",
-    "recentAlbums": "Naposledy pridané albumy",
+    "recentAlbums": "Novo pridané",
     "madeForYou": "Vytvorené pre teba",
     "mostPlayed": "Najhranejšie",
     "onRepeat": "Stále dokola",
     "genreMix": "Žánrový mix",
-    "songsCount": "{count} skladieb"
+    "songsCount": "{count} skladieb",
+    "jumpBackIn": "Pokračuj v počúvaní",
+    "becauseYouListened": "Pretože počúvaš {artist}"
   },
   "search": {
     "title": "Prehľadať vašu knižnicu",
@@ -192,7 +194,14 @@
     "customCssDesc": "Napíšte si vlastné CSS na ďalšiu úpravu vzhľadu aplikácie. Aplikuje sa okamžite.",
     "about": "O aplikácii",
     "offlineMode": "Režim offline",
-    "offlineModeDesc": "Zobrazí a prehrá iba stiahnuté skladby — ostatné sú sivé"
+    "offlineModeDesc": "Zobrazí a prehrá iba stiahnuté skladby — ostatné sú sivé",
+    "storage": "Úložisko",
+    "downloadsLabel": "Stiahnuté skladby",
+    "downloadsUsage": "{count} skladieb · {size} v tomto zariadení",
+    "clearDownloads": "Odstrániť všetky",
+    "clearDownloadsConfirm": "Odstrániť všetkých {count} stiahnutých skladieb z tohto zariadenia? V knižnici zostanú a môžeš si ich stiahnuť znova.",
+    "haptics": "Haptická odozva",
+    "hapticsDesc": "Krátke vibrácie pri potiahnutí, dlhom podržaní a obnovení stránky"
   },
   "audioQuality": {
     "auto": "Automaticky (najlepšia dostupná kvalita)",
@@ -242,7 +251,9 @@
     "topAlbums": "Najpočúvanejšie albumy",
     "plays": "{count} prehratie",
     "playsPlural": "{count} prehratí",
-    "empty": "Počúvaj hudbu a začni budovať svoje štatistiky."
+    "empty": "Počúvaj hudbu a začni budovať svoje štatistiky.",
+    "since": "od {date}",
+    "estimated": "odhad z prehratí"
   },
   "queue": {
     "addToQueue": "Pridať do frontu",
@@ -293,7 +304,7 @@
   },
   "whatsNew": {
     "title": "Čo je nové vo verzii {version}",
-    "subtitle": "Veľká aktualizácia — tu sú hlavné novinky.",
+    "subtitle": "Toto je nové.",
     "continue": "Pokračovať",
     "appleStyleTitle": "Štýl Apple Music",
     "appleStyleDesc": "V Nastavenia → Vzhľad → Štýl rozhrania si môžeš prepnúť medzi vzhľadom Spotify a novým vzhľadom Apple Music.",
@@ -310,6 +321,38 @@
     "shortcutsTitle": "Klávesové skratky",
     "shortcutsDesc": "Medzerník spustí alebo pozastaví, Ctrl + ← a Ctrl + → prepnú na predchádzajúcu alebo ďalšiu skladbu.",
     "polishTitle": "Plynulejšie a spoľahlivejšie",
-    "polishDesc": "Nové animácie, načítavacia obrazovka namiesto bliknutia prihlásenia, spoľahlivejšie texty, rýchlejšie načítanie a množstvo opráv."
+    "polishDesc": "Nové animácie, načítavacia obrazovka namiesto bliknutia prihlásenia, spoľahlivejšie texty, rýchlejšie načítanie a množstvo opráv.",
+    "resumeTitle": "Pokračuj tam, kde si skončil",
+    "resumeDesc": "JellyWave si pamätá tvoju frontu, skladbu aj pozíciu a pri ďalšom otvorení ich má pripravené.",
+    "smartHomeTitle": "Múdrejšia domovská stránka",
+    "smartHomeDesc": "Nové riadky: Pokračuj v počúvaní, Pretože počúvaš… a Novo pridané.",
+    "wrappedTitle": "Tvoj rok v hudbe",
+    "wrappedDesc": "31. decembra príde tvoj rok v hudbe ako príbeh: minúty, top interpret (vírenie bubnov!), top skladby a viac.",
+    "listenTimeTitle": "Skutočný čas počúvania",
+    "listenTimeDesc": "Štatistiky teraz počítajú čas, ktorý naozaj počúvaš, na všetkých zariadeniach, nie odhad z prehratí.",
+    "storageTitle": "Úložisko a haptika",
+    "storageDesc": "Pozri, koľko miesta zaberajú stiahnuté skladby, odstráň ich a zapni alebo vypni vibrácie."
+  },
+  "wrapped": {
+    "bannerTitle": "Tvoj rok {year} v hudbe",
+    "bannerSub": "Najpočúvanejšie skladby, interpreti a minúty ako príbeh",
+    "introTitle": "Tvoj rok {year} v hudbe",
+    "introAllTime": "Tvoja hudba za celý čas",
+    "tapToContinue": "Ťukni pre pokračovanie",
+    "minutesTitle": "Počúval si",
+    "minutesUnit": "minút",
+    "hoursNote": "To je asi {hours} hodín hudby.",
+    "estimatedNote": "Odhad z tvojich prehratí. Presný čas počúvania sa počíta odteraz, nabudúce to bude presnejšie.",
+    "topArtistTitle": "Tvoj top interpret",
+    "minutesTogether": "{minutes} minút spolu",
+    "minutesShort": "{minutes} min",
+    "topSongsTitle": "Tvoje top skladby",
+    "topMonthTitle": "Tvoj najsilnejší mesiac",
+    "topMonthNote": "{minutes} minút hudby",
+    "outroTitle": "To je všetko",
+    "outroSub": "Ďakujeme, že počúvaš s JellyWave.",
+    "playTop": "Pustiť top skladby",
+    "drumrollKicker": "A tvoj top interpret je…",
+    "drumroll": "Vírenie bubnov, prosím…"
   }
 }

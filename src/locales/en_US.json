@@ -62,7 +62,9 @@
     "genreMix": "Genre Mix",
     "songsCount": "{count} songs",
     "yourPlaylists": "Your Playlists",
-    "recentAlbums": "Recently Added Albums"
+    "recentAlbums": "Newly Added",
+    "jumpBackIn": "Jump Back In",
+    "becauseYouListened": "Because you listened to {artist}"
   },
   "search": {
     "title": "Search your library",
@@ -207,7 +209,14 @@
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "thirdPartyNotices": "Third-Party Notices & Licenses",
-    "dataDeletion": "Delete Your Data"
+    "dataDeletion": "Delete Your Data",
+    "storage": "Storage",
+    "downloadsLabel": "Downloaded songs",
+    "downloadsUsage": "{count} songs · {size} on this device",
+    "clearDownloads": "Remove all",
+    "clearDownloadsConfirm": "Remove all {count} downloaded songs from this device? They stay in your library and can be downloaded again.",
+    "haptics": "Haptic feedback",
+    "hapticsDesc": "Short vibrations on swipes, long-press menus and pull-to-refresh"
   },
   "privacyNotice": {
     "text": "JellyWave keeps everything on your own device and your own Jellyfin server. A couple of background lookups (album art, update checks) talk to outside services — see the Privacy Policy for exactly what's sent, and turn them off any time in Settings.",
@@ -272,7 +281,9 @@
     "topAlbums": "Top Albums",
     "plays": "{count} play",
     "playsPlural": "{count} plays",
-    "empty": "Play some music to start building your stats."
+    "empty": "Play some music to start building your stats.",
+    "since": "since {date}",
+    "estimated": "estimated from plays"
   },
   "queue": {
     "addToQueue": "Add to queue",
@@ -323,7 +334,7 @@
   },
   "whatsNew": {
     "title": "What's new in {version}",
-    "subtitle": "A big update — here are the highlights.",
+    "subtitle": "Here's what's new.",
     "continue": "Continue",
     "appleStyleTitle": "Apple Music style",
     "appleStyleDesc": "Settings → Appearance → Interface style now lets you switch between the Spotify look and a new Apple Music look.",
@@ -340,6 +351,38 @@
     "shortcutsTitle": "Keyboard shortcuts",
     "shortcutsDesc": "Space plays and pauses, Ctrl + ← and Ctrl + → skip to the previous or next song.",
     "polishTitle": "Smoother and more reliable",
-    "polishDesc": "New animations, a loading screen instead of the login flash, more reliable lyrics, faster loading and lots of fixes."
+    "polishDesc": "New animations, a loading screen instead of the login flash, more reliable lyrics, faster loading and lots of fixes.",
+    "resumeTitle": "Pick up where you left off",
+    "resumeDesc": "JellyWave remembers your queue, song and position, and has them ready the next time you open it.",
+    "smartHomeTitle": "A smarter Home",
+    "smartHomeDesc": "New rows: Jump Back In, Because you listened to…, and Newly Added.",
+    "wrappedTitle": "Wrapped",
+    "wrappedDesc": "On December 31 your year in music arrives as a story: minutes, top artist (drumroll, please), top songs and more.",
+    "listenTimeTitle": "Real listening time",
+    "listenTimeDesc": "Stats now count the time you actually listen, across all your devices, instead of estimating from plays.",
+    "storageTitle": "Storage and haptics settings",
+    "storageDesc": "See how much space downloads use and remove them, and turn vibration feedback on or off."
+  },
+  "wrapped": {
+    "bannerTitle": "Your {year} Wrapped",
+    "bannerSub": "Your top songs, artists and minutes, as a story",
+    "introTitle": "Your {year} in music",
+    "introAllTime": "Your music, all time",
+    "tapToContinue": "Tap to continue",
+    "minutesTitle": "You listened for",
+    "minutesUnit": "minutes",
+    "hoursNote": "That's about {hours} hours of music.",
+    "estimatedNote": "Estimated from your plays. Exact listening time is counted from now on, so next time this gets more precise.",
+    "topArtistTitle": "Your top artist",
+    "minutesTogether": "{minutes} minutes together",
+    "minutesShort": "{minutes} min",
+    "topSongsTitle": "Your top songs",
+    "topMonthTitle": "Your biggest month",
+    "topMonthNote": "{minutes} minutes of music",
+    "outroTitle": "That's a wrap",
+    "outroSub": "Thanks for listening with JellyWave.",
+    "playTop": "Play your top songs",
+    "drumrollKicker": "And your top artist is…",
+    "drumroll": "Drumroll, please…"
   }
 }

@@ -41,6 +41,7 @@ const DEFAULTS = {
   eqPreset: 'flat',
   loudnessBoostDb: 10, // Android only, 0-20 -- native android.media.audiofx.LoudnessEnhancer gain, see LoudnessPlugin.java
   offlineMode: false, // when on, only downloaded tracks are playable/clickable
+  hapticsEnabled: true, // phones: vibration on swipes, long-press menus, pull-to-refresh
   albumArtLookupEnabled: true, // off = never send artist/album/track text to Deezer's search API
   autoUpdateCheckEnabled: true, // off = never ping GitHub's releases API in the background
   updatedAt: 0 // bumped on every local change — lets initRemoteSync tell

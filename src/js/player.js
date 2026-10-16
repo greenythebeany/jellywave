@@ -472,6 +472,27 @@ export class Player {
     this._loadCurrent(true);
   }
 
+  // Puts back a queue saved from a previous session (see the resume code in
+  // app.js): same order, same song, same position, but paused -- the user
+  // presses play to carry on.
+  restoreQueue(tracks, index, positionSeconds = 0, { shuffle = false, repeat } = {}) {
+    if (!tracks?.length) return;
+    this._cancelTransition();
+    this.queue = [...tracks];
+    this.originalQueue = [...tracks];
+    this.shuffle = !!shuffle;
+    if (repeat) this.repeat = repeat;
+    this.currentIndex = Math.min(Math.max(0, index || 0), tracks.length - 1);
+    this.queueSourceId = null;
+    this._emit('queuechange');
+    const el = this.audio;
+    if (positionSeconds > 1) {
+      const seek = () => { try { el.currentTime = positionSeconds; } catch (err) { /* not seekable yet */ } };
+      el.addEventListener('loadedmetadata', seek, { once: true });
+    }
+    this._loadCurrent(false);
+  }
+
   // Inserts a single track to play right after whatever's currently
   // playing (not appended at the end) — if nothing is playing yet, this
   // just starts it instead. Also inserted into originalQueue at the
