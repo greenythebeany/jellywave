@@ -76,7 +76,14 @@ export function exitApp() {
 // style: 'light' | 'medium' | 'heavy' — matches Haptics' ImpactStyle values,
 // passed as a plain string since the plugin's own enum isn't importable
 // without a bundler (see the module header note above).
+// Settings -> Haptic feedback (app.js keeps this in sync with the setting).
+let hapticsEnabled = true;
+export function setHapticsEnabled(enabled) {
+  hapticsEnabled = enabled !== false;
+}
+
 export function hapticImpact(style = 'light') {
+  if (!hapticsEnabled) return;
   window.Capacitor?.Plugins?.Haptics?.impact({ style }).catch(() => {});
 }
 

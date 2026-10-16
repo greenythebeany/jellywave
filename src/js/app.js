@@ -1,11 +1,12 @@
 import { JellyfinClient, initClientVersion, getClientVersion } from './jellyfin.js';
 import { Player, RepeatMode, EQ_PRESETS } from './player.js';
 import { fetchLyrics, getCachedLyrics } from './lyrics.js';
+import { addListening, persistLocal as persistListening, getOwnLog, isDirty as listeningDirty, markSynced as listeningSynced, adoptIfLarger, combineLogs } from './listening.js';
 import { getSettings, updateSettings, applySettings, currentBitrateKbps, initRemoteSync, PALETTES, AUDIO_QUALITIES } from './settings.js';
 import { LOCALES, loadLocale, applyTranslations, t } from './i18n.js';
-import { platform, isDesktop, isMobile, isAndroid, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
+import { setHapticsEnabled, platform, isDesktop, isMobile, isAndroid, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
 import { createConnect } from './connect.js';
-import { isSupported as downloadsSupported, isDownloaded, downloadTrack, deleteDownload, onDownloadsChange, getDownloadedTracks, getLocalImageUri } from './downloads.js';
+import { isSupported as downloadsSupported, isDownloaded, downloadTrack, deleteDownload, onDownloadsChange, getDownloadedTracks, getTotalDownloadedBytes, getLocalImageUri } from './downloads.js';
 import { renderGrab } from './grab.js';
 import { getPinnedAlbums, isAlbumPinned, togglePinAlbum, onPinnedAlbumsChange } from './pinnedAlbums.js';
 
@@ -105,6 +106,23 @@ const toggleReplayGain = document.getElementById('toggle-replaygain');
 const toggleOfflineMode = document.getElementById('toggle-offline-mode');
 const albumArtLookupRow = document.getElementById('album-art-lookup-row');
 const toggleAlbumArtLookup = document.getElementById('toggle-album-art-lookup');
+const toggleHaptics = document.getElementById('toggle-haptics');
+const storageSection = document.getElementById('storage-section');
+const downloadsUsage = document.getElementById('downloads-usage');
+const btnClearDownloads = document.getElementById('btn-clear-downloads');
+
+function formatBytes(bytes) {
+  if (!bytes) return '0 MB';
+  const mb = bytes / (1024 * 1024);
+  return mb >= 1024 ? `${(mb / 1024).toFixed(1)} GB` : `${mb >= 10 ? Math.round(mb) : mb.toFixed(1)} MB`;
+}
+
+// Settings -> Storage: what the offline downloads take up on this device.
+function refreshStorageUI() {
+  const count = getDownloadedTracks().length;
+  downloadsUsage.textContent = t('settings.downloadsUsage', { count, size: formatBytes(getTotalDownloadedBytes()) });
+  btnClearDownloads.disabled = count === 0;
+}
 const autoUpdateCheckRow = document.getElementById('auto-update-check-row');
 const toggleAutoUpdateCheck = document.getElementById('toggle-auto-update-check');
 const toggleEqualizer = document.getElementById('toggle-equalizer');
@@ -139,6 +157,13 @@ const whatsNewClose = document.getElementById('whats-new-close');
 // Highlights per release, as icon + i18n key pairs (whatsNew.<key>Title /
 // whatsNew.<key>Desc). Only versions listed here get a popup.
 const WHATS_NEW = {
+  '2.0.3': [
+    { icon: 'fi-br-play', key: 'resume' },
+    { icon: 'fi-br-home', key: 'smartHome' },
+    { icon: 'fi-br-gift', key: 'wrapped' },
+    { icon: 'fi-br-time-fast', key: 'listenTime' },
+    { icon: 'fi-br-download', key: 'storage' }
+  ],
   '2.0.0': [
     { icon: 'fi-br-palette', key: 'appleStyle' },
     { icon: 'fi-br-forward', key: 'instantSkip' },
@@ -613,6 +638,8 @@ async function enterApp(username) {
   loadPlaylistSidebar().catch(() => {});
   loadPinnedAlbumsSidebar();
   navigateTo({ view: libs ? 'home' : 'downloads' });
+  restoreResumeState();
+  if (libs) loadListeningFromServer().catch(() => {}).finally(maybeAutoOpenWrapped);
   hideBootSplash();
   // After the splash has faded, so it doesn't pop up mid-transition.
   setTimeout(maybeShowWhatsNew, 500);
@@ -698,6 +725,7 @@ document.addEventListener('keydown', (evt) => {
   if (evt.defaultPrevented || evt.altKey || !player?.currentTrack || appRoot.hidden) return;
   if (evt.target.closest?.('input:not([type="range"]):not([type="checkbox"]), textarea, select, [contenteditable="true"]')) return;
   if (!whatsNewOverlay.hidden || !legalOverlay.hidden || !settingsOverlay.hidden || !createPlaylistOverlay.hidden) return;
+  if (document.querySelector('.wrapped-overlay')) return;
   const mod = evt.ctrlKey || evt.metaKey;
   if (evt.code === 'Space' && !mod && !evt.shiftKey) {
     // Also stops Space from "clicking" whichever button has focus.
@@ -808,6 +836,24 @@ function wireSettingsUI() {
     setHidden(albumArtLookupRow, true);
     setHidden(autoUpdateCheckRow, true);
   }
+  toggleHaptics.addEventListener('change', () => {
+    updateSettings({ hapticsEnabled: toggleHaptics.checked });
+    setHapticsEnabled(toggleHaptics.checked);
+  });
+  // Haptics only exist on phones; Storage only where downloads do.
+  setHidden(document.getElementById('haptics-row'), !isMobile);
+  setHidden(storageSection, !downloadsSupported());
+  setHapticsEnabled(getSettings().hapticsEnabled);
+  btnClearDownloads.addEventListener('click', async () => {
+    const tracks = getDownloadedTracks();
+    if (!tracks.length) return;
+    if (!window.confirm(t('settings.clearDownloadsConfirm', { count: tracks.length }))) return;
+    btnClearDownloads.disabled = true;
+    for (const tr of tracks) await deleteDownload(tr.id).catch(() => {});
+    refreshStorageUI();
+  });
+  onDownloadsChange(refreshStorageUI);
+
   toggleAlbumArtLookup.addEventListener('change', () => {
     updateSettings({ albumArtLookupEnabled: toggleAlbumArtLookup.checked });
   });
@@ -1456,6 +1502,90 @@ function wireMediaKeys() {
 // ---------- Transport controls: local playback, or the connected remote
 // device when one is active (see wireConnectMenu / updateRemoteBarUI) ----------
 
+// ---------- Listening time (see listening.js) ----------
+let otherDeviceListening = []; // the other devices' logs, from the server
+let listeningTickAt = null;
+
+function trackListeningTick() {
+  const now = performance.now();
+  const playing = player?.currentTrack && !player.audio.paused && !connect?.isConnected();
+  if (playing && listeningTickAt !== null) {
+    const delta = (now - listeningTickAt) / 1000;
+    // Gaps over ~5s mean we weren't really observing (backgrounded, seek
+    // stall...) -- don't credit time we can't vouch for.
+    if (delta > 0 && delta < 5) addListening(player.currentTrack.Id, delta);
+  }
+  listeningTickAt = playing ? now : null;
+}
+
+async function loadListeningFromServer() {
+  const logs = await jellyfin.getListeningLogs();
+  adoptIfLarger(logs[jellyfin.deviceId]);
+  otherDeviceListening = Object.entries(logs).filter(([id]) => id !== jellyfin.deviceId).map(([, l]) => l);
+}
+
+function syncListening() {
+  persistListening();
+  if (!listeningDirty() || !jellyfin) return;
+  jellyfin.saveListeningLog(getOwnLog()).then(listeningSynced).catch(() => {});
+}
+
+function listeningTotals() {
+  return combineLogs(otherDeviceListening);
+}
+
+// ---------- Resume where you left off ----------
+// The queue, song, position, shuffle and repeat are saved locally as they
+// change and put back (paused) on the next start. Only a window around the
+// current song is kept, so a huge "All Songs" queue doesn't overflow
+// localStorage, and only the fields the player and UI actually use.
+const RESUME_KEY = 'jellywave:resume';
+const RESUME_TRACK_FIELDS = ['Id', 'Name', 'Album', 'AlbumId', 'AlbumArtist', 'Artists', 'ArtistItems', 'ImageTags',
+  'AlbumPrimaryImageTag', 'RunTimeTicks', 'NormalizationGain', 'UserData', 'Genres', 'Type'];
+let resumeSaveTimer = null;
+
+function saveResumeState() {
+  if (!player?.currentTrack || connect?.isConnected()) return;
+  const from = Math.max(0, player.currentIndex - 50);
+  const tracks = player.queue.slice(from, from + 500).map((tr) => {
+    const slim = {};
+    RESUME_TRACK_FIELDS.forEach((k) => { if (tr[k] !== undefined) slim[k] = tr[k]; });
+    return slim;
+  });
+  try {
+    localStorage.setItem(RESUME_KEY, JSON.stringify({
+      tracks,
+      index: player.currentIndex - from,
+      position: Math.floor(player.audio.currentTime || 0),
+      shuffle: player.shuffle,
+      repeat: player.repeat,
+      savedAt: Date.now()
+    }));
+  } catch (err) {
+    // Storage full/blocked -- resuming is a convenience, skip it.
+  }
+}
+
+function scheduleResumeSave() {
+  clearTimeout(resumeSaveTimer);
+  resumeSaveTimer = setTimeout(saveResumeState, 1000);
+}
+
+function restoreResumeState() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(RESUME_KEY) || 'null'); } catch (err) { /* corrupt */ }
+  if (!saved?.tracks?.length) return;
+  player.restoreQueue(saved.tracks, saved.index, saved.position, { shuffle: saved.shuffle, repeat: saved.repeat });
+  btnShuffle.classList.toggle('active', !!saved.shuffle);
+  mobileBtnShuffle.classList.toggle('active', !!saved.shuffle);
+  const repeatOn = saved.repeat && saved.repeat !== RepeatMode.OFF;
+  btnRepeat.classList.toggle('active', !!repeatOn);
+  mobileBtnRepeat.classList.toggle('active', !!repeatOn);
+  const repeatIconClass = saved.repeat === RepeatMode.ONE ? 'fi fi-br-arrows-repeat-1' : 'fi fi-br-arrows-repeat';
+  iconRepeat.className = repeatIconClass;
+  mobileIconRepeat.className = repeatIconClass;
+}
+
 function uiTogglePlay() {
   if (connect?.isConnected()) { connect.remoteTogglePlay(); return; }
   player.togglePlay();
@@ -1622,6 +1752,9 @@ function refreshSettingsUI() {
   crossfadeSlider.style.setProperty('--pct', rangeFillPercent(((s.crossfadeSeconds || 0) / 12) * 100, crossfadeSlider, 13));
   toggleOfflineMode.checked = !!s.offlineMode;
   toggleAlbumArtLookup.checked = s.albumArtLookupEnabled !== false;
+  toggleHaptics.checked = s.hapticsEnabled !== false;
+  setHapticsEnabled(s.hapticsEnabled);
+  refreshStorageUI();
   toggleAutoUpdateCheck.checked = s.autoUpdateCheckEnabled !== false;
   toggleReplayGain.checked = !!s.replayGainEnabled;
   const loudnessBoostDb = s.loudnessBoostDb ?? 10;
@@ -2191,6 +2324,27 @@ async function renderSmartMix(state) {
 // hundred covers it without pulling the whole library.
 const HOME_RECENT_PLAYED_LIMIT = 300;
 
+// The artist you've played most lately, and albums Jellyfin considers
+// similar to their most recently played album (minus their own albums).
+async function fillBecauseYouListened(slot, recentTracks, excludeAlbumIds = new Set()) {
+  const counts = new Map();
+  for (const tr of recentTracks) {
+    const artist = tr.ArtistItems?.[0];
+    if (!artist?.Id || !tr.AlbumId) continue;
+    const entry = counts.get(artist.Id) || { artist, count: 0, albumId: tr.AlbumId };
+    entry.count++;
+    counts.set(artist.Id, entry);
+  }
+  const top = [...counts.values()].sort((a, b) => b.count - a.count)[0];
+  if (!top) return;
+  const similar = (await jellyfin.getSimilarItems(top.albumId, 16))
+    .filter((al) => al.Type === 'MusicAlbum' && !excludeAlbumIds.has(al.Id) && !(al.AlbumArtist || '').toLowerCase().includes((top.artist.Name || '').toLowerCase()))
+    .slice(0, 12);
+  if (similar.length < 3 || !slot.isConnected) return;
+  slot.appendChild(el('div', 'section-title', escapeHtml(t('home.becauseYouListened', { artist: formatDisplayName(top.artist.Name) }))));
+  slot.appendChild(buildCardRow(similar, 'album'));
+}
+
 async function renderHome() {
   const [playlists, albums, genres, recentPlayed, topPlayed] = await Promise.all([
     jellyfin.getPlaylists(),
@@ -2204,12 +2358,31 @@ async function renderHome() {
 
   viewRoot.innerHTML = '';
   viewRoot.appendChild(el('div', 'view-title', t('home.greeting')));
+  // Around New Year, Wrapped gets the top spot on Home too.
+  const wrappedBanner = buildWrappedBanner();
+  if (wrappedBanner && recentSource?.length) viewRoot.appendChild(wrappedBanner);
 
   const recentlyPlayed = accountRecentlyPlayed(12, recentSource);
   if (recentlyPlayed.length) {
     viewRoot.appendChild(el('div', 'section-title', t('home.recentlyPlayed')));
     viewRoot.appendChild(buildCardRow(recentlyPlayed, 'song'));
   }
+
+  // Jump back in: the albums behind your most recent plays.
+  const recentAlbums = [];
+  const seenAlbums = new Set();
+  for (const tr of accountRecentlyPlayed(80, recentSource)) {
+    if (!tr.AlbumId || seenAlbums.has(tr.AlbumId)) continue;
+    seenAlbums.add(tr.AlbumId);
+    recentAlbums.push({ Id: tr.AlbumId, AlbumId: tr.AlbumId, Name: tr.Album, AlbumArtist: tr.AlbumArtist || artistNames(tr), Type: 'MusicAlbum' });
+    if (recentAlbums.length >= 10) break;
+  }
+  if (recentAlbums.length >= 2) {
+    viewRoot.appendChild(el('div', 'section-title', t('home.jumpBackIn')));
+    viewRoot.appendChild(buildCardRow(recentAlbums, 'album'));
+  }
+  // "Because you listened to X" fills in below once its server call returns.
+  const becauseSlot = el('div', '');
 
   const smartMixCards = buildSmartMixCards(genres, accountMostPlayed(30, topSource), accountOnRepeat(30, recentSource));
   if (smartMixCards.length) {
@@ -2219,13 +2392,17 @@ async function renderHome() {
     viewRoot.appendChild(grid);
   }
 
+  viewRoot.appendChild(becauseSlot);
+  // Skip albums already shown in Jump Back In.
+  fillBecauseYouListened(becauseSlot, accountRecentlyPlayed(60, recentSource), seenAlbums).catch(() => {});
+
   if (playlists.length) {
     viewRoot.appendChild(el('div', 'section-title', t('home.yourPlaylists')));
     viewRoot.appendChild(buildCardGrid(playlists.slice(0, 12), 'playlist'));
   }
 
   viewRoot.appendChild(el('div', 'section-title', t('home.recentAlbums')));
-  viewRoot.appendChild(buildCardGrid(albums.slice(0, 12), 'album'));
+  viewRoot.appendChild(buildCardRow(albums.slice(0, 12), 'album'));
 
   // Warm the full-library cache in the background once home is on screen,
   // so Songs/Stats/artist pages are instant later instead of blocking now.
@@ -2325,18 +2502,31 @@ async function renderStats() {
   viewRoot.innerHTML = '';
   viewRoot.appendChild(el('div', 'view-title', t('stats.title')));
 
+  // Wrapped entry point -- only around New Year (see wrappedYearAvailable).
+  const wrappedBanner = buildWrappedBanner();
+  if (wrappedBanner && stats.totalPlays) viewRoot.appendChild(wrappedBanner);
+
   if (!stats.totalPlays) {
     viewRoot.appendChild(el('div', 'empty-state', t('stats.empty')));
     return;
   }
 
-  const hours = Math.floor(stats.totalMinutes / 60);
-  const mins = stats.totalMinutes % 60;
-  const timeLabel = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+  // Measured listening time when there is some; before that, the old
+  // plays x track-length estimate, marked as such.
+  const listened = listeningTotals();
+  const listenedSeconds = Object.values(listened.years).reduce((sum, b) => sum + b.total, 0);
+  const measured = listenedSeconds >= 60;
+  const totalMinutes = measured ? Math.round(listenedSeconds / 60) : stats.totalMinutes;
+  const hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+  const timeLabel = `${measured ? '' : '≈ '}${hours > 0 ? `${hours}h ${mins}m` : `${mins}m`}`;
+  const timeNote = measured
+    ? t('stats.since', { date: new Date(listened.since).toLocaleDateString(document.documentElement.lang || undefined) })
+    : t('stats.estimated');
 
   const summary = el('div', 'stats-summary');
   summary.appendChild(el('div', 'stat-box', `<div class="stat-value">${stats.totalPlays}</div><div class="stat-label">${escapeHtml(t('stats.totalPlays'))}</div>`));
-  summary.appendChild(el('div', 'stat-box', `<div class="stat-value">${escapeHtml(timeLabel)}</div><div class="stat-label">${escapeHtml(t('stats.timeListened'))}</div>`));
+  summary.appendChild(el('div', 'stat-box', `<div class="stat-value">${escapeHtml(timeLabel)}</div><div class="stat-label">${escapeHtml(t('stats.timeListened'))}</div><div class="stat-note">${escapeHtml(timeNote)}</div>`));
   summary.appendChild(el('div', 'stat-box', `<div class="stat-value">${stats.topArtists.length}</div><div class="stat-label">${escapeHtml(t('stats.artistsPlayed'))}</div>`));
   viewRoot.appendChild(summary);
 
@@ -3482,7 +3672,22 @@ function wirePlayer() {
 
   player.on('queuechange', () => {
     if (queueSheetOpen || (!lyricsPanel.hidden && activePanelTab === 'queue')) renderQueue();
+    scheduleResumeSave();
   });
+  player.on('trackchange', scheduleResumeSave);
+  player.on('playstate', scheduleResumeSave);
+  player.on('timeupdate', trackListeningTick);
+  player.on('playstate', trackListeningTick);
+  player.on('trackchange', () => { listeningTickAt = null; });
+  setInterval(persistListening, 15000);
+  setInterval(syncListening, 120000);
+  window.addEventListener('pagehide', syncListening);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) syncListening(); });
+  // Position: every 10s while playing, and right away when the app goes to
+  // the background or closes (the last chance on phones).
+  setInterval(() => { if (!player.audio.paused) saveResumeState(); }, 10000);
+  window.addEventListener('pagehide', saveResumeState);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) saveResumeState(); });
 
   player.on('trackchange', () => {
     const track = player.currentTrack;
@@ -3855,7 +4060,10 @@ function returnLyricsBody() {
 
 function openQueueSheet() {
   if (queueSheetOpen) return;
-  if (lyricsSheetOpen) { lyricsSheetOpen = false; returnLyricsBody(); }
+  // The sheet holds one thing at a time: make sure the lyrics aren't still
+  // in it (they may be mid-way back to the player after a close).
+  lyricsSheetOpen = false;
+  returnLyricsBody();
   queueSheetOpen = true;
   queueSheet.classList.remove('lyrics-mode');
   queueSheet.appendChild(queueBody);
@@ -3869,7 +4077,10 @@ function openQueueSheet() {
 
 function openLyricsSheet() {
   if (lyricsSheetOpen) return;
-  if (queueSheetOpen) { queueSheetOpen = false; setHidden(queueBody, true); }
+  // The queue list stays parked in the sheet after the queue is closed --
+  // hide it, or it shows (stale) above the lyrics.
+  queueSheetOpen = false;
+  setHidden(queueBody, true);
   lyricsSheetOpen = true;
   clearTimeout(lyricsReturnTimer);
   queueSheet.appendChild(lyricsBody);
@@ -4334,6 +4545,306 @@ function updateActiveLyricLine(currentTime) {
 function centerLyricLine(line, smooth) {
   const top = line.offsetTop - (lyricsBody.clientHeight - line.offsetHeight) / 2;
   lyricsBody.scrollTo({ top: Math.max(0, top), behavior: smooth ? 'smooth' : 'auto' });
+}
+
+// ---------- Wrapped (year in review) ----------
+// Unlocks on December 31 at 0:00 (device time) and opens by itself once
+// that day; it can be reopened from Stats until January 7, as a recap of
+// the year that just ended. Returns that year, or null outside the window.
+function wrappedYearAvailable(now = new Date()) {
+  if (now.getMonth() === 11 && now.getDate() === 31) return now.getFullYear();
+  if (now.getMonth() === 0 && now.getDate() <= 7) return now.getFullYear() - 1;
+  return null;
+}
+
+const WRAPPED_SEEN_KEY = 'jellywave:wrappedSeen';
+
+// "Your {year} Wrapped" banner (Home + Stats), or null outside the window.
+function buildWrappedBanner() {
+  const year = wrappedYearAvailable();
+  if (!year) return null;
+  const banner = el('button', 'wrapped-banner', `<div class="wrapped-banner-title">${escapeHtml(t('wrapped.bannerTitle', { year }))}</div><div class="wrapped-banner-sub">${escapeHtml(t('wrapped.bannerSub'))}</div><i class="fi fi-br-angle-small-right"></i>`);
+  banner.type = 'button';
+  banner.addEventListener('click', () => openWrapped(year));
+  return banner;
+}
+
+// Called once the app is up: opens the year's Wrapped the first time the
+// app is opened inside the window (after any "What's new" popup).
+function maybeAutoOpenWrapped() {
+  const year = wrappedYearAvailable();
+  if (!year) return;
+  try { if (localStorage.getItem(WRAPPED_SEEN_KEY) === String(year)) return; } catch (err) { return; }
+  const tryOpen = () => {
+    if (!whatsNewOverlay.hidden) { setTimeout(tryOpen, 1000); return; }
+    try { localStorage.setItem(WRAPPED_SEEN_KEY, String(year)); } catch (err) { /* ignore */ }
+    openWrapped(year);
+  };
+  setTimeout(tryOpen, 1500);
+}
+// A tap-through story: minutes listened, top artist, top songs, biggest
+// month. Uses the measured listening time for the year once there's a
+// meaningful amount of it (30+ min); before that, an all-time recap from
+// play counts, clearly labelled as such.
+// Adds the top artist's photo, background and logo from Jellyfin (the same
+// images the artist page uses), so the top-artist slide can show them.
+async function withArtistImages(data) {
+  const ta = data?.topArtist;
+  const tr = ta?.track;
+  if (!ta) return data;
+  ta.albumArt = tr ? artUrl(tr, 'album', 600) : placeholderArt('artist');
+  const ref = tr?.ArtistItems?.find((a) => formatDisplayName(a.Name) === ta.name) || tr?.ArtistItems?.[0];
+  if (!ref?.Id) return data;
+  ta.photo = `${jellyfin.serverUrl}/Items/${ref.Id}/Images/Primary?maxWidth=600&quality=90`;
+  const item = await jellyfin.getItem(ref.Id).catch(() => null);
+  if (item) {
+    ta.backdrop = jellyfin.backdropUrl(item, 1600);
+    ta.logo = item.ImageTags?.Logo ? jellyfin.imageUrl(item, 'Logo', 800) : null;
+  }
+  return data;
+}
+
+async function buildWrappedData(year) {
+  return withArtistImages(await buildWrappedDataRaw(year));
+}
+
+async function buildWrappedDataRaw(year) {
+  await ensureAllSongsCache();
+  const byId = new Map((allSongsCache || []).map((tr) => [tr.Id, tr]));
+  const yearLog = listeningTotals().years[year];
+
+  if (yearLog && yearLog.total >= 1800) {
+    const songs = Object.entries(yearLog.tracks)
+      .map(([id, secs]) => ({ track: byId.get(id), secs }))
+      .filter((r) => r.track)
+      .sort((a, b) => b.secs - a.secs);
+    const artists = new Map();
+    for (const { track, secs } of songs) {
+      for (const name of individualArtistNames(track)) artists.set(name, (artists.get(name) || 0) + secs);
+    }
+    const topArtist = [...artists.entries()].sort((a, b) => b[1] - a[1])[0];
+    const monthIdx = yearLog.months.indexOf(Math.max(...yearLog.months));
+    return {
+      allTime: false,
+      year,
+      minutes: Math.round(yearLog.total / 60),
+      topArtist: topArtist && { name: topArtist[0], detail: t('wrapped.minutesTogether', { minutes: Math.round(topArtist[1] / 60) }), track: songs.find((r) => individualArtistNames(r.track).includes(topArtist[0]))?.track },
+      topSongs: songs.slice(0, 5).map((r) => ({ track: r.track, detail: t('wrapped.minutesShort', { minutes: Math.max(1, Math.round(r.secs / 60)) }) })),
+      topMonth: yearLog.months[monthIdx] > 0 ? { index: monthIdx, minutes: Math.round(yearLog.months[monthIdx] / 60) } : null
+    };
+  }
+
+  const stats = accountStats();
+  if (!stats.totalPlays) return null;
+  const topArtistName = stats.topArtists[0]?.artist;
+  return {
+    allTime: true,
+    year,
+    minutes: stats.totalMinutes,
+    topArtist: topArtistName && {
+      name: topArtistName,
+      detail: t(stats.topArtists[0].count === 1 ? 'stats.plays' : 'stats.playsPlural', { count: stats.topArtists[0].count }),
+      track: stats.topTracks.find((tr) => individualArtistNames(tr).includes(topArtistName))
+    },
+    topSongs: stats.topTracks.slice(0, 5).map((tr) => ({ track: tr, detail: t((tr.UserData?.PlayCount || 0) === 1 ? 'stats.plays' : 'stats.playsPlural', { count: tr.UserData?.PlayCount || 0 }) })),
+    topMonth: null
+  };
+}
+
+function wrappedSlides(data) {
+  const slides = [];
+  const monthName = (i) => new Date(2000, i, 1).toLocaleDateString(document.documentElement.lang || undefined, { month: 'long' });
+  slides.push({
+    theme: 'a',
+    html: `<div class="wr-kicker">JellyWave</div>
+      <div class="wr-big">${escapeHtml(data.allTime ? t('wrapped.introAllTime') : t('wrapped.introTitle', { year: data.year }))}</div>
+      <div class="wr-sub">${escapeHtml(t('wrapped.tapToContinue'))}</div>`
+  });
+  slides.push({
+    theme: 'b',
+    html: `<div class="wr-kicker">${escapeHtml(t('wrapped.minutesTitle'))}</div>
+      <div class="wr-huge">${data.allTime ? '≈ ' : ''}${data.minutes.toLocaleString(document.documentElement.lang || undefined)}</div>
+      <div class="wr-big">${escapeHtml(t('wrapped.minutesUnit'))}</div>
+      <div class="wr-sub">${escapeHtml(data.allTime ? t('wrapped.estimatedNote') : t('wrapped.hoursNote', { hours: Math.round(data.minutes / 60) }))}</div>`
+  });
+  if (data.topArtist) {
+    const ta = data.topArtist;
+    // With a background photo: it fills the slide, and the logo (or name)
+    // sits on it. Without one: the round artist photo, as before.
+    const name = ta.logo
+      ? `<img class="wr-logo" src="${ta.logo}" alt="${escapeHtml(ta.name)}" onerror="this.outerHTML='<div class=&quot;wr-big&quot;>${escapeHtml(ta.name).replace(/'/g, '&#39;')}</div>'" />`
+      : `<div class="wr-big">${escapeHtml(ta.name)}</div>`;
+    const photo = ta.backdrop ? '' : `<img class="wr-art round" src="${ta.photo || ta.albumArt}" alt="" onerror="this.onerror=null;this.src='${ta.albumArt}'" />`;
+    slides.push({
+      theme: 'f',
+      drumroll: true,
+      duration: DRUMROLL_HIT_MS,
+      html: `<div class="wr-kicker">${escapeHtml(t('wrapped.drumrollKicker'))}</div>
+        <div class="wr-drum">🥁</div>
+        <div class="wr-big wr-drum-text">${escapeHtml(t('wrapped.drumroll'))}</div>`
+    });
+    slides.push({
+      theme: 'c',
+      music: ta.track || null,
+      bg: ta.backdrop || null,
+      html: `<div class="wr-kicker">${escapeHtml(t('wrapped.topArtistTitle'))}</div>
+        ${photo}
+        ${name}
+        <div class="wr-sub">${escapeHtml(ta.detail)}</div>`
+    });
+  }
+  if (data.topSongs.length) {
+    slides.push({
+      theme: 'd',
+      html: `<div class="wr-kicker">${escapeHtml(t('wrapped.topSongsTitle'))}</div>
+        <ol class="wr-list">${data.topSongs.map((s, i) => `<li><span class="wr-rank">${i + 1}</span><img src="${artUrl(s.track, 'album', 160)}" alt="" /><span class="wr-li-text"><span class="wr-li-title">${escapeHtml(s.track.Name)}</span><span class="wr-li-sub">${escapeHtml(artistNames(s.track))} · ${escapeHtml(s.detail)}</span></span></li>`).join('')}</ol>`
+    });
+  }
+  if (data.topMonth) {
+    slides.push({
+      theme: 'e',
+      html: `<div class="wr-kicker">${escapeHtml(t('wrapped.topMonthTitle'))}</div>
+        <div class="wr-huge wr-month">${escapeHtml(monthName(data.topMonth.index))}</div>
+        <div class="wr-sub">${escapeHtml(t('wrapped.topMonthNote', { minutes: data.topMonth.minutes.toLocaleString(document.documentElement.lang || undefined) }))}</div>`
+    });
+  }
+  slides.push({
+    theme: 'a',
+    html: `<div class="wr-big">${escapeHtml(t('wrapped.outroTitle'))}</div>
+      <div class="wr-sub">${escapeHtml(t('wrapped.outroSub'))}</div>
+      ${data.topSongs.length ? `<button type="button" class="wr-play">${escapeHtml(t('wrapped.playTop'))}</button>` : ''}`
+  });
+  return slides;
+}
+
+// The drumroll before the top artist: a recorded roll that ends on a hit
+// at ~4.15s (assets/drumroll.mp3 -- Kevin MacLeod, CC BY 3.0, see the
+// third-party notices). The artist is revealed right on that hit.
+const DRUMROLL_HIT_MS = 4200;
+function playDrumroll() {
+  const audio = new Audio('assets/drumroll.mp3');
+  audio.volume = 0.85;
+  audio.play().catch(() => {});
+  return () => {
+    // Let the final hit ring out over the reveal unless the user skipped
+    // ahead before it -- then cut the roll off.
+    if (audio.currentTime < DRUMROLL_HIT_MS / 1000 - 0.1) {
+      audio.pause();
+    }
+  };
+}
+
+// Background music for Wrapped: a song from about a third of the way in
+// (past slow intros), faded in, faded out when Wrapped closes.
+function playWrappedMusic(track) {
+  const audio = new Audio(jellyfin.streamUrl(track, currentBitrateKbps()));
+  audio.volume = 0;
+  audio.addEventListener('loadedmetadata', () => {
+    if (isFinite(audio.duration)) audio.currentTime = Math.min(60, audio.duration * 0.33);
+  }, { once: true });
+  audio.play().catch(() => {});
+  let fade = setInterval(() => {
+    audio.volume = Math.min(0.6, audio.volume + 0.04);
+    if (audio.volume >= 0.6) { clearInterval(fade); fade = null; }
+  }, 100);
+  return () => {
+    if (fade) clearInterval(fade);
+    const out = setInterval(() => {
+      audio.volume = Math.max(0, audio.volume - 0.06);
+      if (audio.volume <= 0) {
+        clearInterval(out);
+        audio.pause();
+        audio.removeAttribute('src');
+        audio.load();
+      }
+    }, 60);
+  };
+}
+
+async function openWrapped(year) {
+  let data;
+  try { data = await buildWrappedData(year); } catch (err) { data = null; }
+  if (!data) return;
+  const slides = wrappedSlides(data);
+  const overlay = el('div', 'wrapped-overlay');
+  overlay.innerHTML = `<div class="wr-bars">${slides.map(() => '<span><i></i></span>').join('')}</div>
+    <button type="button" class="wr-close" aria-label="${escapeHtml(t('common.close'))}"><i class="fi fi-br-cross-small"></i></button>
+    <div class="wr-stage"></div>`;
+  document.body.appendChild(overlay);
+  const stage = overlay.querySelector('.wr-stage');
+  const bars = [...overlay.querySelectorAll('.wr-bars i')];
+  let index = 0;
+  let timer = null;
+  const SLIDE_MS = 6000;
+
+  // What's playing in the app pauses for Wrapped and resumes after.
+  const resumeAfter = !!(player?.currentTrack && !player.audio.paused && !connect?.isConnected());
+  if (resumeAfter) player.audio.pause();
+  let stopDrum = null;
+  let stopMusic = null;
+
+  const close = () => {
+    clearTimeout(timer);
+    stopDrum?.();
+    stopMusic?.();
+    overlay.remove();
+    document.removeEventListener('keydown', onKey);
+    if (resumeAfter) player.audio.play().catch(() => {});
+  };
+  const show = (i) => {
+    if (i < 0) i = 0;
+    if (i >= slides.length) { close(); return; }
+    index = i;
+    const slide = slides[i];
+    stopDrum?.();
+    stopDrum = slide.drumroll ? playDrumroll() : null;
+    // The top artist's song starts on their slide and keeps playing for
+    // the rest of the story.
+    if (slide.music && !stopMusic) stopMusic = playWrappedMusic(slide.music);
+    const duration = slide.duration || SLIDE_MS;
+    stage.className = `wr-stage wr-theme-${slides[i].theme}${slides[i].bg ? ' wr-has-bg' : ''}`;
+    stage.style.backgroundImage = slides[i].bg
+      ? `linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.85) 100%), url("${slides[i].bg}")`
+      : '';
+    stage.innerHTML = `<div class="wr-slide">${slides[i].html}</div>`;
+    bars.forEach((b, bi) => {
+      b.style.transition = 'none';
+      b.style.width = bi < i ? '100%' : '0%';
+    });
+    void bars[i].offsetWidth;
+    bars[i].style.transition = `width ${duration}ms linear`;
+    bars[i].style.width = '100%';
+    clearTimeout(timer);
+    // The last slide stays until the user closes it or plays.
+    if (i < slides.length - 1) timer = setTimeout(() => show(index + 1), duration);
+    stage.querySelector('.wr-play')?.addEventListener('click', (evt) => {
+      evt.stopPropagation();
+      player.setQueue(data.topSongs.map((s) => s.track), 0, 'wrapped');
+      close();
+    });
+  };
+  const onKey = (evt) => {
+    if (evt.key === 'Escape') close();
+    else if (evt.key === 'ArrowRight' || evt.key === ' ') { evt.preventDefault(); show(index + 1); }
+    else if (evt.key === 'ArrowLeft') show(index - 1);
+  };
+  document.addEventListener('keydown', onKey);
+  overlay.querySelector('.wr-close').addEventListener('click', close);
+  // Tap the left third to go back, anywhere else to go forward; swipe too.
+  let touchX = null;
+  stage.addEventListener('touchstart', (evt) => { touchX = evt.touches[0].clientX; }, { passive: true });
+  stage.addEventListener('touchend', (evt) => {
+    if (touchX === null) return;
+    const dx = evt.changedTouches[0].clientX - touchX;
+    touchX = null;
+    if (Math.abs(dx) > 50) { evt.preventDefault(); show(index + (dx < 0 ? 1 : -1)); }
+  });
+  stage.addEventListener('click', (evt) => {
+    const rect = stage.getBoundingClientRect();
+    show(index + (evt.clientX - rect.left < rect.width / 3 ? -1 : 1));
+  });
+  hapticImpact('light');
+  show(0);
 }
 
 init().catch((err) => {

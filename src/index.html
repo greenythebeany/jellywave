@@ -556,6 +556,26 @@
             </label>
           </div>
         </section>
+        <section class="settings-section" id="storage-section">
+          <h3 data-i18n="settings.storage">Storage</h3>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.downloadsLabel">Downloaded songs</div>
+              <div class="settings-row-desc" id="downloads-usage"></div>
+            </div>
+            <button id="btn-clear-downloads" class="btn-danger-plain" type="button" data-i18n="settings.clearDownloads">Remove all</button>
+          </div>
+          <div class="settings-row" id="haptics-row">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.haptics">Haptic feedback</div>
+              <div class="settings-row-desc" data-i18n="settings.hapticsDesc">Short vibrations on swipes, long-press menus and pull-to-refresh</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-haptics" />
+              <span class="switch-track"></span>
+            </label>
+          </div>
+        </section>
         <section class="settings-section">
           <h3 data-i18n="settings.advanced">Advanced</h3>
           <div class="settings-row settings-row-stack">
@@ -692,6 +712,7 @@
             <li><strong>Electron</strong> and <strong>Capacitor</strong> (and its official plugins: app, filesystem, haptics, local-notifications, preferences, android/ios core) — open-source app runtimes, MIT-licensed.</li>
             <li><strong>@xhayper/discord-rpc</strong> — MIT-licensed library used for the optional Discord Rich Presence integration.</li>
             <li><strong>Poppins</strong> font, via Fontsource — licensed under the SIL Open Font License 1.1, bundled and self-hosted (never loaded from Google Fonts or any other third-party CDN).</li>
+            <li><strong>Drum roll sound</strong> (Wrapped) — "Assorted Rimshots: 4-second roll" by Kevin MacLeod (<a href="https://incompetech.com" target="_blank" rel="noopener noreferrer">incompetech.com</a>), licensed under <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener noreferrer">Creative Commons Attribution 3.0</a>; trimmed and converted to MP3.</li>
             <li><strong>Uicons by Flaticon</strong> — the app's icon set, used and credited per Flaticon's license (see the credit in Settings → About, and in the README).</li>
             <li><strong>yt-dlp</strong> and <strong>Pillow</strong> — used by the optional "Import" feature's Python helper script to fetch and process media. yt-dlp is released into the public domain (Unlicense). Neither is bundled inside the app — the Import feature requires a separate Python installation on your system.</li>
             <li><strong>"Cat Jam" animation</strong> (the optional "Jam on paw level" easter egg) — adapted from <a href="https://github.com/BlafKing/spicetify-cat-jam-synced" target="_blank" rel="noopener noreferrer">BlafKing's spicetify-cat-jam-synced</a>.</li>

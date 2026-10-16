@@ -103,6 +103,15 @@ npm run dist        # build a Windows installer
 
 The Android project lives in `android/` and is a standard Capacitor project — open it in Android Studio, or build from the command line with `./gradlew assembleRelease` after setting up your own signing keystore in `android/keystore/keystore.properties`.
 
+## What's new in 2.0.3
+
+- Pick up where you left off: the queue, song and position are restored (paused) the next time you open JellyWave
+- A smarter Home: Jump Back In, "Because you listened to…" and Newly Added rows
+- Wrapped: on December 31 your year in music arrives as a tap-through story (minutes listened, a drumroll for your top artist over their own background and logo, top songs, biggest month), and stays on Home/Stats until January 7
+- Real listening time: stats count the seconds you actually listen, summed across your devices, instead of plays × track length
+- Settings → Storage: see and clear downloaded songs; haptic feedback can be turned off on phones
+- Fixed the phone's lyrics sheet sometimes showing an old queue above the lyrics, and icons sitting slightly high in their buttons
+
 ## What's new in 2.0.2
 
 - Accent colors are back, for both interface styles: Default (Spotify green / Apple red), Blue, Green, Red, Magenta, Purple, Pink, Orange, Yellow, Teal, Brown and Monochrome

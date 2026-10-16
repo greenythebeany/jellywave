@@ -31,7 +31,7 @@ const CLIENT_NAME = 'JellyWave';
 // literal below is only the fallback for the brief window before that
 // resolves (or if neither bridge is available, e.g. running in a plain
 // browser during development).
-let CLIENT_VERSION = '2.0.2';
+let CLIENT_VERSION = '2.0.3';
 
 export function getClientVersion() {
   return CLIENT_VERSION;
@@ -592,6 +592,54 @@ export class JellyfinClient {
   // account rather than the device. Scoped to a distinct id+client pair so
   // this never collides with preferences any other Jellyfin client
   // (including the official web client) might store under its own name.
+  // Listening logs (see listening.js): one entry per device in a separate
+  // DisplayPreferences record, so devices never overwrite each other.
+  async getListeningLogs() {
+    try {
+      const data = await this._get(`/DisplayPreferences/JellyWaveListening`, { userId: this.userId, client: 'JellyWave' });
+      const logs = {};
+      for (const [key, raw] of Object.entries(data?.CustomPrefs || {})) {
+        if (!key.startsWith('log_')) continue;
+        try { logs[key.slice(4)] = JSON.parse(raw); } catch (err) { /* skip a corrupt entry */ }
+      }
+      return logs;
+    } catch (err) {
+      return {};
+    }
+  }
+
+  async saveListeningLog(log) {
+    const params = new URLSearchParams({ userId: this.userId, client: 'JellyWave' });
+    // Read-modify-write so the other devices' entries are kept.
+    let prefs = {};
+    try {
+      const data = await this._get(`/DisplayPreferences/JellyWaveListening`, { userId: this.userId, client: 'JellyWave' });
+      prefs = { ...(data?.CustomPrefs || {}) };
+    } catch (err) { /* none yet */ }
+    prefs[`log_${DEVICE_ID}`] = JSON.stringify(log);
+    const res = await fetch(`${this.serverUrl}/DisplayPreferences/JellyWaveListening?${params.toString()}`, {
+      method: 'POST',
+      headers: this._headers(),
+      body: JSON.stringify({ Id: 'JellyWaveListening', Client: 'JellyWave', CustomPrefs: prefs }),
+      keepalive: true
+    });
+    if (!res.ok) throw new Error(`Could not sync listening time (${res.status}).`);
+  }
+
+  get deviceId() {
+    return DEVICE_ID;
+  }
+
+  // Albums/artists Jellyfin considers similar to the given item.
+  async getSimilarItems(itemId, limit = 12) {
+    const data = await this._get(`/Items/${itemId}/Similar`, {
+      UserId: this.userId,
+      Limit: limit,
+      Fields: 'PrimaryImageAspectRatio,AlbumArtist'
+    });
+    return data.Items || [];
+  }
+
   async getSyncedSettings() {
     try {
       const data = await this._get(`/DisplayPreferences/JellyWaveSettings`, {
