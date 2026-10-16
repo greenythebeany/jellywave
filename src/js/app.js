@@ -2,7 +2,7 @@ import { JellyfinClient, initClientVersion, getClientVersion } from './jellyfin.
 import { Player, RepeatMode, EQ_PRESETS } from './player.js';
 import { fetchLyrics, getCachedLyrics } from './lyrics.js';
 import { addListening, persistLocal as persistListening, getOwnLog, isDirty as listeningDirty, markSynced as listeningSynced, adoptIfLarger, combineLogs } from './listening.js';
-import { getSettings, updateSettings, applySettings, currentBitrateKbps, initRemoteSync, PALETTES, AUDIO_QUALITIES } from './settings.js';
+import { getSettings, updateSettings, applySettings, currentBitrateKbps, setAutoBitrate, getAutoBitrate, initRemoteSync, PALETTES, AUDIO_QUALITIES } from './settings.js';
 import { LOCALES, loadLocale, applyTranslations, t } from './i18n.js';
 import { setHapticsEnabled, platform, isDesktop, isMobile, isAndroid, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
 import { createConnect } from './connect.js';
@@ -157,6 +157,11 @@ const whatsNewClose = document.getElementById('whats-new-close');
 // Highlights per release, as icon + i18n key pairs (whatsNew.<key>Title /
 // whatsNew.<key>Desc). Only versions listed here get a popup.
 const WHATS_NEW = {
+  '2.0.4': [
+    { icon: 'fi-br-list-music', key: 'queueOrder' },
+    { icon: 'fi-br-signal-alt-2', key: 'adaptiveQuality' },
+    { icon: 'fi-br-rocket-lunch', key: 'fasterLoading' }
+  ],
   '2.0.3': [
     { icon: 'fi-br-play', key: 'resume' },
     { icon: 'fi-br-home', key: 'smartHome' },
@@ -427,8 +432,18 @@ function placeholderArt(kind) {
     : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23242424"/><path d="M35 30v34a9 9 0 1 0 4 7V42l30-6v24a9 9 0 1 0 4 7V24z" fill="%23555"/></svg>';
 }
 
-function artUrl(item, kind = 'album', maxSize) {
-  return jellyfin.imageUrl(item, 'Primary', maxSize) || placeholderArt(kind);
+// Cover art sized for where it's shown: `cssPx` is the on-screen size in
+// CSS pixels, scaled by the screen's pixel density and rounded up to a
+// 100px step (so the server's resized-image cache gets reused). Small
+// thumbnails download a fraction of what they used to, while big views
+// (full-screen player, detail headers) still get full resolution.
+function imagePx(cssPx) {
+  const dpr = Math.min(3, window.devicePixelRatio || 1);
+  return Math.min(1200, Math.max(100, Math.ceil((cssPx * dpr) / 100) * 100));
+}
+
+function artUrl(item, kind = 'album', cssPx = 200) {
+  return jellyfin.imageUrl(item, 'Primary', imagePx(cssPx)) || placeholderArt(kind);
 }
 
 // Server art requests fail outright when offline — for a downloaded track,
@@ -640,6 +655,7 @@ async function enterApp(username) {
   navigateTo({ view: libs ? 'home' : 'downloads' });
   restoreResumeState();
   if (libs) loadListeningFromServer().catch(() => {}).finally(maybeAutoOpenWrapped);
+  if (libs) startConnectionProbing();
   hideBootSplash();
   // After the splash has faded, so it doesn't pop up mid-transition.
   setTimeout(maybeShowWhatsNew, 500);
@@ -829,13 +845,16 @@ function wireSettingsUI() {
     player?.setReplayGainEnabled(toggleReplayGain.checked);
   });
 
-  // Both rows only do anything on desktop (Deezer lookup and the update
-  // check are both Electron-only, see platform.js/preload.js) — hide them
-  // rather than ship a toggle with nothing behind it.
-  if (!isDesktop) {
-    setHidden(albumArtLookupRow, true);
-    setHidden(autoUpdateCheckRow, true);
-  }
+  // The Deezer lookup only exists on desktop (Electron, see platform.js).
+  // The update check runs on desktop AND phones (checkForUpdatesOnMobile),
+  // so its switch shows on both; only a plain browser has neither.
+  if (!isDesktop) setHidden(albumArtLookupRow, true);
+  if (!isDesktop && !isMobile) setHidden(autoUpdateCheckRow, true);
+  // No empty section headings: hide a section whose rows are all hidden.
+  document.querySelectorAll('#settings-overlay .settings-section').forEach((section) => {
+    const rows = [...section.querySelectorAll(':scope > .settings-row')];
+    if (rows.length && rows.every((r) => r.hidden)) setHidden(section, true);
+  });
   toggleHaptics.addEventListener('change', () => {
     updateSettings({ hapticsEnabled: toggleHaptics.checked });
     setHapticsEnabled(toggleHaptics.checked);
@@ -980,13 +999,13 @@ function updateBgArt() {
   // artwork, so it's always on there regardless of the main-page setting.
   const npArt = track && (s.artBackground || s.uiStyle === 'apple');
   if (s.artBackground && track) {
-    mainBgArt.style.backgroundImage = `url("${artUrl(track)}")`;
+    mainBgArt.style.backgroundImage = `url("${artUrl(track, 'album', 120)}")`;
     mainBgArt.classList.add('visible');
   } else {
     mainBgArt.classList.remove('visible');
   }
   if (npArt) {
-    nowPlayingBgArt.style.backgroundImage = `url("${artUrl(track)}")`;
+    nowPlayingBgArt.style.backgroundImage = `url("${artUrl(track, 'album', 120)}")`;
     nowPlayingBgArt.classList.add('visible');
   } else {
     nowPlayingBgArt.classList.remove('visible');
@@ -1008,7 +1027,7 @@ async function updateDynamicAccentColor(track) {
   }
   if (dynamicAccentTrackId === track.Id) return;
   dynamicAccentTrackId = track.Id;
-  const rgb = await extractDominantColor(artUrl(track, 'album', 64));
+  const rgb = await extractDominantColor(artUrl(track, 'album', 32));
   // Track may have changed (or the setting been turned off) while we awaited the image.
   if (player?.currentTrack?.Id !== track.Id || !getSettings().dynamicAccentColor) return;
   if (rgb) applyDynamicAccentColor(rgb);
@@ -1483,7 +1502,7 @@ function wireUpdateToast() {
     window.api.onShuttingDown?.(() => {
       try { player?.audio.pause(); } catch (err) { /* nothing playing */ }
     });
-  } else if (isMobile) {
+  } else if (isMobile && getSettings().autoUpdateCheckEnabled !== false) {
     checkForUpdatesOnMobile();
   }
 }
@@ -1501,6 +1520,77 @@ function wireMediaKeys() {
 
 // ---------- Transport controls: local playback, or the connected remote
 // device when one is active (see wireConnectMenu / updateRemoteBarUI) ----------
+
+// ---------- Adaptive "Automatic" streaming quality ----------
+// Measures how fast the server actually delivers audio (a short ranged
+// download of a real track) and picks the stream quality from that:
+// original files on a fast link, transcoded 320/192/96 kbps on slower
+// ones (mobile data, a relayed Tailscale connection). Re-checked every few
+// minutes and whenever the network changes; the next song uses it.
+let lastThroughputMbit = null;
+let probeRunning = false;
+
+function bitrateForThroughput(mbit) {
+  if (mbit >= 6) return 0;     // original quality (lossless/high-bitrate files need room)
+  if (mbit >= 2.5) return 320;
+  if (mbit >= 1.2) return 192;
+  return 96;
+}
+
+async function probeConnection() {
+  if (probeRunning || !jellyfin || getSettings().audioQuality !== 'auto' || navigator.onLine === false) return;
+  const track = player?.currentTrack || allSongsCache?.[0];
+  if (!track?.Id || isDownloaded(track.Id)) return;
+  probeRunning = true;
+  try {
+    const res = await fetch(jellyfin.streamUrl(track, 0), { headers: { Range: 'bytes=0-786431' }, cache: 'no-store' });
+    if (!res.body) return;
+    // Timed from the first byte, so the server's start-up delay (seeking,
+    // a relay hop) isn't mistaken for a slow transfer.
+    const reader = res.body.getReader();
+    let first = null;
+    let bytes = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (first === null) first = performance.now();
+      else bytes += value.length;
+    }
+    const secs = first === null ? 0 : (performance.now() - first) / 1000;
+    if (bytes < 65536 || secs <= 0) return; // too little to judge
+    let mbit = (bytes * 8) / secs / 1e6;
+    // The OS's own hints, where available (Android/Chrome): data saver or a
+    // known-slow link caps it regardless of one lucky measurement.
+    const conn = navigator.connection;
+    if (conn?.saveData) mbit = Math.min(mbit, 1.5);
+    if (conn?.effectiveType && /(^|-)2g|3g/.test(conn.effectiveType)) mbit = Math.min(mbit, 1.5);
+    lastThroughputMbit = mbit;
+    setAutoBitrate(bitrateForThroughput(mbit));
+    refreshQualityStatus();
+  } catch (err) {
+    // Measurement failed (offline, server hiccup) -- keep the last choice.
+  } finally {
+    probeRunning = false;
+  }
+}
+
+function startConnectionProbing() {
+  setTimeout(probeConnection, 4000);
+  setInterval(probeConnection, 5 * 60 * 1000);
+  navigator.connection?.addEventListener?.('change', () => setTimeout(probeConnection, 1500));
+  window.addEventListener('online', () => setTimeout(probeConnection, 1500));
+}
+
+// The "Right now: …" line under Settings -> Streaming quality.
+function refreshQualityStatus() {
+  const status = document.getElementById('quality-status');
+  if (!status) return;
+  if (getSettings().audioQuality !== 'auto' || lastThroughputMbit === null) { status.hidden = true; return; }
+  const kbps = getAutoBitrate();
+  const level = kbps ? t('settings.qualityKbps', { kbps }) : t('settings.qualityOriginal');
+  status.textContent = t('settings.qualityNow', { level, speed: lastThroughputMbit.toFixed(1) });
+  status.hidden = false;
+}
 
 // ---------- Listening time (see listening.js) ----------
 let otherDeviceListening = []; // the other devices' logs, from the server
@@ -1541,7 +1631,7 @@ function listeningTotals() {
 // localStorage, and only the fields the player and UI actually use.
 const RESUME_KEY = 'jellywave:resume';
 const RESUME_TRACK_FIELDS = ['Id', 'Name', 'Album', 'AlbumId', 'AlbumArtist', 'Artists', 'ArtistItems', 'ImageTags',
-  'AlbumPrimaryImageTag', 'RunTimeTicks', 'NormalizationGain', 'UserData', 'Genres', 'Type'];
+  'AlbumPrimaryImageTag', 'RunTimeTicks', 'NormalizationGain', 'UserData', 'Genres', 'Type', '__queued'];
 let resumeSaveTimer = null;
 
 function saveResumeState() {
@@ -1662,11 +1752,11 @@ function updateRemoteBarUI(session) {
     // last-seen remote track showing.
     const track = player.currentTrack;
     if (track) {
-      playerArt.src = artUrl(track);
+      playerArt.src = artUrl(track, 'album', 64);
       withOfflineArtFallback(playerArt, track);
       playerTitle.textContent = track.Name;
       playerArtist.textContent = artistNames(track);
-      nowPlayingArt.src = artUrl(track, 'album', 800);
+      nowPlayingArt.src = artUrl(track, 'album', 440);
       withOfflineArtFallback(nowPlayingArt, track);
       setMarqueeText(nowPlayingTitle, track.Name);
       setMarqueeText(nowPlayingArtist, artistNames(track));
@@ -1928,7 +2018,7 @@ async function loadPlaylistSidebar() {
     const item = el('button', 'playlist-item');
     const img = document.createElement('img');
     img.className = 'pl-thumb';
-    img.src = artUrl(pl, 'album', 96);
+    img.src = artUrl(pl, 'album', 48);
     item.appendChild(img);
     const span = document.createElement('span');
     span.textContent = pl.Name;
@@ -1947,7 +2037,7 @@ function loadPinnedAlbumsSidebar() {
     const item = el('button', 'playlist-item');
     const img = document.createElement('img');
     img.className = 'pl-thumb';
-    img.src = artUrl(album);
+    img.src = artUrl(album, 'album', 48);
     item.appendChild(img);
     const span = document.createElement('span');
     span.textContent = album.Name;
@@ -2307,7 +2397,7 @@ async function renderSmartMix(state) {
     kind: t('home.madeForYou'),
     title: state.title,
     sub: t(tracks.length === 1 ? 'playlist.songCount' : 'playlist.songCountPlural', { count: tracks.length }),
-    art: tracks[0] ? artUrl(tracks[0]) : placeholderArt('album'),
+    art: tracks[0] ? artUrl(tracks[0], 'album', 220) : placeholderArt('album'),
     round: false,
     onPlayAll: tracks.length ? () => player.setQueue(tracks, 0, `smart:${state.mixKind}:${state.genreId || ''}`) : undefined,
     trackIds: tracks.map((tr) => tr.Id)
@@ -2789,7 +2879,7 @@ async function renderPlaylistDetail(id, name) {
     kind: t('kind.playlist'),
     title: displayName,
     sub: t(tracks.length === 1 ? 'playlist.songCount' : 'playlist.songCountPlural', { count: tracks.length }),
-    art: jellyfin.imageUrl(playlist) || (tracks[0] ? artUrl(tracks[0]) : placeholderArt('album')),
+    art: jellyfin.imageUrl(playlist, 'Primary', imagePx(220)) || (tracks[0] ? artUrl(tracks[0], 'album', 220) : placeholderArt('album')),
     round: false,
     onPlayAll: tracks.length ? () => player.setQueue(tracks, 0, id) : undefined,
     trackIds: tracks.map((t) => t.Id),
@@ -2819,7 +2909,7 @@ async function renderAlbumDetail(id) {
     kind: t('kind.album'),
     title: first?.Album || 'Album',
     sub: artistNames(first || {}),
-    art: first ? artUrl(first) : placeholderArt('album'),
+    art: first ? artUrl(first, 'album', 220) : placeholderArt('album'),
     round: false,
     onPlayAll: tracks.length ? () => player.setQueue(tracks, 0, id) : undefined,
     trackIds: tracks.map((t) => t.Id),
@@ -3297,7 +3387,7 @@ function buildTrackTable(tracks, queueRef, opts = {}) {
     const titleWrap = el('div', 'track-title-cell');
     if (!opts.hideArt) {
       const img = document.createElement('img');
-      img.src = artUrl(track);
+      img.src = artUrl(track, 'album', 48);
       withOfflineArtFallback(img, track);
       titleWrap.appendChild(img);
     }
@@ -3694,7 +3784,7 @@ function wirePlayer() {
     if (!track) return;
     playerBar.hidden = false;
     appRoot.classList.add('has-track');
-    const art = artUrl(track);
+    const art = artUrl(track, 'album', 64);
     playerArt.src = art;
     withOfflineArtFallback(playerArt, track);
     playerTitle.textContent = track.Name;
@@ -3706,7 +3796,7 @@ function wirePlayer() {
     mobileSeekBar.style.setProperty('--pct', rangeFillPercent(0, mobileSeekBar, 12));
     highlightPlayingRow(track.Id);
 
-    nowPlayingArt.src = artUrl(track, 'album', 800);
+    nowPlayingArt.src = artUrl(track, 'album', 440);
     withOfflineArtFallback(nowPlayingArt, track);
     setMarqueeText(nowPlayingTitle, track.Name);
     setMarqueeText(nowPlayingArtist, artistNames(track));
@@ -4283,7 +4373,7 @@ function buildQueueRow(track, idx, isPlaying) {
   const row = el('div', isPlaying ? 'queue-row playing' : 'queue-row');
   row.dataset.idx = idx;
   const img = document.createElement('img');
-  img.src = artUrl(track);
+  img.src = artUrl(track, 'album', 48);
   row.appendChild(img);
   const text = el('div', 'queue-row-text');
   text.innerHTML = `<div class="queue-row-title">${escapeHtml(track.Name)}</div><div class="queue-row-artist">${escapeHtml(artistNames(track))}</div>`;
@@ -4345,7 +4435,9 @@ function wireQueueDragHandle(handle, row) {
     const baseIndex = player.currentIndex;
     queueDragActive = true;
     row.classList.add('dragging');
-    handle.setPointerCapture(evt.pointerId);
+    // Everything but the grabbed row dims, so it's clear what's moving.
+    row.parentElement?.classList.add('queue-dragging');
+    try { handle.setPointerCapture(evt.pointerId); } catch (err) { /* moves still reach the handle */ }
 
     const onMove = (moveEvt) => {
       let dy = moveEvt.clientY - startY;
@@ -4385,11 +4477,13 @@ function wireQueueDragHandle(handle, row) {
     };
 
     const onUp = () => {
-      handle.releasePointerCapture(evt.pointerId);
+      // Never let a failed release leave the row grabbed or the list dimmed.
+      try { handle.releasePointerCapture(evt.pointerId); } catch (err) { /* capture already gone */ }
       handle.removeEventListener('pointermove', onMove);
       handle.removeEventListener('pointerup', onUp);
       handle.removeEventListener('pointercancel', onUp);
       row.classList.remove('dragging');
+      row.parentElement?.classList.remove('queue-dragging');
       row.style.transform = '';
       row.style.zIndex = '';
       // Read the drop target straight from the final DOM order rather than
@@ -4428,23 +4522,37 @@ function renderQueue() {
   queueRenderPending = false;
   queueBody.innerHTML = '';
   if (!player.queue.length) {
-    queueBody.appendChild(el('div', 'queue-empty', 'Queue is empty.'));
+    queueBody.appendChild(el('div', 'queue-empty', escapeHtml(t('nowPlaying.queueEmpty'))));
     return;
   }
 
   const current = player.currentTrack;
   if (current) {
-    queueBody.appendChild(el('div', 'queue-section-title', 'Now Playing'));
+    queueBody.appendChild(el('div', 'queue-section-title', escapeHtml(t('nowPlaying.nowPlayingSection'))));
     queueBody.appendChild(buildQueueRow(current, player.currentIndex, true));
   }
 
-  // Only what's actually next in play order — the queue array is already in
-  // shuffled order when shuffle is on, so slicing after currentIndex is correct.
-  const upNext = player.queue.slice(player.currentIndex + 1);
-  if (upNext.length) {
-    queueBody.appendChild(el('div', 'queue-section-title', 'Up Next'));
-    upNext.forEach((track, offset) => {
+  // Songs you added yourself ("Add to queue"), in the order you added
+  // them, then the rest of what you started ("Next up").
+  const queued = player.pendingQueued();
+  if (queued.length) {
+    const head = el('div', 'queue-section-title queue-section-head');
+    head.appendChild(el('span', '', escapeHtml(t('nowPlaying.nextInQueue'))));
+    const clear = el('button', 'queue-clear-btn', escapeHtml(t('nowPlaying.clearQueue')));
+    clear.type = 'button';
+    clear.addEventListener('click', () => player.clearQueued());
+    head.appendChild(clear);
+    queueBody.appendChild(head);
+    queued.forEach((track, offset) => {
       queueBody.appendChild(buildQueueRow(track, player.currentIndex + 1 + offset, false));
+    });
+  }
+  const restStart = player.currentIndex + 1 + queued.length;
+  const upNext = player.queue.slice(restStart);
+  if (upNext.length) {
+    queueBody.appendChild(el('div', 'queue-section-title', escapeHtml(t('nowPlaying.upNext'))));
+    upNext.forEach((track, offset) => {
+      queueBody.appendChild(buildQueueRow(track, restStart + offset, false));
     });
   }
 }
@@ -4592,7 +4700,7 @@ async function withArtistImages(data) {
   const ta = data?.topArtist;
   const tr = ta?.track;
   if (!ta) return data;
-  ta.albumArt = tr ? artUrl(tr, 'album', 600) : placeholderArt('artist');
+  ta.albumArt = tr ? artUrl(tr, 'album', 220) : placeholderArt('artist');
   const ref = tr?.ArtistItems?.find((a) => formatDisplayName(a.Name) === ta.name) || tr?.ArtistItems?.[0];
   if (!ref?.Id) return data;
   ta.photo = `${jellyfin.serverUrl}/Items/${ref.Id}/Images/Primary?maxWidth=600&quality=90`;
@@ -4697,7 +4805,7 @@ function wrappedSlides(data) {
     slides.push({
       theme: 'd',
       html: `<div class="wr-kicker">${escapeHtml(t('wrapped.topSongsTitle'))}</div>
-        <ol class="wr-list">${data.topSongs.map((s, i) => `<li><span class="wr-rank">${i + 1}</span><img src="${artUrl(s.track, 'album', 160)}" alt="" /><span class="wr-li-text"><span class="wr-li-title">${escapeHtml(s.track.Name)}</span><span class="wr-li-sub">${escapeHtml(artistNames(s.track))} · ${escapeHtml(s.detail)}</span></span></li>`).join('')}</ol>`
+        <ol class="wr-list">${data.topSongs.map((s, i) => `<li><span class="wr-rank">${i + 1}</span><img src="${artUrl(s.track, 'album', 56)}" alt="" /><span class="wr-li-text"><span class="wr-li-title">${escapeHtml(s.track.Name)}</span><span class="wr-li-sub">${escapeHtml(artistNames(s.track))} · ${escapeHtml(s.detail)}</span></span></li>`).join('')}</ol>`
     });
   }
   if (data.topMonth) {

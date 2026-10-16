@@ -155,7 +155,18 @@ export function applySettings() {
   root.toggleAttribute('data-custom-theme', /themes\/[\w.-]+\.css|--(bg|accent|text)\b/.test(css));
 }
 
+// "Automatic" = whatever the connection probe in app.js last decided
+// (0 = original quality, until it has measured anything).
+let autoBitrateKbps = 0;
+export function setAutoBitrate(kbps) {
+  autoBitrateKbps = kbps || 0;
+}
+export function getAutoBitrate() {
+  return autoBitrateKbps;
+}
+
 export function currentBitrateKbps() {
+  if (current.audioQuality === 'auto') return autoBitrateKbps;
   return AUDIO_QUALITIES[current.audioQuality]?.bitrateKbps || 0;
 }
 
