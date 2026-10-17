@@ -1,0 +1,426 @@
+/* ==========================================================================
+   "Nothing" interface style, after Nothing OS.
+   Scoped to :root[data-ui="nothing"] (set by settings.js from the uiStyle
+   setting), like apple.css. Black, white and grey, with one accent (Nothing
+   red unless another accent color is picked) used sparingly: active states,
+   the dot after page titles, the progress dots. Doto (dot matrix) for big
+   headings, Space Mono for small uppercase labels.
+   Everything has to fit a 320px-wide screen (iPhone 5 / first iPhone SE).
+   ========================================================================== */
+
+/* ---------- Tokens ---------- */
+:root[data-ui="nothing"] {
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --style-accent: #d71921;
+  --nd-dot: "Doto", "Space Mono", ui-monospace, monospace;
+  --nd-mono: "Space Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  --nd-sans: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Dot grid used as a texture and as the mask for the dotted sliders. */
+  --nd-grid: radial-gradient(circle, var(--nd-grid-dot) 1px, transparent 1.4px);
+  /* Dimmer version for big areas (the player): same crisp dots, at 75%
+     of the strength. */
+  --nd-grid-soft: radial-gradient(circle, color-mix(in srgb, var(--nd-grid-dot) 75%, transparent) 1px, transparent 1.4px);
+}
+:root[data-ui="nothing"][data-palette="nothing"]:not([data-custom-theme]) {
+  --accent: #d71921;
+  --accent-hover: #ff2e36;
+  --accent-bg: #d71921;
+  --accent-contrast: #ffffff;
+  --seek-start: #d71921;
+  --seek-end: #d71921;
+}
+:root[data-ui="nothing"][data-theme="dark"]:not([data-custom-theme]) {
+  --bg-void: #000000;
+  --bg-base: #000000;
+  --bg-elevated: #0f0f0f;
+  --bg-highlight: #1d1d1d;
+  --bg-card: #151515;
+  --bg-card-hover: #202020;
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --text-tertiary: #7c7c7c;
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --nd-grid-dot: rgba(255, 255, 255, 0.09);
+}
+:root[data-ui="nothing"][data-theme="light"]:not([data-custom-theme]) {
+  --bg-void: #f2f2f2;
+  --bg-base: #f2f2f2;
+  --bg-elevated: #ffffff;
+  --bg-highlight: #e4e4e4;
+  --bg-card: #ffffff;
+  --bg-card-hover: #e9e9e9;
+  --text-primary: #000000;
+  --text-secondary: #555555;
+  --text-tertiary: #6b6b6b;
+  --border-subtle: rgba(0, 0, 0, 0.12);
+  --nd-grid-dot: rgba(0, 0, 0, 0.1);
+}
+/* With a community theme the grid follows the theme's text color. */
+:root[data-ui="nothing"][data-custom-theme] { --nd-grid-dot: color-mix(in srgb, var(--text-primary) 10%, transparent); }
+
+/* ---------- Typography ---------- */
+:root[data-ui="nothing"] body { font-family: var(--nd-sans); -webkit-font-smoothing: antialiased; }
+/* Big headings in dot matrix. Doto only ships bold; synthetic bold off. */
+:root[data-ui="nothing"] .view-title,
+:root[data-ui="nothing"] .section-title,
+:root[data-ui="nothing"] .detail-title,
+:root[data-ui="nothing"] .genre-card-title,
+:root[data-ui="nothing"] .stat-value,
+:root[data-ui="nothing"] .wrapped-banner-title,
+:root[data-ui="nothing"] .queue-sheet-title,
+:root[data-ui="nothing"] .modal-header h2,
+:root[data-ui="nothing"] .whats-new-card h2,
+:root[data-ui="nothing"] .login-card h1,
+:root[data-ui="nothing"] .titlebar-logo {
+  font-family: var(--nd-dot); font-weight: 700; font-synthesis: none;
+  letter-spacing: 0;
+}
+:root[data-ui="nothing"] .view-title { font-size: 36px; line-height: 1.1; margin: 10px 0 22px; overflow-wrap: anywhere; }
+/* The red dot after every page title, Nothing's signature full stop. */
+:root[data-ui="nothing"] .view-title::after {
+  content: ''; display: inline-block;
+  width: 0.2em; height: 0.2em; margin-left: 0.12em; border-radius: 50%;
+  background: var(--accent);
+}
+:root[data-ui="nothing"] .section-title { font-size: 23px; line-height: 1.15; margin: 30px 0 14px; }
+:root[data-ui="nothing"] .detail-title { font-size: 42px; line-height: 1.1; }
+:root[data-ui="nothing"] .titlebar-logo { font-size: 15px; }
+/* Small labels: uppercase mono, like Nothing OS's settings headers. */
+:root[data-ui="nothing"] .detail-kind,
+:root[data-ui="nothing"] .settings-section h3,
+:root[data-ui="nothing"] .sidebar-section-title,
+:root[data-ui="nothing"] .queue-section-title,
+:root[data-ui="nothing"] .track-table thead th,
+:root[data-ui="nothing"] .stat-label,
+:root[data-ui="nothing"] .card-subtitle,
+:root[data-ui="nothing"] .time-label,
+:root[data-ui="nothing"] .now-playing-artist,
+:root[data-ui="nothing"] .bottom-nav-item,
+:root[data-ui="nothing"] .palette-swatch span,
+:root[data-ui="nothing"] .segmented button {
+  font-family: var(--nd-mono); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 400;
+}
+:root[data-ui="nothing"] .detail-kind { font-size: 11px; color: var(--text-secondary); }
+:root[data-ui="nothing"] .card-subtitle { font-size: 10.5px; color: var(--text-tertiary); }
+:root[data-ui="nothing"] .time-label { font-size: 10.5px; }
+:root[data-ui="nothing"] .track-table thead th { font-size: 10.5px; }
+
+/* ---------- Shell ---------- */
+:root[data-ui="nothing"] .titlebar { background: var(--bg-void); }
+:root[data-ui="nothing"] .main { background: var(--bg-base); }
+:root[data-ui="nothing"] .main-header { background: var(--bg-base); border-bottom: 1px solid transparent; }
+:root[data-ui="nothing"] .main.hero-top .main-header { background: transparent; }
+:root[data-ui="nothing"] .nav-arrow { background: var(--bg-card); border: 1px solid var(--border-subtle); }
+:root[data-ui="nothing"] .user-badge { font-family: var(--nd-mono); }
+
+/* Sidebar: plain black column, active item marked with the accent dot. */
+:root[data-ui="nothing"] .sidebar { background: var(--bg-void); border-right: 1px solid var(--border-subtle); }
+:root[data-ui="nothing"] .nav-item { font-weight: 500; border-radius: 999px; position: relative; }
+:root[data-ui="nothing"] .nav-item.active { background: var(--bg-card); color: var(--text-primary); }
+:root[data-ui="nothing"] .nav-item.active::after {
+  content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+  margin-left: auto; flex-shrink: 0;
+}
+:root[data-ui="nothing"] .playlist-item { border-radius: 999px; }
+
+/* ---------- Cards: rounded widget tiles ---------- */
+:root[data-ui="nothing"] .card {
+  background: var(--bg-card); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); padding: 10px;
+}
+:root[data-ui="nothing"] .card:hover { background: var(--bg-card-hover); }
+:root[data-ui="nothing"] .card.playing { box-shadow: none; border-color: var(--accent); }
+:root[data-ui="nothing"] .card-art-wrap { border-radius: var(--radius-sm); margin-bottom: 10px; }
+:root[data-ui="nothing"] .card-art { box-shadow: none; border-radius: var(--radius-sm); }
+:root[data-ui="nothing"] .card.artist-card { text-align: center; }
+:root[data-ui="nothing"] .card.artist-card .card-art-wrap,
+:root[data-ui="nothing"] .card.artist-card .card-art { border-radius: 50%; }
+:root[data-ui="nothing"] .card-title { font-size: 13.5px; font-weight: 600; margin-bottom: 3px; }
+/* Play button: a white (black in light mode) disc, not the accent. */
+:root[data-ui="nothing"] .card-play-btn {
+  width: 40px; height: 40px;
+  background: var(--text-primary); color: var(--bg-base);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+:root[data-ui="nothing"] .card-play-btn svg { width: 15px; height: 15px; }
+
+:root[data-ui="nothing"] .genre-card {
+  background: var(--bg-card); border: 1px solid var(--border-subtle);
+  background-image: var(--nd-grid); background-size: 7px 7px;
+}
+:root[data-ui="nothing"] .genre-card-title { font-size: 19px; line-height: 1.15; overflow-wrap: anywhere; }
+
+/* Library: Nothing-style grouped list in one rounded card. */
+:root[data-ui="nothing"] .library-grid {
+  background: var(--bg-card); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); overflow: hidden;
+}
+:root[data-ui="nothing"] .library-tile { padding: 14px 16px; border: none; border-radius: 0; background: none; aspect-ratio: auto; background-image: none; }
+:root[data-ui="nothing"] .library-tile + .library-tile { border-top: 1px solid var(--border-subtle); }
+:root[data-ui="nothing"] .library-tile:hover { background: var(--bg-card-hover); }
+:root[data-ui="nothing"] .library-tile-icon { color: var(--text-primary); }
+:root[data-ui="nothing"] .library-tile-label { font-family: var(--nd-sans); font-size: 15px; font-weight: 500; overflow-wrap: normal; }
+
+/* Stats */
+:root[data-ui="nothing"] .stat-box,
+:root[data-ui="nothing"] .stats-list { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); }
+:root[data-ui="nothing"] .stat-value { font-size: 30px; }
+:root[data-ui="nothing"] .stats-list-rank { font-family: var(--nd-mono); font-weight: 400; }
+
+/* Wrapped banner: dot grid on the card. */
+:root[data-ui="nothing"] .wrapped-banner {
+  background: var(--bg-card); color: var(--text-primary);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  background-image: var(--nd-grid); background-size: 7px 7px;
+}
+:root[data-ui="nothing"] .wrapped-banner .fi { color: var(--accent); }
+
+/* ---------- Track lists ---------- */
+:root[data-ui="nothing"] .track-row td { font-size: 13.5px; }
+:root[data-ui="nothing"] .track-row td:first-child { border-radius: 12px 0 0 12px; }
+:root[data-ui="nothing"] .track-row td:last-child { border-radius: 0 12px 12px 0; }
+:root[data-ui="nothing"] .track-row:hover td { background: var(--bg-card) !important; }
+:root[data-ui="nothing"] .track-row.playing td { color: var(--accent); }
+:root[data-ui="nothing"] .track-index,
+:root[data-ui="nothing"] .track-duration { font-family: var(--nd-mono); font-size: 12px; }
+
+/* ---------- Detail header ---------- */
+:root[data-ui="nothing"] .detail-art-wrap,
+:root[data-ui="nothing"] .detail-art { border-radius: var(--radius-md); }
+:root[data-ui="nothing"] .detail-art-wrap:has(.detail-art.round),
+:root[data-ui="nothing"] .detail-art.round { border-radius: 50%; }
+:root[data-ui="nothing"] .detail-art { box-shadow: none; }
+:root[data-ui="nothing"] .detail-sub { font-family: var(--nd-mono); font-size: 12px; }
+:root[data-ui="nothing"] .play-all-btn {
+  background: var(--text-primary); color: var(--bg-base); box-shadow: none;
+}
+:root[data-ui="nothing"] .play-all-btn:hover { transform: scale(1.04); background: var(--text-primary); }
+:root[data-ui="nothing"] .play-all-btn svg { fill: currentColor; }
+:root[data-ui="nothing"] .detail-download-btn,
+:root[data-ui="nothing"] .detail-pin-btn { border: 1px solid var(--border-subtle); }
+
+/* ---------- Sliders: dot-matrix bars ---------- */
+/* The whole bar is masked to a row of dots, so both the filled part
+   (accent) and the rest (grey) read as dots. The knob keeps its size but
+   is invisible: the fill (--pct, from rangeFillPercent in app.js) is
+   computed for that size. */
+:root[data-ui="nothing"] input[type="range"].seek-bar,
+:root[data-ui="nothing"] input[type="range"].volume-bar,
+:root[data-ui="nothing"] input[type="range"].np-volume-bar {
+  height: 8px; border-radius: 0;
+  background-color: color-mix(in srgb, var(--text-primary) 26%, transparent);
+  background-image: linear-gradient(to right, var(--accent) 0%, var(--accent) var(--pct, 0%), transparent var(--pct, 0%));
+  -webkit-mask-image: radial-gradient(circle, #000 2.2px, transparent 2.7px);
+  mask-image: radial-gradient(circle, #000 2.2px, transparent 2.7px);
+  -webkit-mask-size: 7px 8px; mask-size: 7px 8px;
+  -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+  -webkit-mask-position: 0 50%; mask-position: 0 50%;
+}
+:root[data-ui="nothing"] input[type="range"].seek-bar::-webkit-slider-thumb,
+:root[data-ui="nothing"] input[type="range"].volume-bar::-webkit-slider-thumb,
+:root[data-ui="nothing"] input[type="range"].np-volume-bar::-webkit-slider-thumb { opacity: 0; box-shadow: none; }
+
+/* ---------- Player bar (desktop) ---------- */
+:root[data-ui="nothing"] .player-bar { background: var(--bg-void); border-top: 1px solid var(--border-subtle); }
+:root[data-ui="nothing"] .player-art { border-radius: 10px; }
+:root[data-ui="nothing"] .player-title { font-weight: 600; }
+:root[data-ui="nothing"] .player-artist { font-family: var(--nd-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+:root[data-ui="nothing"] .ctrl-btn { color: var(--text-secondary); }
+:root[data-ui="nothing"] .ctrl-btn:hover { color: var(--text-primary); }
+/* On/off reads as an accent dot under the icon, like Nothing's toggles. */
+:root[data-ui="nothing"] .ctrl-btn.active { color: var(--text-primary); }
+:root[data-ui="nothing"] .ctrl-btn.active::after {
+  content: ''; position: absolute; left: 50%; bottom: -5px;
+  width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--accent);
+}
+:root[data-ui="nothing"] .ctrl-btn-play {
+  width: 42px; height: 42px; top: 0; border-radius: 50%;
+  background: var(--text-primary); color: var(--bg-base);
+}
+:root[data-ui="nothing"] .ctrl-btn-play:hover { color: var(--bg-base); transform: scale(1.06); }
+:root[data-ui="nothing"] .ctrl-btn-play svg { width: 20px; height: 20px; fill: currentColor; }
+
+/* ---------- Controls ---------- */
+/* Switches: white knob that slides onto the accent track. */
+:root[data-ui="nothing"] .switch-track { background: var(--bg-highlight); border-color: var(--border-subtle); }
+:root[data-ui="nothing"] .switch-track::before { background: var(--text-tertiary); }
+:root[data-ui="nothing"] .switch input:checked + .switch-track { background: var(--accent); }
+:root[data-ui="nothing"] .switch input:checked + .switch-track::before { background: #fff; }
+:root[data-ui="nothing"][data-palette="mono"] .switch input:checked + .switch-track::before { background: var(--bg-base); }
+/* Segmented: outlined pills, the picked one filled white. */
+:root[data-ui="nothing"] .segmented { background: transparent; border: 1px solid var(--border-subtle); padding: 3px; }
+:root[data-ui="nothing"] .segmented button { font-size: 10.5px; padding: 7px 11px; white-space: nowrap; }
+:root[data-ui="nothing"] .segmented button.active { background: var(--text-primary); color: var(--bg-base); }
+:root[data-ui="nothing"] .btn-primary {
+  background: var(--text-primary); color: var(--bg-base);
+  font-family: var(--nd-mono); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-size: 13px;
+}
+:root[data-ui="nothing"] .btn-primary:hover { background: var(--text-secondary); }
+:root[data-ui="nothing"] select.settings-select { border-radius: 999px; padding: 8px 12px; }
+:root[data-ui="nothing"] .palette-swatch { border-radius: var(--radius-sm); }
+:root[data-ui="nothing"] .palette-swatch span { font-size: 9.5px; }
+
+/* ---------- Modals & menus ---------- */
+:root[data-ui="nothing"] .modal-overlay { background: rgba(0, 0, 0, 0.72); }
+:root[data-ui="nothing"] .modal-card {
+  background: var(--bg-base); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg); box-shadow: none;
+}
+:root[data-ui="nothing"] .modal-header { background: var(--bg-base); border-bottom: none; }
+:root[data-ui="nothing"] .modal-header h2 { font-size: 26px; }
+/* Settings: every section is its own rounded card, label above it. */
+:root[data-ui="nothing"] .settings-section {
+  background: var(--bg-card); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); padding: 14px 16px 8px; margin-bottom: 12px;
+}
+:root[data-ui="nothing"] .settings-section:last-child { border-bottom: 1px solid var(--border-subtle); }
+:root[data-ui="nothing"] .settings-section h3 { font-size: 11px; color: var(--text-tertiary); margin: 0 0 6px; }
+:root[data-ui="nothing"] .settings-row + .settings-row { border-top: 1px solid var(--border-subtle); }
+:root[data-ui="nothing"] .settings-row { padding: 11px 0; }
+:root[data-ui="nothing"] .settings-row-label { font-weight: 500; }
+:root[data-ui="nothing"] .account-menu,
+:root[data-ui="nothing"] .context-menu,
+:root[data-ui="nothing"] .add-playlist-menu,
+:root[data-ui="nothing"] .sleep-timer-menu,
+:root[data-ui="nothing"] .connect-menu {
+  background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- Side panel & sheets ---------- */
+:root[data-ui="nothing"] .lyrics-panel {
+  background-color: var(--bg-void); border-left: 1px solid var(--border-subtle);
+  background-image: var(--nd-grid-soft); background-size: 9px 9px;
+}
+:root[data-ui="nothing"] .now-playing-art-wrap,
+:root[data-ui="nothing"] .now-playing-art { border-radius: var(--radius-md); box-shadow: none; }
+:root[data-ui="nothing"] .now-playing-title { font-family: var(--nd-dot); font-weight: 700; font-synthesis: none; font-size: 22px; line-height: 1.2; letter-spacing: 0; }
+:root[data-ui="nothing"] .now-playing-artist { font-size: 11.5px; }
+/* Lyrics in dot matrix too, a bit bigger than body text so the dots stay
+   readable; the active line only brightens (same size, so nothing jumps). */
+:root[data-ui="nothing"] .lyric-line,
+:root[data-ui="nothing"] .lyric-line.active {
+  font-family: var(--nd-dot); font-weight: 700; font-synthesis: none; letter-spacing: 0;
+  font-size: 19px; line-height: 1.3;
+}
+:root[data-ui="nothing"] .lyric-line.active { color: var(--text-primary); }
+:root[data-ui="nothing"] .lyrics-empty { font-family: var(--nd-mono); text-transform: uppercase; letter-spacing: 0.06em; font-size: 11px; }
+:root[data-ui="nothing"] .queue-sheet { background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-bottom: none; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+:root[data-ui="nothing"] .queue-sheet-title { font-size: 24px; }
+:root[data-ui="nothing"] .queue-row { border-radius: var(--radius-sm); }
+:root[data-ui="nothing"] .queue-row img { border-radius: 8px; }
+:root[data-ui="nothing"] .queue-row.playing .queue-row-title { color: var(--accent); }
+:root[data-ui="nothing"] .queue-clear-btn { font-family: var(--nd-mono); text-transform: uppercase; font-weight: 400; font-size: 10.5px; }
+
+/* Volume row in the full-screen player -- also used by apple.css. */
+:root[data-ui="nothing"] body.platform-mobile .np-volume-row { display: flex; }
+
+/* ==========================================================================
+   Phone layout (down to 320px wide)
+   ========================================================================== */
+@media (max-width: 820px) {
+  :root[data-ui="nothing"] .view-root { padding: 6px 14px 24px; }
+  :root[data-ui="nothing"] .view-title { font-size: 32px; margin: 6px 0 18px; }
+  :root[data-ui="nothing"] .section-title { font-size: 21px; margin: 26px 0 12px; }
+  :root[data-ui="nothing"] .detail-title { font-size: 30px; white-space: normal; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  :root[data-ui="nothing"] .card-row { gap: 10px; }
+  :root[data-ui="nothing"] .card-grid { gap: 10px; }
+  :root[data-ui="nothing"] .card-row .card { flex-basis: calc((100% - 10px) / 2.15); }
+
+  /* Floating mini-player card above the tab bar; the page scrolls under it. */
+  :root[data-ui="nothing"] .main { grid-row: 1 / 3; grid-column: 1; }
+  :root[data-ui="nothing"] .app.has-track .view-root { padding-bottom: 92px; }
+  :root[data-ui="nothing"] .player-bar {
+    grid-row: 2; grid-column: 1; align-self: end;
+    position: relative; z-index: 30;
+    margin: 0 8px 8px; border-radius: var(--radius-md);
+    background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    min-height: 62px; padding: 8px 10px 8px 8px; gap: 8px;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  :root[data-ui="nothing"] .player-bar .player-center { width: auto; }
+  :root[data-ui="nothing"] .player-bar .player-controls { gap: 6px; }
+  :root[data-ui="nothing"] .player-bar #btn-prev,
+  :root[data-ui="nothing"] .player-bar #btn-next { display: flex; color: var(--text-primary); }
+  :root[data-ui="nothing"] .player-bar .ctrl-btn-play { width: 38px; height: 38px; }
+  :root[data-ui="nothing"] .player-bar .ctrl-btn-play svg { width: 17px; height: 17px; }
+  :root[data-ui="nothing"] .player-art { width: 44px; height: 44px; }
+  :root[data-ui="nothing"] .player-track-info { gap: 10px; }
+
+  /* Tab bar: mono labels, active tab marked by an accent dot. */
+  :root[data-ui="nothing"] .bottom-nav { background: var(--bg-void); border-top: 1px solid var(--border-subtle); }
+  :root[data-ui="nothing"] .bottom-nav-item { font-size: 9.5px; color: var(--text-tertiary); position: relative; padding: 4px 10px 8px; }
+  :root[data-ui="nothing"] .bottom-nav-item.active { color: var(--text-primary); }
+  :root[data-ui="nothing"] .bottom-nav-item.active::after {
+    content: ''; position: absolute; left: 50%; bottom: 0;
+    width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: var(--accent);
+  }
+
+  /* Full-screen player: black with a dot grid instead of blurred artwork. */
+  :root[data-ui="nothing"] .lyrics-panel {
+    background-color: var(--bg-void);
+    background-image: var(--nd-grid-soft); background-size: 9px 9px;
+  }
+  :root[data-ui="nothing"] .now-playing-summary { padding: 8px 22px 6px; }
+  :root[data-ui="nothing"] .now-playing-art-wrap { margin-bottom: 20px; border: 1px solid var(--border-subtle); }
+  /* Artwork shrinks while paused and springs back on play, like apple.css. */
+  :root[data-ui="nothing"] .now-playing-art-wrap { transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.25); }
+  :root[data-ui="nothing"] .lyrics-panel.is-paused .now-playing-art-wrap { transform: scale(0.84); }
+  :root[data-ui="nothing"] .now-playing-info-row { grid-template-columns: minmax(0, 1fr) 36px 36px; }
+  :root[data-ui="nothing"] .now-playing-text { order: 0; text-align: left; }
+  :root[data-ui="nothing"] .now-playing-download-btn { order: 1; justify-self: end; }
+  :root[data-ui="nothing"] .now-playing-like-btn { order: 2; }
+  :root[data-ui="nothing"] .now-playing-title { font-family: var(--nd-dot); font-weight: 700; font-synthesis: none; font-size: 26px; line-height: 1.2; letter-spacing: 0; }
+  :root[data-ui="nothing"] .now-playing-like-btn,
+  :root[data-ui="nothing"] .now-playing-download-btn {
+    border: none; background: transparent; color: var(--text-primary);
+  }
+  :root[data-ui="nothing"] .now-playing-like-btn.liked { color: var(--accent); }
+  :root[data-ui="nothing"] .mobile-now-playing-controls { background: transparent; padding: 8px 22px 16px; }
+  :root[data-ui="nothing"] .mobile-now-playing-controls input[type="range"].seek-bar { flex: none; height: 8px; }
+  :root[data-ui="nothing"] .mobile-now-playing-controls .seek-bar::-webkit-slider-thumb { opacity: 0; }
+  :root[data-ui="nothing"] .mobile-now-playing-controls .seek-times-row { margin-top: 6px; }
+  :root[data-ui="nothing"] .mobile-now-playing-controls .player-controls { justify-content: space-between; }
+  :root[data-ui="nothing"] .mobile-now-playing-controls .ctrl-btn-play {
+    width: 64px; height: 64px; background: var(--text-primary); color: var(--bg-base);
+  }
+  :root[data-ui="nothing"] .mobile-now-playing-controls .ctrl-btn-play:hover { color: var(--bg-base); }
+  :root[data-ui="nothing"] .mobile-now-playing-controls .ctrl-btn-play svg { width: 26px; height: 26px; }
+  :root[data-ui="nothing"] .mobile-now-playing-controls #mobile-btn-prev,
+  :root[data-ui="nothing"] .mobile-now-playing-controls #mobile-btn-next { color: var(--text-primary); }
+  :root[data-ui="nothing"] .mobile-now-playing-controls #mobile-btn-shuffle,
+  :root[data-ui="nothing"] .mobile-now-playing-controls #mobile-btn-repeat { color: var(--text-tertiary); }
+  :root[data-ui="nothing"] .mobile-now-playing-controls #mobile-btn-shuffle.active,
+  :root[data-ui="nothing"] .mobile-now-playing-controls #mobile-btn-repeat.active { color: var(--text-primary); }
+  :root[data-ui="nothing"] .np-volume-row {
+    display: flex; align-items: center; gap: 12px; margin-top: 10px;
+    color: var(--text-tertiary); font-size: 13px;
+  }
+  :root[data-ui="nothing"] .np-volume-row input[type="range"] { flex: 1; }
+  :root[data-ui="nothing"] .queue-sheet .lyric-line,
+  :root[data-ui="nothing"] .queue-sheet .lyric-line.active { font-size: 25px; line-height: 1.25; }
+
+  /* Settings as a full sheet with a little less side padding. */
+  :root[data-ui="nothing"] .modal-body { padding: 4px 12px 22px; }
+  :root[data-ui="nothing"] .modal-header { padding: 16px 16px 12px; }
+  :root[data-ui="nothing"] .settings-section { padding: 12px 14px 6px; }
+}
+
+/* iPhone 5 / SE (1st gen) and other ~320px screens: tighter type and
+   controls so nothing has to scroll sideways. */
+@media (max-width: 360px) {
+  :root[data-ui="nothing"] .view-title { font-size: 28px; }
+  :root[data-ui="nothing"] .section-title { font-size: 19px; }
+  :root[data-ui="nothing"] .detail-title { font-size: 26px; }
+  :root[data-ui="nothing"] .now-playing-title { font-size: 22px; }
+  :root[data-ui="nothing"] .view-root { padding-left: 12px; padding-right: 12px; }
+  :root[data-ui="nothing"] .card-row .card { flex-basis: calc((100% - 10px) / 1.9); }
+  :root[data-ui="nothing"] .now-playing-summary { padding: 4px 18px 4px; }
+  :root[data-ui="nothing"] .now-playing-art-wrap { margin-bottom: 14px; }
+  :root[data-ui="nothing"] .mobile-now-playing-controls { padding: 6px 18px 12px; gap: 6px; }
+  :root[data-ui="nothing"] .mobile-now-playing-controls .ctrl-btn-play { width: 56px; height: 56px; }
+  :root[data-ui="nothing"] .segmented button { padding: 6px 8px; }
+}

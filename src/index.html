@@ -14,9 +14,19 @@
   <link rel="stylesheet" href="vendor/poppins/latin-ext-500.css" />
   <link rel="stylesheet" href="vendor/poppins/latin-ext-600.css" />
   <link rel="stylesheet" href="vendor/poppins/latin-ext-700.css" />
+  <!-- Nothing style only: Doto (dot matrix) headings, Space Mono labels. -->
+  <link rel="stylesheet" href="vendor/doto/latin-700.css" />
+  <link rel="stylesheet" href="vendor/doto/latin-ext-700.css" />
+  <link rel="stylesheet" href="vendor/spacemono/latin-400.css" />
+  <link rel="stylesheet" href="vendor/spacemono/latin-700.css" />
+  <link rel="stylesheet" href="vendor/spacemono/latin-ext-400.css" />
+  <link rel="stylesheet" href="vendor/spacemono/latin-ext-700.css" />
   <link rel="stylesheet" href="vendor/uicons/rounded.css" />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/apple.css" />
+  <link rel="stylesheet" href="css/nothing.css" />
+  <link rel="stylesheet" href="css/nothing-icons.css" />
+  <link rel="stylesheet" href="css/compact.css" />
   <style id="custom-css-style"></style>
 </head>
 <body>
@@ -226,7 +236,7 @@
           <button id="mobile-btn-next" class="ctrl-btn" data-i18n-title="player.next" title="Next"><i class="fi fi-br-forward"></i></button>
           <button id="mobile-btn-repeat" class="ctrl-btn" data-i18n-title="player.repeat" title="Repeat"><i id="mobile-icon-repeat" class="fi fi-br-arrows-repeat"></i></button>
         </div>
-        <!-- Apple Music style only (hidden otherwise, see apple.css). -->
+        <!-- Apple Music and Nothing styles only (hidden otherwise, see apple.css). -->
         <div class="np-volume-row">
           <i class="fi fi-br-volume-mute" aria-hidden="true"></i>
           <input type="range" id="np-volume-bar" class="np-volume-bar" min="0" max="100" value="50" data-i18n-title="player.volume" title="Volume" />
@@ -375,6 +385,7 @@
             <div class="segmented" id="ui-style-toggle">
               <button data-value="spotify" type="button" data-i18n="settings.uiSpotify">Spotify</button>
               <button data-value="apple" type="button" data-i18n="settings.uiApple">Apple Music</button>
+              <button data-value="nothing" type="button" data-i18n="settings.uiNothing">Nothing</button>
             </div>
           </div>
           <div class="settings-row" id="accent-color-row">
@@ -713,6 +724,8 @@
             <li><strong>Electron</strong> and <strong>Capacitor</strong> (and its official plugins: app, filesystem, haptics, local-notifications, preferences, android/ios core) — open-source app runtimes, MIT-licensed.</li>
             <li><strong>@xhayper/discord-rpc</strong> — MIT-licensed library used for the optional Discord Rich Presence integration.</li>
             <li><strong>Poppins</strong> font, via Fontsource — licensed under the SIL Open Font License 1.1, bundled and self-hosted (never loaded from Google Fonts or any other third-party CDN).</li>
+            <li><strong>Doto</strong> (dot-matrix headings) and <strong>Space Mono</strong> (labels) fonts, used by the Nothing interface style, via Fontsource — licensed under the SIL Open Font License 1.1, bundled and self-hosted like Poppins.</li>
+            <li>The <strong>Nothing</strong> interface style is inspired by the look of Nothing OS. JellyWave is not affiliated with or endorsed by Nothing Technology Limited, and uses none of its fonts or artwork.</li>
             <li><strong>Drum roll sound</strong> (Wrapped) — "Assorted Rimshots: 4-second roll" by Kevin MacLeod (<a href="https://incompetech.com" target="_blank" rel="noopener noreferrer">incompetech.com</a>), licensed under <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener noreferrer">Creative Commons Attribution 3.0</a>; trimmed and converted to MP3.</li>
             <li><strong>Uicons by Flaticon</strong> — the app's icon set, used and credited per Flaticon's license (see the credit in Settings → About, and in the README).</li>
             <li><strong>yt-dlp</strong> and <strong>Pillow</strong> — used by the optional "Import" feature's Python helper script to fetch and process media. yt-dlp is released into the public domain (Unlicense). Neither is bundled inside the app — the Import feature requires a separate Python installation on your system.</li>

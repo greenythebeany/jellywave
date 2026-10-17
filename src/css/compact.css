@@ -1,0 +1,51 @@
+/* ==========================================================================
+   Small-screen fit, shared by all three interface styles.
+   Loaded after styles.css, apple.css and nothing.css: the :root[data-ui]
+   prefix ties with each style's own selectors, so these win by order.
+   Target: iPhone 5 / first iPhone SE (320 x 568) without anything cut off.
+   ========================================================================== */
+
+/* ---------- Settings: rows with button groups stack on narrow screens ---------- */
+/* Side by side, a 3-button group next to its label squeezed both and
+   wrapped the buttons onto several lines. Stacked, the label gets the full
+   width and the buttons share one even row under it. */
+@media (max-width: 520px) {
+  :root[data-ui] .settings-row:has(> .segmented) { flex-direction: column; align-items: stretch; gap: 10px; }
+  :root[data-ui] .settings-row > .segmented { width: 100%; flex-wrap: nowrap; }
+  :root[data-ui] .settings-row > .segmented button {
+    flex: 1 1 0; min-width: 0; padding-left: 4px; padding-right: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  /* Nothing's mono uppercase labels are wide: drop the tracking so
+     "APPLE MUSIC" fits a third of a 320px screen. */
+  :root[data-ui="nothing"] .settings-row > .segmented button { letter-spacing: 0; font-size: 10px; }
+}
+
+/* ---------- Full-screen player on short phones ---------- */
+/* The artwork stays as wide as the screen allows; everything around it
+   (header, gaps, title, controls) gets tighter so the volume slider and the
+   first lines of lyrics still fit under it. */
+@media (max-width: 820px) and (max-height: 700px) {
+  :root[data-ui] .lyrics-header { padding-top: max(env(safe-area-inset-top, 0px), 8px); padding-bottom: 4px; }
+  :root[data-ui] .np-collapse-btn { bottom: 20.5px; }
+  :root[data-ui] .now-playing-summary { padding: 2px 20px 2px; }
+  :root[data-ui] .now-playing-art-wrap { margin-bottom: 10px; }
+  :root[data-ui] .now-playing-title { font-size: 17px; margin-bottom: 1px; }
+  :root[data-ui="nothing"] .now-playing-title { font-size: 21px; }
+  :root[data-ui] .now-playing-artist { font-size: 12.5px; }
+  :root[data-ui] .now-playing-like-btn,
+  :root[data-ui] .now-playing-download-btn { width: 32px; height: 32px; }
+  :root[data-ui] .now-playing-info-row { grid-template-columns: minmax(0, 1fr) 32px 32px; gap: 6px; }
+  :root[data-ui="spotify"] .now-playing-info-row { grid-template-columns: 32px minmax(0, 1fr) 32px; }
+
+  :root[data-ui] .mobile-now-playing-controls { padding: 4px 20px 6px; gap: 2px; }
+  :root[data-ui] .mobile-now-playing-controls .seek-times-row { margin-top: 3px; }
+  :root[data-ui] .mobile-now-playing-controls .player-controls { margin-top: 0; }
+  :root[data-ui] .mobile-now-playing-controls .ctrl-btn-play { width: 48px; height: 48px; }
+  :root[data-ui] .mobile-now-playing-controls .ctrl-btn-play svg { width: 22px; height: 22px; }
+  :root[data-ui="apple"] .mobile-now-playing-controls .ctrl-btn-play svg { width: 34px; height: 34px; }
+  :root[data-ui] .mobile-now-playing-controls #mobile-btn-prev,
+  :root[data-ui] .mobile-now-playing-controls #mobile-btn-next { font-size: 23px; }
+  :root[data-ui] .np-volume-row { margin-top: 2px; }
+  :root[data-ui] .lyrics-body { padding-top: 6px; font-size: 14px; gap: 10px; }
+}

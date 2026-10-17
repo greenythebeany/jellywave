@@ -31,7 +31,7 @@ const CLIENT_NAME = 'JellyWave';
 // literal below is only the fallback for the brief window before that
 // resolves (or if neither bridge is available, e.g. running in a plain
 // browser during development).
-let CLIENT_VERSION = '2.0.4';
+let CLIENT_VERSION = '2.0.5';
 
 export function getClientVersion() {
   return CLIENT_VERSION;

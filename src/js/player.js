@@ -313,8 +313,25 @@ export class Player {
   // so native builds need the plugin for lock-screen controls and for
   // playback to survive the app going to the background.
 
+  // iOS is the exception: WebKit itself publishes the playing <audio> to
+  // iOS's Now Playing (lock screen, Control Center) and fills it from
+  // navigator.mediaSession. The plugin writing to the same Now Playing info
+  // and remote commands raced with WebKit -- whichever wrote last won, so the
+  // controls sometimes lost previous/next or stopped responding.
   _nativeMediaSession() {
-    return (typeof window !== 'undefined' && window.Capacitor?.Plugins?.MediaSession) || null;
+    if (typeof window === 'undefined') return null;
+    if (window.Capacitor?.getPlatform?.() === 'ios' && 'mediaSession' in navigator) return null;
+    return window.Capacitor?.Plugins?.MediaSession || null;
+  }
+
+  // Lock screen / headphone play and pause are explicit: toggling could
+  // pause when the system asked to play (e.g. after an interruption).
+  _remotePlay() {
+    if (this.currentTrack && this.audio.paused) this.togglePlay();
+  }
+
+  _remotePause() {
+    if (!this.audio.paused) this.audio.pause();
   }
 
   _setupMediaSession() {
@@ -338,8 +355,8 @@ export class Player {
 
     const native = this._nativeMediaSession();
     if (native) {
-      native.setActionHandler({ action: 'play' }, () => this.togglePlay());
-      native.setActionHandler({ action: 'pause' }, () => this.togglePlay());
+      native.setActionHandler({ action: 'play' }, () => this._remotePlay());
+      native.setActionHandler({ action: 'pause' }, () => this._remotePause());
       native.setActionHandler({ action: 'previoustrack' }, () => this.previous());
       native.setActionHandler({ action: 'nexttrack' }, () => this.next(true));
       native.setActionHandler({ action: 'seekto' }, (details) => {
@@ -354,8 +371,8 @@ export class Player {
       return;
     }
     if (!('mediaSession' in navigator)) return;
-    navigator.mediaSession.setActionHandler('play', () => this.togglePlay());
-    navigator.mediaSession.setActionHandler('pause', () => this.togglePlay());
+    navigator.mediaSession.setActionHandler('play', () => this._remotePlay());
+    navigator.mediaSession.setActionHandler('pause', () => this._remotePause());
     navigator.mediaSession.setActionHandler('previoustrack', () => this.previous());
     navigator.mediaSession.setActionHandler('nexttrack', () => this.next(true));
     navigator.mediaSession.setActionHandler('seekto', (details) => {

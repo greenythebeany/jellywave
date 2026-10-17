@@ -163,9 +163,10 @@
     "theme": "Theme",
     "themeDesc": "Light, dark, or match your system",
     "uiStyle": "Interface style",
-    "uiStyleDesc": "Spotify-style or Apple Music-style look",
+    "uiStyleDesc": "Spotify, Apple Music or Nothing look",
     "uiSpotify": "Spotify",
     "uiApple": "Apple Music",
+    "uiNothing": "Nothing",
     "dark": "Dark",
     "light": "Light",
     "system": "System",
@@ -372,7 +373,13 @@
     "adaptiveQualityTitle": "Automatic quality that adapts",
     "adaptiveQualityDesc": "Automatic streaming quality now measures your connection and lowers the bitrate on slow or mobile connections.",
     "fasterLoadingTitle": "Faster on slow connections",
-    "fasterLoadingDesc": "Cover images are sized for your screen, and the next song only preloads once the current one is downloaded."
+    "fasterLoadingDesc": "Cover images are sized for your screen, and the next song only preloads once the current one is downloaded.",
+    "nothingStyleTitle": "New look: Nothing",
+    "nothingStyleDesc": "A third interface style next to Spotify and Apple Music, inspired by Nothing OS: black and white, dot-matrix headings and lyrics, thin outline icons and a red accent you can change. Pick it in Settings → Appearance.",
+    "smallScreensTitle": "Fits small phones",
+    "smallScreensDesc": "On short screens the full-screen player keeps the big cover and tightens everything else, so the controls, volume and lyrics all stay visible. Settings fits narrow screens too.",
+    "iosPlaybackTitle": "Better playback on iPhone",
+    "iosPlaybackDesc": "Music keeps playing in the background, the lock screen and Control Center controls always work, and the volume slider follows the volume buttons."
   },
   "wrapped": {
     "bannerTitle": "Your {year} Wrapped",
