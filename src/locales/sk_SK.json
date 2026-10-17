@@ -163,6 +163,8 @@
     "uiSpotify": "Spotify",
     "uiApple": "Apple Music",
     "uiNothing": "Nothing",
+    "nothingDots": "Bodkované posuvníky",
+    "nothingDotsDesc": "Bodkované posuvníky prehrávania a hlasitosti; vypnuté zobrazí obyčajné čiary",
     "dark": "Tmavý",
     "light": "Svetlý",
     "system": "Systémový",
@@ -349,7 +351,9 @@
     "smallScreensTitle": "Aj na malé telefóny",
     "smallScreensDesc": "Na nízkych obrazovkách si prehrávač nechá veľký obal a zvyšok zmenší, takže ovládanie, hlasitosť aj text piesne ostanú viditeľné. Aj Nastavenia sa zmestia na úzke obrazovky.",
     "iosPlaybackTitle": "Lepšie prehrávanie na iPhone",
-    "iosPlaybackDesc": "Hudba hrá aj na pozadí, ovládanie na zamknutej obrazovke a v Ovládacom centre funguje vždy a posuvník hlasitosti sleduje tlačidlá hlasitosti."
+    "iosPlaybackDesc": "Hudba hrá aj na pozadí, ovládanie na zamknutej obrazovke a v Ovládacom centre funguje vždy a posuvník hlasitosti sleduje tlačidlá hlasitosti.",
+    "nothingSlidersTitle": "Bodkované alebo obyčajné posuvníky",
+    "nothingSlidersDesc": "V štýle Nothing si teraz môžeš prepnúť bodkované posuvníky prehrávania a hlasitosti na obyčajné čiary: Nastavenia → Vzhľad → Bodkované posuvníky."
   },
   "wrapped": {
     "bannerTitle": "Tvoj rok {year} v hudbe",

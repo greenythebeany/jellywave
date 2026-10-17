@@ -424,3 +424,13 @@
   :root[data-ui="nothing"] .mobile-now-playing-controls .ctrl-btn-play { width: 56px; height: 56px; }
   :root[data-ui="nothing"] .segmented button { padding: 6px 8px; }
 }
+
+/* "Dotted sliders" switched off in Settings: plain rounded lines in the same
+   colors (accent fill, grey track). Kept last so it wins over the dotted
+   rules above, including the phone player's. */
+:root[data-ui="nothing"][data-nd-line-sliders] input[type="range"].seek-bar,
+:root[data-ui="nothing"][data-nd-line-sliders] input[type="range"].volume-bar,
+:root[data-ui="nothing"][data-nd-line-sliders] input[type="range"].np-volume-bar {
+  height: 4px; border-radius: 999px;
+  -webkit-mask-image: none; mask-image: none;
+}
