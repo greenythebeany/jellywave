@@ -167,6 +167,8 @@
     "uiSpotify": "Spotify",
     "uiApple": "Apple Music",
     "uiNothing": "Nothing",
+    "nothingDots": "Dotted sliders",
+    "nothingDotsDesc": "Dot-matrix seek and volume bars; off shows plain lines",
     "dark": "Dark",
     "light": "Light",
     "system": "System",
@@ -379,7 +381,9 @@
     "smallScreensTitle": "Fits small phones",
     "smallScreensDesc": "On short screens the full-screen player keeps the big cover and tightens everything else, so the controls, volume and lyrics all stay visible. Settings fits narrow screens too.",
     "iosPlaybackTitle": "Better playback on iPhone",
-    "iosPlaybackDesc": "Music keeps playing in the background, the lock screen and Control Center controls always work, and the volume slider follows the volume buttons."
+    "iosPlaybackDesc": "Music keeps playing in the background, the lock screen and Control Center controls always work, and the volume slider follows the volume buttons.",
+    "nothingSlidersTitle": "Dotted or plain sliders",
+    "nothingSlidersDesc": "In the Nothing style you can now switch the dotted seek and volume bars to plain lines: Settings → Appearance → Dotted sliders."
   },
   "wrapped": {
     "bannerTitle": "Your {year} Wrapped",

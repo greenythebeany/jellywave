@@ -30,6 +30,7 @@ const DEFAULTS = {
   themeMode: 'dark', // 'dark' | 'light' | 'system'
   palette: 'default', // a PALETTES key; 'default' = the interface style's own accent
   uiStyle: 'spotify', // 'spotify' | 'apple' | 'nothing' -- see css/apple.css, css/nothing.css
+  nothingDottedSliders: true, // Nothing style only: dot-matrix seek/volume bars, off = plain lines
   audioQuality: 'auto',
   artBackground: false,
   dynamicAccentColor: false,
@@ -153,6 +154,7 @@ export function applySettings() {
     : ui;
   root.setAttribute('data-palette', palette);
   root.setAttribute('data-ui', ui);
+  root.toggleAttribute('data-nd-line-sliders', current.nothingDottedSliders === false);
   // Custom CSS that sets the app's colors (e.g. a theme from the README's
   // list, @import-ed from src/themes) -- lets apple.css hand colors over.
   const css = current.customCss || '';

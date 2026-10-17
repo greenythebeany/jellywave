@@ -103,6 +103,10 @@ npm run dist        # build a Windows installer
 
 The Android project lives in `android/` and is a standard Capacitor project — open it in Android Studio, or build from the command line with `./gradlew assembleRelease` after setting up your own signing keystore in `android/keystore/keystore.properties`.
 
+## What's new in 2.0.6
+
+- Nothing style: a new "Dotted sliders" switch (Settings → Appearance) turns the dotted seek and volume bars into plain lines, and back
+
 ## What's new in 2.0.5
 
 - A third interface style, Nothing, inspired by Nothing OS: black, white and grey with one red accent (which follows the accent color you pick), dot-matrix headings, titles and lyrics, small monospaced labels, thin outline icons, rounded widget-style cards and Settings groups, dotted seek and volume bars, and a full-screen player on a faint dot grid whose cover shrinks while paused

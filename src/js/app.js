@@ -107,6 +107,8 @@ const toggleOfflineMode = document.getElementById('toggle-offline-mode');
 const albumArtLookupRow = document.getElementById('album-art-lookup-row');
 const toggleAlbumArtLookup = document.getElementById('toggle-album-art-lookup');
 const toggleHaptics = document.getElementById('toggle-haptics');
+const toggleNothingDots = document.getElementById('toggle-nothing-dots');
+const nothingDotsRow = document.getElementById('nothing-dots-row');
 const storageSection = document.getElementById('storage-section');
 const downloadsUsage = document.getElementById('downloads-usage');
 const btnClearDownloads = document.getElementById('btn-clear-downloads');
@@ -157,6 +159,9 @@ const whatsNewClose = document.getElementById('whats-new-close');
 // Highlights per release, as icon + i18n key pairs (whatsNew.<key>Title /
 // whatsNew.<key>Desc). Only versions listed here get a popup.
 const WHATS_NEW = {
+  '2.0.6': [
+    { icon: 'fi-br-settings-sliders', key: 'nothingSliders' }
+  ],
   '2.0.5': [
     { icon: 'fi-br-palette', key: 'nothingStyle' },
     { icon: 'fi-br-mobile', key: 'smallScreens' },
@@ -859,6 +864,9 @@ function wireSettingsUI() {
   document.querySelectorAll('#settings-overlay .settings-section').forEach((section) => {
     const rows = [...section.querySelectorAll(':scope > .settings-row')];
     if (rows.length && rows.every((r) => r.hidden)) setHidden(section, true);
+  });
+  toggleNothingDots.addEventListener('change', () => {
+    updateSettings({ nothingDottedSliders: toggleNothingDots.checked });
   });
   toggleHaptics.addEventListener('change', () => {
     updateSettings({ hapticsEnabled: toggleHaptics.checked });
@@ -1860,6 +1868,8 @@ function refreshSettingsUI() {
   toggleOfflineMode.checked = !!s.offlineMode;
   toggleAlbumArtLookup.checked = s.albumArtLookupEnabled !== false;
   toggleHaptics.checked = s.hapticsEnabled !== false;
+  toggleNothingDots.checked = s.nothingDottedSliders !== false;
+  setHidden(nothingDotsRow, s.uiStyle !== 'nothing');
   setHapticsEnabled(s.hapticsEnabled);
   refreshStorageUI();
   toggleAutoUpdateCheck.checked = s.autoUpdateCheckEnabled !== false;
