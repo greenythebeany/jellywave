@@ -157,6 +157,11 @@ const whatsNewClose = document.getElementById('whats-new-close');
 // Highlights per release, as icon + i18n key pairs (whatsNew.<key>Title /
 // whatsNew.<key>Desc). Only versions listed here get a popup.
 const WHATS_NEW = {
+  '2.0.5': [
+    { icon: 'fi-br-palette', key: 'nothingStyle' },
+    { icon: 'fi-br-mobile', key: 'smallScreens' },
+    { icon: 'fi-br-headphones', key: 'iosPlayback' }
+  ],
   '2.0.4': [
     { icon: 'fi-br-list-music', key: 'queueOrder' },
     { icon: 'fi-br-signal-alt-2', key: 'adaptiveQuality' },
@@ -1720,6 +1725,18 @@ function initSystemVolume() {
   systemVolume.addListener('volumeChange', ({ level }) => {
     // Don't fight the finger while the slider itself is being dragged.
     if (!systemVolumeDragging && !connect?.isConnected()) showVolumeLevel(Math.round(level * 100));
+  });
+  // iOS: the audio session goes active once something plays (only then do
+  // the hardware buttons report changes), and the level is re-read whenever
+  // the app comes back to the front, in case it changed meanwhile.
+  if (window.Capacitor?.getPlatform?.() === 'ios') {
+    player.on('playstate', () => {
+      if (!player.audio.paused) systemVolume.activate().catch(() => {});
+    });
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden || systemVolumeDragging || connect?.isConnected()) return;
+    systemVolume.getVolume().then(({ level }) => showVolumeLevel(Math.round(level * 100))).catch(() => {});
   });
   const endDrag = () => { systemVolumeDragging = false; };
   [volumeBar, npVolumeBar].forEach((bar) => {

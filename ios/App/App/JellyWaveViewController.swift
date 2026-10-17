@@ -8,6 +8,14 @@ import MediaPlayer
 // auto-registers plugins from npm packages, not ones that live in the app.
 class JellyWaveViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
+        // A music player, not app sound: the "playback" category keeps audio
+        // going in the background and with the silent switch on, and is what
+        // gives the app the lock screen / Control Center player. (With the
+        // default category those only showed up some of the time.) Only the
+        // category is set here -- the session is activated once something
+        // plays (SystemVolumePlugin.activate), so just opening the app never
+        // stops music another app is playing.
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
         bridge?.registerPluginInstance(SystemVolumePlugin())
     }
 }
@@ -22,10 +30,16 @@ public class SystemVolumePlugin: CAPPlugin, CAPBridgedPlugin {
     public let jsName = "JellyWaveSystemVolume"
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "getVolume", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "setVolume", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "setVolume", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "activate", returnType: CAPPluginReturnPromise)
     ]
 
     private var observation: NSKeyValueObservation?
+    // Set once something has played; from then on the session is re-activated
+    // whenever iOS deactivates it (a call, Siri, another app, coming back from
+    // the background), since outputVolume only reports changes -- i.e. the
+    // hardware buttons only move the slider -- while it's active.
+    private var wantsActive = false
 
     // iOS has no public API to set the system volume; the standard approach
     // is an MPVolumeView's internal slider. Kept off-screen (but in the view
@@ -40,17 +54,46 @@ public class SystemVolumePlugin: CAPPlugin, CAPBridgedPlugin {
 
     override public func load() {
         let session = AVAudioSession.sharedInstance()
-        // outputVolume only reports changes while the session is active.
-        try? session.setActive(true)
         observation = session.observe(\.outputVolume, options: [.new]) { [weak self] _, change in
             guard let level = change.newValue else { return }
             self?.notifyListeners("volumeChange", data: ["level": Double(level)])
         }
+        let center = NotificationCenter.default
+        center.addObserver(self, selector: #selector(reactivate), name: UIApplication.didBecomeActiveNotification, object: nil)
+        center.addObserver(self, selector: #selector(reactivate), name: AVAudioSession.mediaServicesWereResetNotification, object: nil)
+        center.addObserver(self, selector: #selector(interruption(_:)), name: AVAudioSession.interruptionNotification, object: session)
         DispatchQueue.main.async { _ = self.volumeView }
     }
 
     deinit {
         observation?.invalidate()
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func reactivate() {
+        guard wantsActive else { return }
+        let session = AVAudioSession.sharedInstance()
+        if session.category != .playback {
+            try? session.setCategory(.playback, mode: .default, options: [])
+        }
+        try? session.setActive(true)
+        // Catch up on anything the buttons changed while it was inactive.
+        notifyListeners("volumeChange", data: ["level": Double(session.outputVolume)])
+    }
+
+    @objc private func interruption(_ note: Notification) {
+        guard let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+              AVAudioSession.InterruptionType(rawValue: raw) == .ended else { return }
+        reactivate()
+    }
+
+    // Called from JS whenever playback starts.
+    @objc func activate(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            self.wantsActive = true
+            self.reactivate()
+            call.resolve()
+        }
     }
 
     @objc func getVolume(_ call: CAPPluginCall) {

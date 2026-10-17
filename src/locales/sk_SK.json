@@ -159,9 +159,10 @@
     "theme": "Motív",
     "themeDesc": "Svetlý, tmavý, alebo podľa systému",
     "uiStyle": "Štýl rozhrania",
-    "uiStyleDesc": "Vzhľad v štýle Spotify alebo Apple Music",
+    "uiStyleDesc": "Vzhľad v štýle Spotify, Apple Music alebo Nothing",
     "uiSpotify": "Spotify",
     "uiApple": "Apple Music",
+    "uiNothing": "Nothing",
     "dark": "Tmavý",
     "light": "Svetlý",
     "system": "Systémový",
@@ -342,7 +343,13 @@
     "adaptiveQualityTitle": "Automatická kvalita, ktorá sa prispôsobí",
     "adaptiveQualityDesc": "Automatická kvalita streamovania teraz meria tvoje pripojenie a na pomalom či mobilnom pripojení zníži bitrate.",
     "fasterLoadingTitle": "Rýchlejšie na pomalom pripojení",
-    "fasterLoadingDesc": "Obaly sa načítavajú vo veľkosti pre tvoju obrazovku a ďalšia skladba sa prednačíta až keď je aktuálna stiahnutá."
+    "fasterLoadingDesc": "Obaly sa načítavajú vo veľkosti pre tvoju obrazovku a ďalšia skladba sa prednačíta až keď je aktuálna stiahnutá.",
+    "nothingStyleTitle": "Nový vzhľad: Nothing",
+    "nothingStyleDesc": "Tretí štýl rozhrania popri Spotify a Apple Music, inšpirovaný Nothing OS: čierna a biela, bodkované nadpisy a texty piesní, tenké ikony a červený akcent, ktorý si môžeš zmeniť. Vyber si ho v Nastaveniach → Vzhľad.",
+    "smallScreensTitle": "Aj na malé telefóny",
+    "smallScreensDesc": "Na nízkych obrazovkách si prehrávač nechá veľký obal a zvyšok zmenší, takže ovládanie, hlasitosť aj text piesne ostanú viditeľné. Aj Nastavenia sa zmestia na úzke obrazovky.",
+    "iosPlaybackTitle": "Lepšie prehrávanie na iPhone",
+    "iosPlaybackDesc": "Hudba hrá aj na pozadí, ovládanie na zamknutej obrazovke a v Ovládacom centre funguje vždy a posuvník hlasitosti sleduje tlačidlá hlasitosti."
   },
   "wrapped": {
     "bannerTitle": "Tvoj rok {year} v hudbe",

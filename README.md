@@ -44,7 +44,7 @@ JellyWave is a personal music client for a self-hosted Jellyfin server. It logs 
 - Native lock-screen and notification media controls on Android, including playback that survives the app going to the background
 - Discord Rich Presence on desktop: shows what you're currently listening to, with cover art
 - Custom CSS support for further tweaking the look of the app, including a set of ready-made community color schemes (see [Themes](#themes) below)
-- Two interface styles (Spotify or Apple Music), light and dark themes, a choice of accent colors, plus a blurred cover-art background option
+- Three interface styles (Spotify, Apple Music or Nothing), light and dark themes, a choice of accent colors, plus a blurred cover-art background option
 - "Jam on paw level": an optional cat that bounces along with the actual bass of whatever's playing
 - 15 language translations (English, French, German, Slovak, Czech, Spanish, Polish, Russian, Ukrainian, Norwegian, Swedish, Finnish, Danish, Dutch, Italian) with more welcome via contribution
 - Desktop app built with Electron, Android app built with Capacitor, with one-click in-app updates on desktop
@@ -102,6 +102,14 @@ npm run dist        # build a Windows installer
 ```
 
 The Android project lives in `android/` and is a standard Capacitor project — open it in Android Studio, or build from the command line with `./gradlew assembleRelease` after setting up your own signing keystore in `android/keystore/keystore.properties`.
+
+## What's new in 2.0.5
+
+- A third interface style, Nothing, inspired by Nothing OS: black, white and grey with one red accent (which follows the accent color you pick), dot-matrix headings, titles and lyrics, small monospaced labels, thin outline icons, rounded widget-style cards and Settings groups, dotted seek and volume bars, and a full-screen player on a faint dot grid whose cover shrinks while paused
+- Small phones (down to 320 x 568, like the iPhone SE): the full-screen player keeps the cover big and tightens the header, title and controls instead, so the volume slider and lyrics are no longer pushed off the bottom, in every style
+- Settings on narrow screens: rows with button groups (Theme, Interface style) stack, with the buttons in one even row instead of wrapping
+- iPhone: music keeps playing in the background and with the silent switch on, the lock screen / Control Center player always has previous/next and responds, and the volume slider follows the volume buttons again after calls, Siri or switching apps
+- Lock screen and headphone play/pause now do exactly what was pressed (they used to toggle)
 
 ## What's new in 2.0.4
 

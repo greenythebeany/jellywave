@@ -1,8 +1,9 @@
 const STORAGE_KEY = 'jellywave:settings';
 
 export const PALETTES = {
-  // Each interface style's own accent (Spotify green / Apple red).
-  default: { label: 'Default', accent: 'linear-gradient(135deg, #1ed760 50%, #fa2d48 50%)' },
+  // Each interface style's own accent (Spotify green / Apple red / Nothing
+  // red) -- the swatch shows the current style's, see --style-accent.
+  default: { label: 'Default', accent: 'var(--style-accent)' },
   blue: { label: 'Blue', accent: '#3b82f6', accentHover: '#60a5fa' },
   green: { label: 'Green', accent: '#1ed760', accentHover: '#3be275' },
   red: { label: 'Red', accent: '#ef4444', accentHover: '#f87171' },
@@ -16,6 +17,8 @@ export const PALETTES = {
   mono: { label: 'Monochrome', accent: 'linear-gradient(135deg, #f2f2f2 50%, #1a1a1a 50%)' }
 };
 
+export const UI_STYLES = ['spotify', 'apple', 'nothing'];
+
 export const AUDIO_QUALITIES = {
   auto: { label: 'Automatic (best available)', bitrateKbps: 0 },
   high: { label: 'High — 320 kbps', bitrateKbps: 320 },
@@ -26,7 +29,7 @@ export const AUDIO_QUALITIES = {
 const DEFAULTS = {
   themeMode: 'dark', // 'dark' | 'light' | 'system'
   palette: 'default', // a PALETTES key; 'default' = the interface style's own accent
-  uiStyle: 'spotify', // 'spotify' | 'apple' -- see css/apple.css
+  uiStyle: 'spotify', // 'spotify' | 'apple' | 'nothing' -- see css/apple.css, css/nothing.css
   audioQuality: 'auto',
   artBackground: false,
   dynamicAccentColor: false,
@@ -139,16 +142,17 @@ function resolvedThemeMode() {
 export function applySettings() {
   const root = document.documentElement;
   root.setAttribute('data-theme', resolvedThemeMode());
-  const apple = current.uiStyle === 'apple';
-  // A picked accent applies to either style; 'default' (or a palette from
-  // an older version that no longer exists) uses the style's own accent:
-  // "spotify" (styles.css) or "apple" (apple.css). Community themes still
-  // recolor everything -- they target any :root[data-palette].
+  const ui = UI_STYLES.includes(current.uiStyle) ? current.uiStyle : 'spotify';
+  // A picked accent applies to any style; 'default' (or a palette from an
+  // older version that no longer exists) uses the style's own accent:
+  // "spotify" (styles.css), "apple" (apple.css) or "nothing" (nothing.css).
+  // Community themes still recolor everything -- they target any
+  // :root[data-palette].
   const palette = PALETTES[current.palette] && current.palette !== 'default'
     ? current.palette
-    : (apple ? 'apple' : 'spotify');
+    : ui;
   root.setAttribute('data-palette', palette);
-  root.setAttribute('data-ui', apple ? 'apple' : 'spotify');
+  root.setAttribute('data-ui', ui);
   // Custom CSS that sets the app's colors (e.g. a theme from the README's
   // list, @import-ed from src/themes) -- lets apple.css hand colors over.
   const css = current.customCss || '';

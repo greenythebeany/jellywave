@@ -6,6 +6,8 @@
   --player-h: 104px;
   --accent-contrast: #0a0a0a;
   --accent-bg: var(--accent, #00a4dc);
+  /* The current style's own accent, for the Default swatch in Settings. */
+  --style-accent: #1ed760;
 }
 
 /* ---------- Theme modes ---------- */
@@ -1316,6 +1318,15 @@ body.platform-mobile .titlebar { display: none; }
 
   .now-playing-summary { padding: 12px 24px 8px; }
   .now-playing-art-wrap { max-width: 100%; width: 100%; margin-bottom: 26px; border-radius: var(--radius-lg); }
+  /* The artwork is the only part that can give up room, so on short
+     screens (iPhone 5/SE: 568px) it shrinks to whatever height is left
+     after the header, title, controls, volume and a couple of lyric lines
+     (~270px once compact.css has tightened them), instead of pushing those off the bottom. */
+  .now-playing-art-wrap {
+    max-width: max(140px, calc(100vh - 270px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)));
+    max-width: max(140px, calc(100dvh - 270px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)));
+    margin-left: auto; margin-right: auto;
+  }
   .now-playing-art { border-radius: var(--radius-lg); box-shadow: 0 24px 50px rgba(0,0,0,0.5); }
   /* Three columns -- download | title | like -- so the title only ever
      gets the space between the buttons, whatever the screen width, and
