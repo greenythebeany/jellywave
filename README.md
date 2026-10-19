@@ -11,6 +11,14 @@
   </a>
 </p>
 
+<p align="center">
+  <a href="https://greenythebeany.github.io/jellywave/">
+    <img src="docs/screenshots/video-poster.jpg" width="800" alt="Watch the JellyWave video" />
+  </a>
+  <br />
+  <sub>▶ Watch the 20-second video on the <a href="https://greenythebeany.github.io/jellywave/">JellyWave website</a></sub>
+</p>
+
 ---
 
 JellyWave is a personal music client for a self-hosted Jellyfin server. It logs into your own server with your own library and gives you a modern, Spotify-like listening experience across desktop and Android, without any of the server-side bloat of a general-purpose media app.
