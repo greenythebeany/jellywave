@@ -3,10 +3,12 @@ import { useEffect, useRef, useState } from 'react';
 const REPO = 'greenythebeany/jellywave';
 const GITHUB = `https://github.com/${REPO}`;
 const RELEASES = `${GITHUB}/releases/latest`;
+const PRIVACY = `${GITHUB}/blob/main/docs/legal/PRIVACY.md`;
+const JELLYFIN = 'https://jellyfin.org/downloads/server';
 const media = (file) => `${import.meta.env.BASE_URL}media/${file}`;
 
 // Adds the "in" class once an element scrolls into view (one-shot reveal).
-function useReveal() {
+function useReveal(threshold = 0.15) {
   const ref = useRef(null);
   useEffect(() => {
     const el = ref.current;
@@ -16,10 +18,10 @@ function useReveal() {
         el.classList.add('in');
         io.disconnect();
       }
-    }, { threshold: 0.18 });
+    }, { threshold });
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [threshold]);
   return ref;
 }
 
@@ -44,14 +46,23 @@ function useLatestRelease() {
   };
 }
 
+// Section heading: mono index label + dot-matrix title ending in the red dot.
+function Heading({ index, label, children }) {
+  return (
+    <div className="heading">
+      <div className="label"><span className="label-index">{index}</span>{label}</div>
+      <h2>{children}<span className="rdot" aria-hidden="true" /></h2>
+    </div>
+  );
+}
+
 // "Your music / Your server." typed in the dot-matrix font, like the video.
 function Typewriter() {
   const lines = ['Your music', 'Your server'];
   const [shown, setShown] = useState([0, 0]);
   const [done, setDone] = useState(false);
   useEffect(() => {
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setShown([lines[0].length, lines[1].length]);
       setDone(true);
       return undefined;
@@ -78,7 +89,7 @@ function Typewriter() {
         <span className="type-line" key={text} aria-hidden="true">
           {text.slice(0, shown[i])}
           <span className="type-rest">{text.slice(shown[i])}</span>
-          {i === 1 && <span className={`red-dot${done ? ' on' : ''}`} />}
+          {i === 1 && <span className={`rdot big${done ? ' on' : ''}`} />}
           {!done && ((i === 0 && shown[1] === 0) || (i === 1 && shown[1] > 0)) && <span className="caret" />}
         </span>
       ))}
@@ -90,14 +101,15 @@ function Nav() {
   return (
     <nav className="nav">
       <a className="brand" href="#top">
-        <img src={media('icon.png')} alt="" width="34" height="34" />
+        <img src={media('icon.png')} alt="" width="30" height="30" />
         <span>JellyWave</span>
       </a>
       <div className="nav-links">
-        <a href="#styles">Styles</a>
-        <a href="#features">Features</a>
-        <a href="#download">Download</a>
-        <a href={GITHUB} target="_blank" rel="noreferrer" className="nav-gh">GitHub</a>
+        <a href="#what">What it is</a>
+        <a href="#how">How it works</a>
+        <a href="#looks">Looks</a>
+        <a href="#faq">FAQ</a>
+        <a href="#download" className="pill">Download</a>
       </div>
     </nav>
   );
@@ -118,39 +130,143 @@ function Hero() {
   };
   return (
     <header className="hero" id="top">
+      <div className="label hero-label">Music app for Jellyfin</div>
       <Typewriter />
-      <p className="hero-sub">JellyWave is a free, open-source music app for your own <strong>Jellyfin</strong> server.</p>
+      <p className="hero-sub">
+        JellyWave plays the music <em>you own</em>. Keep your songs on your own Jellyfin server, and listen
+        to them on your computer and phone in an app that feels like Spotify or Apple Music. No subscription, no ads.
+      </p>
       <div className="hero-cta">
-        <a className="btn btn-primary" href="#download">Download</a>
-        <a className="btn btn-ghost" href={GITHUB} target="_blank" rel="noreferrer">View on GitHub</a>
+        <a className="btn btn-white" href="#download">Download JellyWave</a>
+        <a className="btn btn-line" href="#how">How it works</a>
       </div>
       <div className="hero-video">
-        <video
-          ref={videoRef}
-          src={media('jellywave.mp4')}
-          poster={media('poster.jpg')}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-        />
-        <button className="sound-btn" type="button" onClick={toggleSound} aria-label={muted ? 'Play with sound' : 'Mute'}>
-          {muted ? <IconMuted /> : <IconSound />}
-          <span>{muted ? 'Play with sound' : 'Mute'}</span>
+        <video ref={videoRef} src={media('jellywave.mp4')} poster={media('poster.jpg')} autoPlay muted loop playsInline preload="auto" />
+        <button className="sound-btn" type="button" onClick={toggleSound}>
+          <span className={`sound-dot${muted ? '' : ' on'}`} />
+          {muted ? 'Sound off' : 'Sound on'}
         </button>
       </div>
     </header>
   );
 }
 
+// ---------- 01: what it is ----------
+function What() {
+  const ref = useReveal();
+  return (
+    <section className="section reveal" id="what" ref={ref}>
+      <Heading index="01" label="What is JellyWave">A player for your own music</Heading>
+      <p className="lead">
+        Streaming apps rent you music. JellyWave plays the files you already have: your MP3s and FLACs, ripped CDs,
+        old downloads. It works together with <a href="https://jellyfin.org" target="_blank" rel="noreferrer">Jellyfin</a>,
+        free software that keeps your library on a computer you control.
+      </p>
+      <div className="flow">
+        <div className="flow-card">
+          <div className="flow-num">A</div>
+          <IconFiles />
+          <h3>Your music files</h3>
+          <p>Albums and songs on your computer, NAS or home server.</p>
+        </div>
+        <div className="flow-link" aria-hidden="true"><span /></div>
+        <div className="flow-card">
+          <div className="flow-num">B</div>
+          <IconServer />
+          <h3>Jellyfin server</h3>
+          <p>Free software that organizes them and streams them to your devices.</p>
+        </div>
+        <div className="flow-link" aria-hidden="true"><span /></div>
+        <div className="flow-card accent">
+          <div className="flow-num">C</div>
+          <img src={media('icon.png')} alt="" className="flow-logo" />
+          <h3>JellyWave</h3>
+          <p>The app you listen with, on Windows, Linux, Android and iPhone.</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ---------- 02: how it works, step by step ----------
+function How() {
+  const ref = useReveal(0.08);
+  return (
+    <section className="section reveal" id="how" ref={ref}>
+      <Heading index="02" label="How it works">Up and running in three steps</Heading>
+      <div className="steps">
+        <div className="step">
+          <div className="step-text">
+            <div className="step-num">Step 1</div>
+            <h3>Put your music on Jellyfin</h3>
+            <p>
+              Install Jellyfin on a computer that stays on (a PC, a NAS or a small server) and point it at your music folder.
+              It reads your tags and cover art and builds the library. Already running Jellyfin? Skip ahead.
+            </p>
+            <a className="btn btn-line small" href={JELLYFIN} target="_blank" rel="noreferrer">Get Jellyfin (free)</a>
+          </div>
+          <div className="step-visual">
+            <div className="tree" aria-label="Example music folder">
+              <div className="tree-head"><span className="tree-dot" />Music</div>
+              <div className="tree-row d1">Slipknot</div>
+              <div className="tree-row d2">We Are Not Your Kind</div>
+              <div className="tree-row d3 file">01 Insert Coin.flac</div>
+              <div className="tree-row d3 file on">02 Unsainted.flac</div>
+              <div className="tree-row d3 file">03 Birth of the Cruel.flac</div>
+              <div className="tree-row d1">Elán</div>
+              <div className="tree-row d1 more">…</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="step">
+          <div className="step-text">
+            <div className="step-num">Step 2</div>
+            <h3>Install JellyWave</h3>
+            <p>
+              Download it for your devices: an installer for Windows, an APK for Android, an AppImage or snap for Linux,
+              and an .ipa you can sideload on iPhone. Install it on as many devices as you like.
+            </p>
+            <a className="btn btn-line small" href="#download">See all downloads</a>
+          </div>
+          <div className="step-visual">
+            <div className="platform-stack">
+              {['Windows', 'Android', 'Linux', 'iPhone'].map((p, i) => (
+                <div className="platform-chip" key={p} style={{ '--i': i }}>
+                  <span className="chip-dot" />{p}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="step">
+          <div className="step-text">
+            <div className="step-num">Step 3</div>
+            <h3>Sign in and press play</h3>
+            <p>
+              Open JellyWave, type your server's address and your Jellyfin username and password. Your whole library shows up:
+              artists, albums, playlists and liked songs. Your settings follow you to every device.
+            </p>
+          </div>
+          <div className="step-visual phones-pair">
+            <Phone src="phone-login.jpg" alt="JellyWave sign-in screen with an example server address" />
+            <Phone src="phone-nothing-home.jpg" alt="An artist page in JellyWave after signing in" className="lift" />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ---------- 03: three looks ----------
 const STYLES = [
   { key: 'spotify', label: 'Spotify', desc: 'The familiar dark look: cards, a green accent and big bold type.' },
   { key: 'apple', label: 'Apple Music', desc: 'Frosted glass, bare rounded artwork and slim pill sliders.' },
   { key: 'nothing', label: 'Nothing', desc: 'Black and white with one red accent, dot-matrix type and outline icons.' }
 ];
 
-function StylesSection() {
+function Looks() {
   const ref = useReveal();
   const [active, setActive] = useState(0);
   const [sweep, setSweep] = useState(0);
@@ -160,7 +276,7 @@ function StylesSection() {
     const id = setInterval(() => {
       setActive((a) => (a + 1) % STYLES.length);
       setSweep((s) => s + 1);
-    }, 3200);
+    }, 3400);
     return () => clearInterval(id);
   }, [auto]);
   const pick = (i) => {
@@ -169,8 +285,9 @@ function StylesSection() {
     setActive(i);
   };
   return (
-    <section className="section reveal" id="styles" ref={ref}>
-      <h2>Three looks. <span className="grad">One tap to switch.</span></h2>
+    <section className="section reveal" id="looks" ref={ref}>
+      <Heading index="03" label="Make it yours">Three looks, one tap to switch</Heading>
+      <p className="lead">Pick the style you like in Settings. Each one restyles the whole app, on desktop and phone, and you can pick your own accent color too.</p>
       <div className="seg" role="tablist" aria-label="Interface style">
         <span className="seg-pill" style={{ transform: `translateX(${active * 100}%)` }} />
         {STYLES.map((s, i) => (
@@ -185,7 +302,7 @@ function StylesSection() {
           <img
             key={s.key}
             src={media(`desktop-${s.key}.jpg`)}
-            alt={`JellyWave desktop app in the ${s.label} style, showing an artist page and lyrics`}
+            alt={`JellyWave on desktop in the ${s.label} style, on an artist page with lyrics on the right`}
             className="window-layer"
             style={{ clipPath: i <= active ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)', zIndex: i }}
             loading="lazy"
@@ -197,46 +314,61 @@ function StylesSection() {
   );
 }
 
-function Phones() {
+// ---------- 04: on your phone ----------
+function Pocket() {
   const ref = useReveal();
   const [lyrics, setLyrics] = useState(false);
-  // Slide the lyrics sheet up a moment after the phones come into view.
   useEffect(() => {
     const el = ref.current;
     if (!el) return undefined;
     let timer;
     const io = new IntersectionObserver(([e]) => {
       if (!e.isIntersecting) return;
-      timer = setTimeout(() => setLyrics(true), 1600);
+      timer = setTimeout(() => setLyrics(true), 1800);
       io.disconnect();
-    }, { threshold: 0.5 });
+    }, { threshold: 0.45 });
     io.observe(el);
     return () => { io.disconnect(); clearTimeout(timer); };
   }, []);
   return (
     <section className="section reveal" ref={ref}>
-      <h2>Synced lyrics, <span className="grad">right in your pocket.</span></h2>
-      <p className="lead">Lyrics follow the song line by line, from lrclib.net, your own server or lyrics.ovh. Tap the lyrics button for the full sheet.</p>
-      <div className="phones">
-        <Phone src="phone-apple.jpg" alt="Phone player in the Apple Music style" className="side left" />
-        <div className="phone center">
+      <Heading index="04" label="In your pocket">Made for listening</Heading>
+      <div className="pocket">
+        <div className="pocket-list">
+          <Point title="Synced lyrics">Lines light up with the song, from lrclib.net, your own server or lyrics.ovh.</Point>
+          <Point title="Offline downloads">Save albums and playlists to your phone and listen without a connection.</Point>
+          <Point title="Lock-screen controls">Play, pause and skip from the lock screen. Music keeps playing in the background.</Point>
+          <Point title="A real queue">Songs you add play in order, before the rest of the album. Drag to reorder, swipe to remove.</Point>
+          <button type="button" className="btn btn-line small" onClick={() => setLyrics((v) => !v)}>
+            {lyrics ? 'Back to the player' : 'Open the lyrics sheet'}
+          </button>
+        </div>
+        <div className="phone big">
           <div className="screen">
             <span className="island" />
-            <img src={media('phone-nothing.jpg')} alt="Phone player in the Nothing style" loading="lazy" />
-            <img src={media('phone-nothing-lyrics.jpg')} alt="Full lyrics sheet in the Nothing style" className={`sheet${lyrics ? ' up' : ''}`} loading="lazy" />
+            <img src={media('phone-nothing.jpg')} alt="The full-screen player on a phone, Nothing style" loading="lazy" />
+            <img src={media('phone-nothing-lyrics.jpg')} alt="The full lyrics sheet" className={`sheet${lyrics ? ' up' : ''}`} loading="lazy" />
             <button type="button" className="lyrics-hit" onClick={() => setLyrics((v) => !v)} aria-label={lyrics ? 'Hide lyrics' : 'Show lyrics'} />
           </div>
         </div>
-        <Phone src="phone-spotify.jpg" alt="Phone player in the Spotify style" className="side right" />
       </div>
-      <button type="button" className="btn btn-ghost small" onClick={() => setLyrics((v) => !v)}>
-        {lyrics ? 'Back to the player' : 'Show the lyrics sheet'}
-      </button>
     </section>
   );
 }
 
-function Phone({ src, alt, className }) {
+function Point({ title, children }) {
+  return (
+    <div className="point">
+      <span className="point-dot" />
+      <div>
+        <h3>{title}</h3>
+        <p>{children}</p>
+      </div>
+    </div>
+  );
+}
+
+function Phone({ src, alt, className = '' }) {
   return (
     <div className={`phone ${className}`}>
       <div className="screen">
@@ -247,28 +379,29 @@ function Phone({ src, alt, className }) {
   );
 }
 
+// ---------- 05: everything else ----------
 const FEATURES = [
-  { icon: 'wave', title: 'Gapless & crossfade', text: 'Gapless playback, with an optional 0–12 second crossfade between songs.' },
-  { icon: 'level', title: 'ReplayGain', text: 'Even volume across your library, using the loudness data your server already has.' },
-  { icon: 'download', title: 'Offline downloads', text: 'Save albums and playlists to your device and keep listening without a connection.' },
-  { icon: 'lock', title: 'Lock-screen controls', text: 'Play, pause and skip from the lock screen and notifications, and keep playing in the background.' },
-  { icon: 'chart', title: 'Stats & Wrapped', text: 'Real listening time, your top songs and artists, and a year-in-review every December.' },
-  { icon: 'brush', title: 'Themes & custom CSS', text: 'Light and dark, a dozen accent colors, community color schemes and your own CSS.' },
-  { icon: 'globe', title: '15 languages', text: 'English, Slovak, Czech, German, French, Spanish, Polish and more.' },
-  { icon: 'discord', title: 'Discord status', text: 'On desktop, show what you are listening to, cover art included.' }
+  ['Gapless & crossfade', 'Gapless playback, with an optional 0–12 second crossfade between songs.'],
+  ['ReplayGain', 'Even volume across your library, using loudness data your server already has.'],
+  ['Stats & Wrapped', 'Real listening time, your top songs and artists, and a year in review every December.'],
+  ['Equalizer', 'A five-band EQ with presets, and a loudness boost on Android.'],
+  ['Themes & custom CSS', 'Light and dark, a dozen accent colors, community color schemes, or your own CSS.'],
+  ['Discord status', 'On desktop, show what you are listening to, cover art included.'],
+  ['Cast & sleep timer', 'Send playback to other Jellyfin devices, or stop the music after a set time.'],
+  ['15 languages', 'English, Slovak, Czech, German, French, Spanish, Polish and more.']
 ];
 
 function Features() {
   const ref = useReveal();
   return (
     <section className="section reveal" id="features" ref={ref}>
-      <h2>Everything a music app <span className="grad">should do.</span></h2>
+      <Heading index="05" label="And the rest">Everything else you'd expect</Heading>
       <div className="features">
-        {FEATURES.map((f) => (
-          <div className="feature" key={f.title}>
-            <FeatureIcon name={f.icon} />
-            <h3>{f.title}</h3>
-            <p>{f.text}</p>
+        {FEATURES.map(([title, text], i) => (
+          <div className="feature" key={title}>
+            <div className="feature-num">{String(i + 1).padStart(2, '0')}</div>
+            <h3>{title}</h3>
+            <p>{text}</p>
           </div>
         ))}
       </div>
@@ -276,37 +409,60 @@ function Features() {
   );
 }
 
+// ---------- 06: FAQ ----------
+const FAQ = [
+  ['Is JellyWave free?', 'Yes. It is free and open source, with no subscription, ads or account of ours to sign up for.'],
+  ['Do I need a Jellyfin server?', 'Yes. JellyWave plays music from a Jellyfin server, and does not include music of its own. Jellyfin is free too, and runs on Windows, macOS, Linux and most NAS boxes.'],
+  ['Can I play Spotify or Apple Music songs with it?', 'No. JellyWave plays music files you own that are on your Jellyfin server. The Spotify, Apple Music and Nothing options only change how the app looks.'],
+  ['Does it work away from home?', 'Yes, as long as your phone can reach your server, for example through a VPN like Tailscale or a public address. Songs you download play with no connection at all.'],
+  ['What happens to my data?', 'Your library and listening history stay on your device and your own server. A few optional lookups (missing cover art, lyrics and update checks) talk to outside services, and the Privacy Policy lists exactly what is sent.'],
+  ['Which devices are supported?', 'Windows, Linux, Android and iPhone. On iPhone the app is installed by sideloading an unsigned .ipa, for example with AltStore or Sideloadly.']
+];
+
+function Faq() {
+  const ref = useReveal();
+  return (
+    <section className="section reveal" id="faq" ref={ref}>
+      <Heading index="06" label="Questions">Good to know</Heading>
+      <div className="faq">
+        {FAQ.map(([q, a]) => (
+          <details key={q}>
+            <summary>{q}<span className="faq-plus" aria-hidden="true" /></summary>
+            <p>{a}{q.startsWith('What happens') && <> <a href={PRIVACY} target="_blank" rel="noreferrer">Read the Privacy Policy</a>.</>}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ---------- 07: download ----------
 function Download() {
   const ref = useReveal();
   const r = useLatestRelease();
   const platforms = [
-    { name: 'Windows', file: 'Installer (.exe)', href: r.windows, note: 'Updates itself in the app' },
-    { name: 'Android', file: 'APK', href: r.android, note: 'Allow installs from your browser the first time' },
-    { name: 'Linux', file: 'AppImage', href: r.appimage, note: 'Or the', extra: { label: '.snap', href: r.snap } },
-    { name: 'iPhone', file: 'Unsigned .ipa', href: r.ipa, note: 'Sideload with AltStore or Sideloadly' }
+    { name: 'Windows', file: 'Installer · .exe', href: r.windows, note: 'Updates itself from inside the app.' },
+    { name: 'Android', file: 'APK', href: r.android, note: 'Allow installs from your browser the first time.' },
+    { name: 'Linux', file: 'AppImage', href: r.appimage, note: 'Also available as a', extra: { label: '.snap', href: r.snap } },
+    { name: 'iPhone', file: 'Unsigned .ipa', href: r.ipa, note: 'Sideload with AltStore or Sideloadly.' }
   ];
   return (
     <section className="section reveal" id="download" ref={ref}>
-      <h2>Get <span className="grad">JellyWave</span></h2>
-      <p className="lead">
-        Free and open source. {r.version ? <>Latest version: <span className="mono">{r.version}</span>.</> : 'Grab the latest build.'}
-      </p>
+      <Heading index="07" label={r.version ? `Latest · ${r.version}` : 'Latest release'}>Get JellyWave</Heading>
       <div className="platforms">
         {platforms.map((p) => (
           <div className="platform" key={p.name}>
-            <a className="platform-link" href={p.href}>
-              <span className="platform-name">{p.name}</span>
-            </a>
+            <a className="platform-link" href={p.href}><span className="platform-name">{p.name}</span></a>
             <span className="platform-file">{p.file}</span>
             <span className="platform-note">
               {p.note}
-              {p.extra && <> <a className="link" href={p.extra.href}>{p.extra.label}</a></>}
+              {p.extra && <> <a className="link" href={p.extra.href}>{p.extra.label}</a>.</>}
             </span>
-            <span className="platform-arrow" aria-hidden="true">↓</span>
+            <span className="platform-arrow" aria-hidden="true"><IconDown /></span>
           </div>
         ))}
       </div>
-      <p className="fine">On first launch, enter your Jellyfin server address and sign in with your Jellyfin account.</p>
+      <p className="fine">After installing: open JellyWave, enter your Jellyfin server address, and sign in. That's it.</p>
     </section>
   );
 }
@@ -315,14 +471,14 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="footer-brand">
-        <img src={media('icon.png')} alt="" width="40" height="40" />
+        <img src={media('icon.png')} alt="" width="36" height="36" />
         <div>
-          <div className="footer-name">JellyWave</div>
-          <div className="mono dim">github.com/{REPO}</div>
+          <div className="footer-name">JellyWave<span className="rdot" /></div>
+          <a className="mono dim" href={GITHUB}>github.com/{REPO}</a>
         </div>
       </div>
       <p className="dim small-text">
-        JellyWave is not affiliated with Jellyfin, Spotify, Apple or Nothing. Their names belong to their owners.
+        Free and open source. Not affiliated with Jellyfin, Spotify, Apple or Nothing; their names belong to their owners.
       </p>
     </footer>
   );
@@ -332,16 +488,18 @@ export default function App() {
   return (
     <>
       <div className="bg" aria-hidden="true">
-        <div className="glow a" />
-        <div className="glow b" />
+        <div className="ambient" style={{ backgroundImage: `url(${media('ambient.jpg')})` }} />
         <div className="grid" />
       </div>
       <Nav />
       <main>
         <Hero />
-        <StylesSection />
-        <Phones />
+        <What />
+        <How />
+        <Looks />
+        <Pocket />
         <Features />
+        <Faq />
         <Download />
       </main>
       <Footer />
@@ -349,37 +507,28 @@ export default function App() {
   );
 }
 
-// ---------- icons ----------
-function IconMuted() {
+// ---------- icons (thin outline, like the Nothing style) ----------
+const svgProps = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.4, strokeLinecap: 'round', strokeLinejoin: 'round' };
+function IconFiles() {
   return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M11 5 6 9H3v6h3l5 4V5z" /><path d="m22 9-6 6M16 9l6 6" />
+    <svg {...svgProps} className="flow-icon">
+      <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <path d="M10 16.5V11l5-1v5" /><circle cx="9" cy="16.5" r="1.2" /><circle cx="14" cy="15" r="1.2" />
     </svg>
   );
 }
-function IconSound() {
+function IconServer() {
   return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M11 5 6 9H3v6h3l5 4V5z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14" />
+    <svg {...svgProps} className="flow-icon">
+      <rect x="4" y="4" width="16" height="6" rx="1.5" /><rect x="4" y="14" width="16" height="6" rx="1.5" />
+      <path d="M8 7h.01M8 17h.01M12 7h5M12 17h5" />
     </svg>
   );
 }
-const ICON_PATHS = {
-  wave: 'M2 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0',
-  level: 'M4 20V10M10 20V4M16 20v-8M22 20v-4',
-  download: 'M12 3v12m0 0-5-5m5 5 5-5M4 21h16',
-  lock: 'M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4',
-  chart: 'M4 20V4M4 20h16M8 16v-4M12 16V8M16 16v-6',
-  brush: 'M14 4l6 6-9 9H5v-6zM13 5l6 6',
-  globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18',
-  discord: 'M7 7c3-1.5 7-1.5 10 0l2 9c-2 2-4 2.5-5 2.5l-1-2M7 7l-2 9c2 2 4 2.5 5 2.5l1-2M9 13h.01M15 13h.01'
-};
-function FeatureIcon({ name }) {
+function IconDown() {
   return (
-    <span className="feature-icon">
-      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-        <path d={ICON_PATHS[name]} />
-      </svg>
-    </span>
+    <svg {...svgProps} width="18" height="18" strokeWidth="1.8">
+      <path d="M12 4v12m0 0-5-5m5 5 5-5M5 20h14" />
+    </svg>
   );
 }
