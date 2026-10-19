@@ -141,7 +141,7 @@ function Hero() {
         <a className="btn btn-line" href="#how">How it works</a>
       </div>
       <div className="hero-video">
-        <video ref={videoRef} src={media('jellywave.mp4')} poster={media('poster.jpg')} autoPlay muted loop playsInline preload="auto" />
+        <video ref={videoRef} src={media('jellywave-unsainted.mp4')} poster={media('poster-unsainted.jpg')} autoPlay muted loop playsInline preload="auto" />
         <button className="sound-btn" type="button" onClick={toggleSound}>
           <span className={`sound-dot${muted ? '' : ' on'}`} />
           {muted ? 'Sound off' : 'Sound on'}
