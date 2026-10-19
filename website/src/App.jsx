@@ -5,7 +5,7 @@ const GITHUB = `https://github.com/${REPO}`;
 const RELEASES = `${GITHUB}/releases/latest`;
 const PRIVACY = `${GITHUB}/blob/main/docs/legal/PRIVACY.md`;
 const JELLYFIN = 'https://jellyfin.org/downloads/server';
-const media = (file) => `${import.meta.env.BASE_URL}media/${file}`;
+const media = (file) => `${import.meta.env.BASE_URL}media/${file}?v=${__BUILD__}`;
 
 // Adds the "in" class once an element scrolls into view (one-shot reveal).
 function useReveal(threshold = 0.15) {

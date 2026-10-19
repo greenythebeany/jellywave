@@ -5,5 +5,8 @@ import react from '@vitejs/plugin-react';
 // (https://<user>.github.io/jellywave/), so assets must not assume "/".
 export default defineConfig({
   plugins: [react()],
-  base: './'
+  base: './',
+  // Changes on every build; appended to media URLs so browsers fetch the
+  // new screenshots/video after a deploy instead of their cached copies.
+  define: { __BUILD__: JSON.stringify(Date.now().toString(36)) }
 });
