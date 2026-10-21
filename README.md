@@ -111,6 +111,10 @@ npm run dist        # build a Windows installer
 
 The Android project lives in `android/` and is a standard Capacitor project — open it in Android Studio, or build from the command line with `./gradlew assembleRelease` after setting up your own signing keystore in `android/keystore/keystore.properties`.
 
+## What's new in 2.0.7
+
+- Nothing style, light mode: the back/forward arrows at the top of artist pages no longer disappear over the artist photo
+
 ## What's new in 2.0.6
 
 - Nothing style: a new "Dotted sliders" switch (Settings → Appearance) turns the dotted seek and volume bars into plain lines, and back
