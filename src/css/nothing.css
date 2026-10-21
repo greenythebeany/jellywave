@@ -112,7 +112,11 @@
 :root[data-ui="nothing"] .main { background: var(--bg-base); }
 :root[data-ui="nothing"] .main-header { background: var(--bg-base); border-bottom: 1px solid transparent; }
 :root[data-ui="nothing"] .main.hero-top .main-header { background: transparent; }
-:root[data-ui="nothing"] .nav-arrow { background: var(--bg-card); border: 1px solid var(--border-subtle); }
+/* Over an artist photo (hero-top) the arrows keep styles.css's dark frosted
+   backing with white icons; a light-mode card background there made them
+   white-on-white. */
+:root[data-ui="nothing"] .main:not(.hero-top) .nav-arrow { background: var(--bg-card); border: 1px solid var(--border-subtle); }
+:root[data-ui="nothing"] .main.hero-top .nav-arrow { border: 1px solid rgba(255, 255, 255, 0.25); }
 :root[data-ui="nothing"] .user-badge { font-family: var(--nd-mono); }
 
 /* Sidebar: plain black column, active item marked with the accent dot. */
