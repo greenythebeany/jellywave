@@ -10,10 +10,11 @@
     <img src="download_icon.png" alt="Download JellyWave" height="160">
   </a>
 </p>
+
+https://github.com/user-attachments/assets/7aa86738-c7d1-4744-b776-ef10be6dca9c
+
 <p align="center">
-  https://github.com/user-attachments/assets/7aa86738-c7d1-4744-b776-ef10be6dca9c
-  <br />
-  <sub>▶ Watch the 26-second JellyWave 2.1.0 video (click to play), or see it on the <a href="https://greenybeany.dev/jellywave/">JellyWave website</a></sub>
+  <sub>JellyWave 2.1.0 in 26 seconds · more on the <a href="https://greenybeany.dev/jellywave/">JellyWave website</a></sub>
 </p>
 
 ---
