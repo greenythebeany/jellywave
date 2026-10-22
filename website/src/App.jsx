@@ -141,12 +141,15 @@ function Hero() {
         <a className="btn btn-line" href="#how">How it works</a>
       </div>
       <div className="hero-video">
-        <video ref={videoRef} src={media('jellywave-unsainted.mp4')} poster={media('poster-unsainted.jpg')} autoPlay muted loop playsInline preload="auto" />
+        <video ref={videoRef} src={media('jellywave-2.1.0.mp4')} poster={media('poster-2.1.0.jpg')} autoPlay muted loop playsInline preload="auto" />
         <button className="sound-btn" type="button" onClick={toggleSound}>
           <span className={`sound-dot${muted ? '' : ' on'}`} />
           {muted ? 'Sound off' : 'Sound on'}
         </button>
       </div>
+      <p className="video-credit">
+        Music: <a href="http://ncs.io/redesigned" target="_blank" rel="noreferrer">Matzan – Redesigned [NCS Release]</a>, provided by NoCopyrightSounds · Made with the help of AI
+      </p>
     </header>
   );
 }

@@ -16,7 +16,7 @@
     <img src="docs/screenshots/video-poster.jpg" width="800" alt="Watch the JellyWave video" />
   </a>
   <br />
-  <sub>▶ Watch the 20-second video on the <a href="https://greenythebeany.github.io/jellywave/">JellyWave website</a></sub>
+  <sub>▶ Watch the 26-second JellyWave 2.1.0 video on the <a href="https://greenythebeany.github.io/jellywave/">JellyWave website</a></sub>
 </p>
 
 ---
