@@ -11,7 +11,7 @@
   </a>
 </p>
 
-https://github.com/user-attachments/assets/7aa86738-c7d1-4744-b776-ef10be6dca9c
+https://github.com/user-attachments/assets/8dd6f05c-bb3a-4647-b9e8-6ded7564c8cb
 
 <p align="center">
   <sub>JellyWave 2.1.0 in 26 seconds · more on the <a href="https://greenybeany.dev/jellywave/">JellyWave website</a></sub>
