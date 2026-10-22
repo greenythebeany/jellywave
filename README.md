@@ -10,11 +10,9 @@
     <img src="download_icon.png" alt="Download JellyWave" height="160">
   </a>
 </p>
-
+https://github.com/greenythebeany/jellywave/blob/main/website/public/media/jellywave-2.1.0.mp4
 <p align="center">
-  <a href="https://greenythebeany.github.io/jellywave/">
-    <img src="docs/screenshots/video-poster.jpg" width="800" alt="Watch the JellyWave video" />
-  </a>
+  [!video](https://github.com/greenythebeany/jellywave/blob/main/website/public/media/jellywave-2.1.0.mp4)
   <br />
   <sub>▶ Watch the 26-second JellyWave 2.1.0 video on the <a href="https://greenythebeany.github.io/jellywave/">JellyWave website</a></sub>
 </p>
