@@ -568,6 +568,16 @@
               <span class="switch-track"></span>
             </label>
           </div>
+          <div class="settings-row" id="lyrics-search-row">
+            <div>
+              <div class="settings-row-label" data-i18n="settings.lyricsSearch">Search by lyrics</div>
+              <div class="settings-row-desc"><span data-i18n="settings.lyricsSearchDesc">Lets you find songs by a line of their lyrics. Fetches your library's lyrics in the background (song titles and artists go to lrclib.net and lyrics.ovh) and keeps them on this device.</span> <span id="lyrics-index-status"></span></div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-lyrics-search" />
+              <span class="switch-track"></span>
+            </label>
+          </div>
           <div class="settings-row" id="auto-update-check-row">
             <div>
               <div class="settings-row-label" data-i18n="settings.autoUpdateCheck">Automatic update check</div>
@@ -682,7 +692,7 @@
             <li><strong>Your own Jellyfin server</strong> — the app talks to it directly with your credentials to stream your library. This is infrastructure you control.</li>
             <li><strong>GitHub (api.github.com)</strong> — a background check for a newer JellyWave release. Sends a generic app identifier, nothing that identifies you. Can be turned off in Settings → Privacy.</li>
             <li><strong>Deezer (api.deezer.com)</strong> — when your server has no cover art for a track, the current artist/album/track name is sent to Deezer's public search to find one. No account or personal identifier is sent. Can be turned off in Settings → Privacy.</li>
-            <li><strong>Lyrics: lrclib.net, then lyrics.ovh</strong> — when you view lyrics, the current track's title, artist, album and length are sent to lrclib.net's public lyrics API to find them. If lrclib and your own Jellyfin server don't have them, the title and first artist are also sent to lyrics.ovh. No account or personal identifier is sent; lyrics are only kept in memory while the app is open.</li>
+            <li><strong>Lyrics: lrclib.net, then lyrics.ovh</strong> — when you view lyrics, the current track's title, artist, album and length are sent to lrclib.net's public lyrics API to find them. If lrclib and your own Jellyfin server don't have them, the title and first artist are also sent to lyrics.ovh. No account or personal identifier is sent; lyrics are only kept in memory while the app is open. If you turn on <strong>Search by lyrics</strong> (Settings → Privacy, off by default), the same lookups also run in the background for the songs in your library, about one per second, and the lyrics found are stored on your device so you can search them; turning it off stops this.</li>
             <li><strong>Discord</strong> — only if you explicitly connect it in Settings → Audio → Discord Rich Presence. While connected, the currently playing track/artist and its cover art URL are sent to your local Discord client so it can show on your Discord profile. Off by default; disconnect any time.</li>
             <li><strong>YouTube / YouTube Music / SoundCloud</strong> — only if you use the "Import" feature to paste a link, which fetches that specific media directly to your device. See the Terms of Service section below for the responsibility that comes with this feature.</li>
           </ul>

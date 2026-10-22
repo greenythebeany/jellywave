@@ -28,8 +28,14 @@ let log = load();
 let dirty = false;
 
 function yearBucket(year) {
-  if (!log.years[year]) log.years[year] = { total: 0, tracks: {}, months: new Array(12).fill(0) };
+  if (!log.years[year]) log.years[year] = { total: 0, tracks: {}, months: new Array(12).fill(0), days: {} };
+  if (!log.years[year].days) log.years[year].days = {}; // logs from before the calendar
   return log.years[year];
+}
+
+// "MM-DD" key for the per-day totals behind the listening calendar.
+export function dayKey(date) {
+  return `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
 export function addListening(trackId, seconds, when = new Date()) {
@@ -38,6 +44,8 @@ export function addListening(trackId, seconds, when = new Date()) {
   bucket.total += seconds;
   bucket.tracks[trackId] = (bucket.tracks[trackId] || 0) + seconds;
   bucket.months[when.getMonth()] += seconds;
+  const day = dayKey(when);
+  bucket.days[day] = (bucket.days[day] || 0) + seconds;
   dirty = true;
 }
 
@@ -49,7 +57,11 @@ function compact(source) {
     for (const [id, secs] of Object.entries(b.tracks)) {
       if (secs >= 1) tracks[id] = Math.round(secs);
     }
-    out.years[year] = { total: Math.round(b.total), tracks, months: b.months.map((m) => Math.round(m)) };
+    const days = {};
+    for (const [day, secs] of Object.entries(b.days || {})) {
+      if (secs >= 1) days[day] = Math.round(secs);
+    }
+    out.years[year] = { total: Math.round(b.total), tracks, months: b.months.map((m) => Math.round(m)), days };
   }
   return out;
 }
@@ -95,10 +107,11 @@ export function combineLogs(otherLogs) {
     if (!l?.years) continue;
     if (l.since && l.since < merged.since) merged.since = l.since;
     for (const [year, b] of Object.entries(l.years)) {
-      const m = merged.years[year] || (merged.years[year] = { total: 0, tracks: {}, months: new Array(12).fill(0) });
+      const m = merged.years[year] || (merged.years[year] = { total: 0, tracks: {}, months: new Array(12).fill(0), days: {} });
       m.total += b.total || 0;
       for (const [id, secs] of Object.entries(b.tracks || {})) m.tracks[id] = (m.tracks[id] || 0) + secs;
       (b.months || []).forEach((secs, i) => { m.months[i] += secs || 0; });
+      for (const [day, secs] of Object.entries(b.days || {})) m.days[day] = (m.days[day] || 0) + secs;
     }
   }
   return merged;

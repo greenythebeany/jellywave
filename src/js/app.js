@@ -1,7 +1,8 @@
 import { JellyfinClient, initClientVersion, getClientVersion } from './jellyfin.js';
 import { Player, RepeatMode, EQ_PRESETS } from './player.js';
 import { fetchLyrics, getCachedLyrics } from './lyrics.js';
-import { addListening, persistLocal as persistListening, getOwnLog, isDirty as listeningDirty, markSynced as listeningSynced, adoptIfLarger, combineLogs } from './listening.js';
+import { rememberLyrics, startIndexing, stopIndexing, searchByLyrics, indexStatus, onIndexProgress } from './lyricsIndex.js';
+import { addListening, persistLocal as persistListening, getOwnLog, isDirty as listeningDirty, markSynced as listeningSynced, adoptIfLarger, combineLogs, dayKey } from './listening.js';
 import { getSettings, updateSettings, applySettings, currentBitrateKbps, setAutoBitrate, getAutoBitrate, initRemoteSync, PALETTES, AUDIO_QUALITIES } from './settings.js';
 import { LOCALES, loadLocale, applyTranslations, t } from './i18n.js';
 import { setHapticsEnabled, platform, isDesktop, isMobile, isAndroid, sessionStore, windowControls, wireHardwareBackButton, exitApp, requestNotificationPermission, setDiscordActivity, clearDiscordActivity, searchDeezerAlbumArt, hapticImpact } from './platform.js';
@@ -106,6 +107,8 @@ const toggleReplayGain = document.getElementById('toggle-replaygain');
 const toggleOfflineMode = document.getElementById('toggle-offline-mode');
 const albumArtLookupRow = document.getElementById('album-art-lookup-row');
 const toggleAlbumArtLookup = document.getElementById('toggle-album-art-lookup');
+const toggleLyricsSearch = document.getElementById('toggle-lyrics-search');
+const lyricsIndexStatus = document.getElementById('lyrics-index-status');
 const toggleHaptics = document.getElementById('toggle-haptics');
 const toggleNothingDots = document.getElementById('toggle-nothing-dots');
 const nothingDotsRow = document.getElementById('nothing-dots-row');
@@ -159,6 +162,12 @@ const whatsNewClose = document.getElementById('whats-new-close');
 // Highlights per release, as icon + i18n key pairs (whatsNew.<key>Title /
 // whatsNew.<key>Desc). Only versions listed here get a popup.
 const WHATS_NEW = {
+  '2.1.0': [
+    { icon: 'fi-br-quote-right', key: 'lyricsSearch' },
+    { icon: 'fi-br-calendar', key: 'listeningCalendar' },
+    { icon: 'fi-br-hourglass-end', key: 'listTotals' },
+    { icon: 'fi-br-check-circle', key: 'realPlays' }
+  ],
   '2.0.6': [
     { icon: 'fi-br-settings-sliders', key: 'nothingSliders' }
   ],
@@ -374,6 +383,18 @@ function rangeFillPercent(valuePercent, trackEl, thumbWidthPx) {
   const usable = trackWidth - thumbWidthPx;
   const fillPx = thumbWidthPx / 2 + (valuePercent / 100) * usable;
   return `${(fillPx / trackWidth) * 100}%`;
+}
+
+// "12 songs · 47 min" / "30 songs · 1 hr 52 min" under a list's title, like
+// Spotify. Tracks without a known length just don't add to the total.
+function trackListSummary(tracks) {
+  const count = t(tracks.length === 1 ? 'playlist.songCount' : 'playlist.songCountPlural', { count: tracks.length });
+  const seconds = tracks.reduce((sum, tr) => sum + (ticksToSeconds(tr.RunTimeTicks) || 0), 0);
+  if (!seconds) return count;
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.round((seconds % 3600) / 60);
+  const length = hours ? t('duration.hoursMinutes', { h: hours, m: minutes }) : t('duration.minutes', { m: Math.max(1, minutes) });
+  return `${count} · ${length}`;
 }
 
 function formatTime(seconds) {
@@ -664,8 +685,9 @@ async function enterApp(username) {
   loadPinnedAlbumsSidebar();
   navigateTo({ view: libs ? 'home' : 'downloads' });
   restoreResumeState();
-  if (libs) loadListeningFromServer().catch(() => {}).finally(maybeAutoOpenWrapped);
+  if (libs) listeningLoad = loadListeningFromServer().catch(() => {}).finally(maybeAutoOpenWrapped);
   if (libs) startConnectionProbing();
+  if (libs && getSettings().lyricsSearchEnabled) setTimeout(startLyricsIndexing, 15000);
   hideBootSplash();
   // After the splash has faded, so it doesn't pop up mid-transition.
   setTimeout(maybeShowWhatsNew, 500);
@@ -886,6 +908,13 @@ function wireSettingsUI() {
   });
   onDownloadsChange(refreshStorageUI);
 
+  toggleLyricsSearch.addEventListener('change', () => {
+    updateSettings({ lyricsSearchEnabled: toggleLyricsSearch.checked });
+    if (toggleLyricsSearch.checked) startLyricsIndexing();
+    else stopIndexing();
+    refreshLyricsIndexStatus();
+  });
+  onIndexProgress(showLyricsIndexStatus);
   toggleAlbumArtLookup.addEventListener('change', () => {
     updateSettings({ albumArtLookupEnabled: toggleAlbumArtLookup.checked });
   });
@@ -1133,23 +1162,48 @@ async function fetchExternalCoverArt(artist, album, trackName) {
   return url;
 }
 
+// Discord accepts only ~5 presence updates per 20 seconds and silently drops
+// the rest. Sending "logo" first and the cover a moment later, plus an
+// update per play/pause event, went over that when skipping songs -- the
+// dropped update was usually the cover, so everyone saw just the logo.
+// Now the cover is looked up first (briefly) and updates are coalesced:
+// at most one every 1.5s, always the latest state.
+const DISCORD_MIN_GAP_MS = 1500;
+const DISCORD_ART_WAIT_MS = 2500;
+let discordTimer = null;
+let discordLastSent = 0;
+let discordSeq = 0;
+
 function updateDiscordPresence() {
+  const seq = ++discordSeq;
+  clearTimeout(discordTimer);
+  const wait = Math.max(0, discordLastSent + DISCORD_MIN_GAP_MS - Date.now());
+  discordTimer = setTimeout(() => sendDiscordPresence(seq), wait);
+}
+
+async function sendDiscordPresence(seq) {
   const track = player?.currentTrack;
   if (!track || player.audio.paused) {
+    discordLastSent = Date.now();
     clearDiscordActivity();
     return;
   }
-  const durationSeconds = ticksToSeconds(track.RunTimeTicks) || player.audio.duration || 0;
-  const startTimestamp = Date.now() - player.audio.currentTime * 1000;
   const artist = artistNames(track);
   const album = track.Album || '';
-  const trackIdAtCall = track.Id;
-
-  const buildActivity = (largeImageKey) => ({
+  const art = await Promise.race([
+    fetchExternalCoverArt(artist, album, track.Name).catch(() => null),
+    new Promise((r) => setTimeout(() => r(null), DISCORD_ART_WAIT_MS))
+  ]);
+  // A newer update was requested while the cover was being looked up.
+  if (seq !== discordSeq) return;
+  const durationSeconds = ticksToSeconds(track.RunTimeTicks) || player.audio.duration || 0;
+  const startTimestamp = Date.now() - player.audio.currentTime * 1000;
+  discordLastSent = Date.now();
+  setDiscordActivity({
     type: 2, // Listening
     details: track.Name,
     state: artist,
-    largeImageKey,
+    largeImageKey: art || 'logo',
     largeImageText: album || undefined,
     smallImageKey: 'logo',
     smallImageText: 'JellyWave',
@@ -1157,20 +1211,13 @@ function updateDiscordPresence() {
     endTimestamp: durationSeconds ? startTimestamp + durationSeconds * 1000 : undefined,
     instance: false
   });
-
-  const cacheKey = `${artist}|${album}`.toLowerCase();
-  if (externalCoverArtCache.has(cacheKey)) {
-    setDiscordActivity(buildActivity(externalCoverArtCache.get(cacheKey) || 'logo'));
-    return;
+  // The lookup took too long this time; once it lands (cached), send the
+  // cover in a single follow-up.
+  if (!art && !externalCoverArtCache.has(`${artist}|${album}`.toLowerCase())) {
+    fetchExternalCoverArt(artist, album, track.Name).then((late) => {
+      if (late && seq === discordSeq) updateDiscordPresence();
+    }).catch(() => {});
   }
-
-  // Show something immediately, then upgrade to real art once the lookup
-  // resolves — guarded so a late response can't clobber a since-changed track.
-  setDiscordActivity(buildActivity('logo'));
-  fetchExternalCoverArt(artist, album, track.Name).then((art) => {
-    if (!art || player?.currentTrack?.Id !== trackIdAtCall || player.audio.paused) return;
-    setDiscordActivity(buildActivity(art));
-  });
 }
 
 // ---------- Sleep timer ----------
@@ -1512,8 +1559,12 @@ function wireUpdateToast() {
     });
     // Quitting for the installer: stop playback first, so no audio stream
     // to the server is left open while the app shuts down.
+    // Also saves listening time and resume state, so an update never loses
+    // the last few minutes.
     window.api.onShuttingDown?.(() => {
       try { player?.audio.pause(); } catch (err) { /* nothing playing */ }
+      saveResumeState();
+      syncListening();
     });
   } else if (isMobile && getSettings().autoUpdateCheckEnabled !== false) {
     checkForUpdatesOnMobile();
@@ -1607,6 +1658,9 @@ function refreshQualityStatus() {
 
 // ---------- Listening time (see listening.js) ----------
 let otherDeviceListening = []; // the other devices' logs, from the server
+// The server load at login. Stats waits for it (briefly), or a fresh install
+// -- empty local log -- showed 0 minutes until the next visit to Stats.
+let listeningLoad = null;
 let listeningTickAt = null;
 
 function trackListeningTick() {
@@ -1867,6 +1921,7 @@ function refreshSettingsUI() {
   crossfadeSlider.style.setProperty('--pct', rangeFillPercent(((s.crossfadeSeconds || 0) / 12) * 100, crossfadeSlider, 13));
   toggleOfflineMode.checked = !!s.offlineMode;
   toggleAlbumArtLookup.checked = s.albumArtLookupEnabled !== false;
+  toggleLyricsSearch.checked = !!s.lyricsSearchEnabled;
   toggleHaptics.checked = s.hapticsEnabled !== false;
   toggleNothingDots.checked = s.nothingDottedSliders !== false;
   setHidden(nothingDotsRow, s.uiStyle !== 'nothing');
@@ -2423,7 +2478,7 @@ async function renderSmartMix(state) {
   viewRoot.appendChild(buildDetailHeader({
     kind: t('home.madeForYou'),
     title: state.title,
-    sub: t(tracks.length === 1 ? 'playlist.songCount' : 'playlist.songCountPlural', { count: tracks.length }),
+    sub: trackListSummary(tracks),
     art: tracks[0] ? artUrl(tracks[0], 'album', 220) : placeholderArt('album'),
     round: false,
     onPlayAll: tracks.length ? () => player.setQueue(tracks, 0, `smart:${state.mixKind}:${state.genreId || ''}`) : undefined,
@@ -2551,8 +2606,65 @@ async function renderSearch() {
         return;
       }
       items.forEach((item) => resultsEl.appendChild(buildCard(item, typeToKind(item.Type))));
+      appendLyricMatches(term, resultsEl);
     }, 300);
   };
+}
+
+// "Found in lyrics": songs whose lyrics contain the typed line (see
+// lyricsIndex.js), each with the matching line. Shown under the normal
+// results; a hint instead when lyrics search is turned off.
+async function appendLyricMatches(term, resultsEl) {
+  const words = term.trim().split(/\s+/).length;
+  if (words < 2) return;
+  resultsEl.parentElement?.querySelectorAll('.lyric-matches').forEach((old) => old.remove());
+  const section = el('div', 'lyric-matches');
+  if (!getSettings().lyricsSearchEnabled) {
+    if (words < 4) return;
+    section.appendChild(el('div', 'empty-state lyric-hint', escapeHtml(t('search.lyricsOff'))));
+    resultsEl.after(section);
+    return;
+  }
+  const hits = await searchByLyrics(term);
+  if (globalSearchInput.value.trim() !== term || !hits.length) return;
+  await ensureAllSongsCache().catch(() => {});
+  const byId = new Map((allSongsCache || []).map((tr) => [tr.Id, tr]));
+  const tracks = hits.map((h) => byId.get(h.id)).filter(Boolean);
+  if (!tracks.length) return;
+  section.appendChild(el('div', 'section-title', escapeHtml(t('search.lyricsMatches'))));
+  hits.forEach((hit) => {
+    const track = byId.get(hit.id);
+    if (!track) return;
+    const row = el('button', 'lyric-hit');
+    row.type = 'button';
+    row.innerHTML = `<img src="${artUrl(track, 'album', 48)}" alt="" loading="lazy">
+      <span class="lyric-hit-text"><span class="lyric-hit-title">${escapeHtml(track.Name)}</span>
+      <span class="lyric-hit-artist">${escapeHtml(artistNames(track))}</span>
+      ${hit.line ? `<span class="lyric-hit-line">“${escapeHtml(hit.line)}”</span>` : ''}</span>`;
+    row.addEventListener('click', () => player.setQueue(tracks, tracks.indexOf(track)));
+    section.appendChild(row);
+  });
+  resultsEl.parentElement?.querySelectorAll('.lyric-matches').forEach((old) => old.remove());
+  resultsEl.after(section);
+}
+
+async function startLyricsIndexing() {
+  if (!getSettings().lyricsSearchEnabled) return;
+  await ensureAllSongsCache().catch(() => {});
+  if (allSongsCache?.length) startIndexing(allSongsCache, lyricsQueryFor, fetchLyrics);
+}
+
+function showLyricsIndexStatus(status) {
+  if (!lyricsIndexStatus) return;
+  lyricsIndexStatus.textContent = getSettings().lyricsSearchEnabled && status.total
+    ? t('settings.lyricsSearchStatus', { done: status.done, total: status.total, found: status.withLyrics })
+    : '';
+}
+
+async function refreshLyricsIndexStatus() {
+  if (!getSettings().lyricsSearchEnabled) { showLyricsIndexStatus({ total: 0 }); return; }
+  await ensureAllSongsCache().catch(() => {});
+  showLyricsIndexStatus(await indexStatus((allSongsCache || []).map((tr) => tr.Id)));
 }
 
 async function renderAllSongs() {
@@ -2574,6 +2686,7 @@ async function renderLikedSongs() {
     viewRoot.appendChild(el('div', 'empty-state', t('liked.empty')));
     return;
   }
+  viewRoot.appendChild(el('div', 'view-sub', escapeHtml(trackListSummary(liked))));
   viewRoot.appendChild(buildTrackTable(liked, liked, { isLikedView: true }));
 }
 
@@ -2610,11 +2723,60 @@ async function renderDownloads() {
   await ensureAllSongsCache().catch(() => {});
   const cacheById = new Map((allSongsCache || []).map((tr) => [tr.Id, tr]));
   const tracks = entries.map((entry) => cacheById.get(entry.id) || downloadedEntryToTrack(entry));
+  viewRoot.appendChild(el('div', 'view-sub', escapeHtml(trackListSummary(tracks))));
   viewRoot.appendChild(buildTrackTable(tracks, tracks));
+}
+
+// Listening calendar: one dot per day of the current year, brighter the more
+// was heard that day (GitHub-style, in weeks top-to-bottom Mon..Sun), with
+// the number of days listened and the longest streak. Per-day totals only
+// exist from 2.0.8 on, so earlier days stay empty.
+function buildListeningCalendar(listened) {
+  const now = new Date();
+  const year = now.getFullYear();
+  const days = listened.years[year]?.days || {};
+  const wrap = el('div', 'listen-cal-wrap');
+  wrap.appendChild(el('div', 'section-title', escapeHtml(t('stats.calendar'))));
+  const grid = el('div', 'listen-cal');
+  const start = new Date(year, 0, 1);
+  const lead = (start.getDay() + 6) % 7; // Monday-first offset of Jan 1
+  for (let i = 0; i < lead; i++) grid.appendChild(el('span', 'cal-cell cal-pad'));
+  const values = Object.values(days);
+  const max = Math.max(1, ...values);
+  let listenedDays = 0;
+  let streak = 0;
+  let best = 0;
+  const locale = document.documentElement.lang || undefined;
+  for (let d = new Date(start); d.getFullYear() === year; d.setDate(d.getDate() + 1)) {
+    const secs = days[dayKey(d)] || 0;
+    const future = d > now;
+    const level = secs >= 60 ? Math.min(4, 1 + Math.floor((secs / max) * 4)) : 0;
+    const cell = el('span', `cal-cell${future ? ' cal-future' : ''}${level ? ` l${level}` : ''}`);
+    const mins = Math.round(secs / 60);
+    cell.title = `${d.toLocaleDateString(locale, { day: 'numeric', month: 'short' })}: ${mins ? t('duration.minutes', { m: mins }) : '—'}`;
+    grid.appendChild(cell);
+    if (secs >= 60) {
+      listenedDays++;
+      streak++;
+      best = Math.max(best, streak);
+    } else if (!future) {
+      streak = 0;
+    }
+  }
+  const scroller = el('div', 'listen-cal-scroll');
+  scroller.appendChild(grid);
+  wrap.appendChild(scroller);
+  wrap.appendChild(el('div', 'stat-note listen-cal-note', escapeHtml(listenedDays
+    ? t('stats.calendarNote', { days: listenedDays, streak: best })
+    : t('stats.calendarEmpty'))));
+  return wrap;
 }
 
 async function renderStats() {
   await ensureAllSongsCache();
+  // Other devices' listening time comes from the server at login; wait for
+  // it (briefly) so a fresh install doesn't show only its own empty log.
+  if (listeningLoad) await Promise.race([listeningLoad, new Promise((r) => setTimeout(r, 4000))]);
   const stats = accountStats();
   viewRoot.innerHTML = '';
   viewRoot.appendChild(el('div', 'view-title', t('stats.title')));
@@ -2646,6 +2808,7 @@ async function renderStats() {
   summary.appendChild(el('div', 'stat-box', `<div class="stat-value">${escapeHtml(timeLabel)}</div><div class="stat-label">${escapeHtml(t('stats.timeListened'))}</div><div class="stat-note">${escapeHtml(timeNote)}</div>`));
   summary.appendChild(el('div', 'stat-box', `<div class="stat-value">${stats.topArtists.length}</div><div class="stat-label">${escapeHtml(t('stats.artistsPlayed'))}</div>`));
   viewRoot.appendChild(summary);
+  viewRoot.appendChild(buildListeningCalendar(listened));
 
   const playsLabel = (count) => t(count === 1 ? 'stats.plays' : 'stats.playsPlural', { count });
 
@@ -2905,7 +3068,7 @@ async function renderPlaylistDetail(id, name) {
   viewRoot.appendChild(buildDetailHeader({
     kind: t('kind.playlist'),
     title: displayName,
-    sub: t(tracks.length === 1 ? 'playlist.songCount' : 'playlist.songCountPlural', { count: tracks.length }),
+    sub: trackListSummary(tracks),
     art: jellyfin.imageUrl(playlist, 'Primary', imagePx(220)) || (tracks[0] ? artUrl(tracks[0], 'album', 220) : placeholderArt('album')),
     round: false,
     onPlayAll: tracks.length ? () => player.setQueue(tracks, 0, id) : undefined,
@@ -2935,7 +3098,7 @@ async function renderAlbumDetail(id) {
   viewRoot.appendChild(buildDetailHeader({
     kind: t('kind.album'),
     title: first?.Album || 'Album',
-    sub: artistNames(first || {}),
+    sub: tracks.length ? `${artistNames(first)} · ${trackListSummary(tracks)}` : artistNames(first || {}),
     art: first ? artUrl(first, 'album', 220) : placeholderArt('album'),
     round: false,
     onPlayAll: tracks.length ? () => player.setQueue(tracks, 0, id) : undefined,
@@ -3797,7 +3960,9 @@ function wirePlayer() {
   player.on('playstate', trackListeningTick);
   player.on('trackchange', () => { listeningTickAt = null; });
   setInterval(persistListening, 15000);
-  setInterval(syncListening, 120000);
+  // Often enough that closing the app (or an update restarting it) loses
+  // at most half a minute on the server copy.
+  setInterval(syncListening, 30000);
   window.addEventListener('pagehide', syncListening);
   document.addEventListener('visibilitychange', () => { if (document.hidden) syncListening(); });
   // Position: every 10s while playing, and right away when the app goes to
@@ -4637,6 +4802,7 @@ async function loadLyricsForCurrentTrack() {
     return;
   }
 
+  rememberLyrics(track.Id, result);
   if (lyricsTrackId !== track.Id) return; // track changed while fetching
   currentLyrics = result;
   prefetchNextLyrics();

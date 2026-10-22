@@ -66,7 +66,9 @@
   "search": {
     "title": "Prehľadať vašu knižnicu",
     "noResults": "Nenašli sa žiadne výsledky.",
-    "failed": "Vyhľadávanie zlyhalo: {error}"
+    "failed": "Vyhľadávanie zlyhalo: {error}",
+    "lyricsMatches": "Nájdené v textoch",
+    "lyricsOff": "Hľadáš skladbu podľa textu? Zapni „Hľadanie podľa textu“ v Nastaveniach → Súkromie."
   },
   "songs": {
     "title": "Všetky skladby",
@@ -209,7 +211,10 @@
     "hapticsDesc": "Krátke vibrácie pri potiahnutí, dlhom podržaní a obnovení stránky",
     "qualityNow": "Teraz: {level} · tvoje pripojenie ≈ {speed} Mbit/s",
     "qualityKbps": "{kbps} kbps",
-    "qualityOriginal": "pôvodná kvalita"
+    "qualityOriginal": "pôvodná kvalita",
+    "lyricsSearch": "Hľadanie podľa textu",
+    "lyricsSearchDesc": "Nájdeš skladby podľa riadku z ich textu. Texty tvojej knižnice sa sťahujú na pozadí (názvy skladieb a interpreti idú na lrclib.net a lyrics.ovh) a ostávajú v tomto zariadení.",
+    "lyricsSearchStatus": "Spracované {done} z {total} skladieb ({found} s textom)."
   },
   "audioQuality": {
     "auto": "Automaticky (podľa pripojenia)",
@@ -261,7 +266,10 @@
     "playsPlural": "{count} prehratí",
     "empty": "Počúvaj hudbu a začni budovať svoje štatistiky.",
     "since": "od {date}",
-    "estimated": "odhad z prehratí"
+    "estimated": "odhad z prehratí",
+    "calendar": "Kalendár počúvania",
+    "calendarNote": "{days} dní s hudbou tento rok · najdlhšia séria {streak} dní",
+    "calendarEmpty": "Kalendár sa zaplní, ako budeš počúvať."
   },
   "queue": {
     "addToQueue": "Pridať do frontu",
@@ -353,7 +361,15 @@
     "iosPlaybackTitle": "Lepšie prehrávanie na iPhone",
     "iosPlaybackDesc": "Hudba hrá aj na pozadí, ovládanie na zamknutej obrazovke a v Ovládacom centre funguje vždy a posuvník hlasitosti sleduje tlačidlá hlasitosti.",
     "nothingSlidersTitle": "Bodkované alebo obyčajné posuvníky",
-    "nothingSlidersDesc": "V štýle Nothing si teraz môžeš prepnúť bodkované posuvníky prehrávania a hlasitosti na obyčajné čiary: Nastavenia → Vzhľad → Bodkované posuvníky."
+    "nothingSlidersDesc": "V štýle Nothing si teraz môžeš prepnúť bodkované posuvníky prehrávania a hlasitosti na obyčajné čiary: Nastavenia → Vzhľad → Bodkované posuvníky.",
+    "lyricsSearchTitle": "Hľadanie podľa textu",
+    "lyricsSearchDesc": "Pamätáš si riadok, ale nie názov? Zapni „Hľadanie podľa textu“ v Nastaveniach → Súkromie a napíš ten riadok do Hľadania.",
+    "listeningCalendarTitle": "Kalendár počúvania",
+    "listeningCalendarDesc": "Štatistiky ukazujú bodku za každý deň, keď si počúval, tým jasnejšiu, čím viac si hral, a tvoju najdlhšiu sériu.",
+    "listTotalsTitle": "Ako dlho to trvá?",
+    "listTotalsDesc": "Albumy, playlisty, Obľúbené a Stiahnuté ukazujú celkovú dĺžku, napríklad „19 skladieb · 1 h 14 min“.",
+    "realPlaysTitle": "Rátajú sa len skutočné prehratia",
+    "realPlaysDesc": "Skladba sa ráta ako prehratá, keď si ju vypočuješ aspoň do polovice. Preskočené sa už nerátajú a čas počúvania sa po aktualizácii už nevynuluje."
   },
   "wrapped": {
     "bannerTitle": "Tvoj rok {year} v hudbe",
@@ -376,5 +392,9 @@
     "playTop": "Pustiť top skladby",
     "drumrollKicker": "A tvoj top interpret je…",
     "drumroll": "Vírenie bubnov, prosím…"
+  },
+  "duration": {
+    "hoursMinutes": "{h} h {m} min",
+    "minutes": "{m} min"
   }
 }

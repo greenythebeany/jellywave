@@ -20,6 +20,21 @@ function loadOrCreateDeviceId() {
   }
 }
 const DEVICE_ID = loadOrCreateDeviceId();
+
+// Jellyfin makes a separate artist for every collaboration credit it finds
+// in tags ("Pitbull feat. Ne-Yo", "Pitbull & Ke$ha"), so searching one artist
+// listed several. A credit like that is dropped when one of its names is
+// also in the results on its own; real duo names ("Simon & Garfunkel") stay,
+// since neither half exists by itself.
+const COLLAB_SPLIT = /\s*(?:,|;|&|\+|\bfeat\.?|\bft\.?|\bfeaturing\b|\bwith\b|\bx\b|\bvs\.?)\s*/i;
+function dedupeCollabArtists(artists) {
+  const single = new Set(artists.map((a) => (a.Name || '').trim().toLowerCase()));
+  return artists.filter((a) => {
+    const parts = (a.Name || '').split(COLLAB_SPLIT).map((x) => x.trim().toLowerCase()).filter(Boolean);
+    if (parts.length < 2) return true;
+    return !parts.some((part) => single.has(part));
+  });
+}
 const CLIENT_NAME = 'JellyWave';
 // Was previously a hardcoded string that had to be bumped by hand on every
 // release and repeatedly drifted out of sync with the app's real version
@@ -31,7 +46,7 @@ const CLIENT_NAME = 'JellyWave';
 // literal below is only the fallback for the brief window before that
 // resolves (or if neither bridge is available, e.g. running in a plain
 // browser during development).
-let CLIENT_VERSION = '2.0.7';
+let CLIENT_VERSION = '2.1.0';
 
 export function getClientVersion() {
   return CLIENT_VERSION;
@@ -471,7 +486,7 @@ export class JellyfinClient {
         Fields: 'PrimaryImageAspectRatio'
       })
     ]);
-    return [...(artistsData.Items || []), ...(itemsData.Items || [])];
+    return [...dedupeCollabArtists(artistsData.Items || []), ...(itemsData.Items || [])];
   }
 
   // ---------- Connect (Sessions API remote control) ----------
