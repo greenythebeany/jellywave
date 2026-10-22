@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, safeStorage, shell, globalShortcut, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, safeStorage, shell, globalShortcut, dialog, session } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
@@ -69,10 +69,47 @@ function setupSmtc() {
   }
 }
 
+// Window size/position/maximized, remembered between launches. Restored
+// only if it still lands on a connected screen (a monitor may have been
+// unplugged since), otherwise the default size, centered.
+const WINDOW_STATE_PATH = path.join(app.getPath('userData'), 'window-state.json');
+function loadWindowState() {
+  try {
+    const state = JSON.parse(fs.readFileSync(WINDOW_STATE_PATH, 'utf8'));
+    const { screen } = require('electron');
+    const visible = screen.getAllDisplays().some(({ workArea: a }) =>
+      state.x < a.x + a.width - 100 && state.x + state.width > a.x + 100 &&
+      state.y >= a.y - 10 && state.y < a.y + a.height - 100);
+    return visible ? state : { width: state.width, height: state.height, maximized: state.maximized };
+  } catch (err) {
+    return null;
+  }
+}
+function trackWindowState(win) {
+  let timer = null;
+  const save = () => {
+    if (win.isDestroyed() || win.isMinimized()) return;
+    const bounds = win.isMaximized() ? win.getNormalBounds() : win.getBounds();
+    try {
+      fs.writeFileSync(WINDOW_STATE_PATH, JSON.stringify({ ...bounds, maximized: win.isMaximized() }));
+    } catch (err) {
+      // Not worth bothering anyone about.
+    }
+  };
+  const later = () => { clearTimeout(timer); timer = setTimeout(save, 500); };
+  win.on('resize', later);
+  win.on('move', later);
+  win.on('maximize', later);
+  win.on('unmaximize', later);
+  win.on('close', () => { clearTimeout(timer); save(); });
+}
+
 function createWindow() {
+  const saved = loadWindowState();
   mainWindow = new BrowserWindow({
-    width: 1360,
-    height: 870,
+    width: saved?.width || 1360,
+    height: saved?.height || 870,
+    ...(saved && saved.x !== undefined ? { x: saved.x, y: saved.y } : {}),
     minWidth: 960,
     minHeight: 600,
     backgroundColor: '#0a0a0a',
@@ -87,6 +124,8 @@ function createWindow() {
     }
   });
 
+  if (saved?.maximized) mainWindow.maximize();
+  trackWindowState(mainWindow);
   mainWindow.loadFile(path.join(__dirname, 'src', 'index.html'));
 
   mainWindow.webContents.on('console-message', (_e, level, message, line, sourceId) => {
@@ -128,7 +167,24 @@ ipcMain.on('smtc:setPlayback', (_event, state, positionMs) => {
   }
 });
 
+// One JellyWave at a time. A second copy (opened twice, or started by the
+// installer while the old one is still closing) can't open the locked
+// local storage, so it ran on empty, throwaway storage: a new device id,
+// 0 minutes listened, no downloads list. Instead it just brings the running
+// window to the front and exits.
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (!mainWindow) return;
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    mainWindow.focus();
+  });
+}
+
 app.whenReady().then(() => {
+  if (!app.hasSingleInstanceLock()) return;
   createWindow();
 
   app.on('activate', () => {
@@ -202,11 +258,17 @@ function killGrabProcess() {
 function shutdownForUpdate() {
   killGrabProcess();
   mainWindow?.webContents.send('app:shuttingDown');
-  setTimeout(() => app.exit(0), 2500);
-  app.quit();
+  // Give the renderer a moment to save, then make sure local storage is on
+  // disk before the (possibly hard) exit below.
+  setTimeout(() => {
+    session.defaultSession.flushStorageData();
+    app.quit();
+  }, 600);
+  setTimeout(() => app.exit(0), 3000);
 }
 
 app.on('will-quit', () => {
+  session.defaultSession.flushStorageData();
   killGrabProcess();
   globalShortcut.unregisterAll();
   try {

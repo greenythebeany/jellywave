@@ -69,7 +69,9 @@
   "search": {
     "title": "Search your library",
     "noResults": "No results found.",
-    "failed": "Search failed: {error}"
+    "failed": "Search failed: {error}",
+    "lyricsMatches": "Found in lyrics",
+    "lyricsOff": "Looking for a song by its lyrics? Turn on \"Search by lyrics\" in Settings → Privacy."
   },
   "songs": {
     "title": "All Songs",
@@ -224,7 +226,10 @@
     "hapticsDesc": "Short vibrations on swipes, long-press menus and pull-to-refresh",
     "qualityNow": "Right now: {level} · your connection ≈ {speed} Mbit/s",
     "qualityKbps": "{kbps} kbps",
-    "qualityOriginal": "original quality"
+    "qualityOriginal": "original quality",
+    "lyricsSearch": "Search by lyrics",
+    "lyricsSearchDesc": "Lets you find songs by a line of their lyrics. Fetches your library's lyrics in the background (song titles and artists go to lrclib.net and lyrics.ovh) and keeps them on this device.",
+    "lyricsSearchStatus": "Indexed {done} of {total} songs ({found} with lyrics)."
   },
   "privacyNotice": {
     "text": "JellyWave keeps everything on your own device and your own Jellyfin server. A couple of background lookups (album art, update checks) talk to outside services — see the Privacy Policy for exactly what's sent, and turn them off any time in Settings.",
@@ -291,7 +296,10 @@
     "playsPlural": "{count} plays",
     "empty": "Play some music to start building your stats.",
     "since": "since {date}",
-    "estimated": "estimated from plays"
+    "estimated": "estimated from plays",
+    "calendar": "Listening calendar",
+    "calendarNote": "{days} days with music this year · longest streak {streak} days",
+    "calendarEmpty": "Your calendar fills in as you listen."
   },
   "queue": {
     "addToQueue": "Add to queue",
@@ -383,7 +391,15 @@
     "iosPlaybackTitle": "Better playback on iPhone",
     "iosPlaybackDesc": "Music keeps playing in the background, the lock screen and Control Center controls always work, and the volume slider follows the volume buttons.",
     "nothingSlidersTitle": "Dotted or plain sliders",
-    "nothingSlidersDesc": "In the Nothing style you can now switch the dotted seek and volume bars to plain lines: Settings → Appearance → Dotted sliders."
+    "nothingSlidersDesc": "In the Nothing style you can now switch the dotted seek and volume bars to plain lines: Settings → Appearance → Dotted sliders.",
+    "lyricsSearchTitle": "Search by lyrics",
+    "lyricsSearchDesc": "Remember a line but not the title? Turn on \"Search by lyrics\" in Settings → Privacy, then type the line in Search.",
+    "listeningCalendarTitle": "Listening calendar",
+    "listeningCalendarDesc": "Stats now shows a dot for every day you listened, brighter the more you played, plus your longest streak.",
+    "listTotalsTitle": "How long is it?",
+    "listTotalsDesc": "Albums, playlists, Liked Songs and Downloads show their total length, like \"19 songs · 1 hr 14 min\".",
+    "realPlaysTitle": "Only real plays count",
+    "realPlaysDesc": "A song counts as played once you have heard at least half of it. Skips no longer add plays, and your listening time no longer resets after an update."
   },
   "wrapped": {
     "bannerTitle": "Your {year} Wrapped",
@@ -406,5 +422,9 @@
     "playTop": "Play your top songs",
     "drumrollKicker": "And your top artist is…",
     "drumroll": "Drumroll, please…"
+  },
+  "duration": {
+    "hoursMinutes": "{h} hr {m} min",
+    "minutes": "{m} min"
   }
 }

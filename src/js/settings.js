@@ -47,6 +47,7 @@ const DEFAULTS = {
   offlineMode: false, // when on, only downloaded tracks are playable/clickable
   hapticsEnabled: true, // phones: vibration on swipes, long-press menus, pull-to-refresh
   albumArtLookupEnabled: true, // off = never send artist/album/track text to Deezer's search API
+  lyricsSearchEnabled: false, // on = index the library's lyrics in the background for search (see lyricsIndex.js)
   autoUpdateCheckEnabled: true, // off = never ping GitHub's releases API in the background
   updatedAt: 0 // bumped on every local change — lets initRemoteSync tell
   // whether this device's settings or the server's saved copy is newer

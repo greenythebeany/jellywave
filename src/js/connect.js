@@ -50,7 +50,60 @@ export function createConnect(jellyfin, player) {
     };
   }
 
+  // ---------- Real plays ----------
+  // Jellyfin decides "played" from the position in the Stopped report: songs
+  // under 5 minutes count once past 5%, so skipping after 10 seconds used to
+  // add a play (and when no Stopped was sent, the server stopped the old
+  // song itself at its last reported position -- same result). Instead the
+  // seconds actually heard are counted, and a song only counts when at
+  // least half of it (or 4 minutes of a long one) was really listened to,
+  // the same rule Last.fm uses. A counted play reports the full length (so
+  // Jellyfin marks it played); anything less reports 0 (not counted, and no
+  // resume point).
+  const REAL_PLAY_MAX_SECONDS = 240;
+  let sessionTrack = null;
+  let heardSeconds = 0;
+  let heardTickAt = null;
+
+  function trackHeard() {
+    const now = performance.now();
+    const playing = !player.audio.paused && sessionTrack && player.currentTrack?.Id === sessionTrack.Id;
+    if (playing && heardTickAt !== null) {
+      const delta = (now - heardTickAt) / 1000;
+      if (delta > 0 && delta < 5) heardSeconds += delta;
+    }
+    heardTickAt = playing ? now : null;
+  }
+
+  function isRealPlay(track, seconds) {
+    const length = (track?.RunTimeTicks || 0) / 10000000;
+    if (!length) return seconds >= 30;
+    return seconds >= Math.min(REAL_PLAY_MAX_SECONDS, length / 2);
+  }
+
+  // The Stopped report for the song that was playing (or null), and resets
+  // the session -- called before the next song's Start.
+  function takeStopPayload() {
+    if (!playSessionId || !sessionTrack) return null;
+    trackHeard();
+    const counted = isRealPlay(sessionTrack, heardSeconds);
+    const payload = {
+      ItemId: sessionTrack.Id,
+      PlaySessionId: playSessionId,
+      PositionTicks: counted ? (sessionTrack.RunTimeTicks || currentPositionTicks()) : 0
+    };
+    playSessionId = null;
+    sessionTrack = null;
+    heardSeconds = 0;
+    heardTickAt = null;
+    return payload;
+  }
+
   function reportStart() {
+    sessionTrack = player.currentTrack;
+    heardSeconds = 0;
+    heardTickAt = null;
+    trackHeard();
     playSessionId = `jellywave-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
     const payload = buildReportPayload();
     if (payload) jellyfin.reportPlaybackStart(payload).catch(() => {});
@@ -62,12 +115,8 @@ export function createConnect(jellyfin, player) {
   }
 
   function reportStopped() {
-    if (!playSessionId) return;
-    jellyfin.reportPlaybackStopped({
-      PlaySessionId: playSessionId,
-      PositionTicks: currentPositionTicks()
-    }).catch(() => {});
-    playSessionId = null;
+    const payload = takeStopPayload();
+    if (payload) jellyfin.reportPlaybackStopped(payload).catch(() => {});
   }
 
   // ---------- Inbound remote control ----------
@@ -180,16 +229,18 @@ export function createConnect(jellyfin, player) {
     jellyfin.registerCapabilities().catch(() => {});
     connectSocket();
     player.on('trackchange', () => {
-      // Report the new track directly rather than stopping first — Stopped
-      // and Start are separate unawaited requests, and Stopped landing after
-      // Start (easily possible over a real network) would briefly clear the
-      // session's now-playing info right as a controller polls it. Playing a
-      // new ItemId already supersedes whatever was playing before; Stopped
-      // is only for genuinely stopping (queue ended, nothing next).
-      if (player.currentTrack) reportStart();
-      else reportStopped();
+      // Close the previous song explicitly (with the real-play decision, see
+      // takeStopPayload) and only then start the new one: if Start landed
+      // first, the Stopped would clear the new song's now-playing info, and
+      // without any Stopped the server would close the old song itself at
+      // its last progress position and count skips as plays.
+      const stop = takeStopPayload();
+      const start = () => { if (player.currentTrack) reportStart(); };
+      if (stop) jellyfin.reportPlaybackStopped(stop).catch(() => {}).finally(start);
+      else start();
     });
-    player.on('playstate', () => { if (player.currentTrack) reportProgress(); });
+    player.on('timeupdate', trackHeard);
+    player.on('playstate', () => { trackHeard(); if (player.currentTrack) reportProgress(); });
     if (progressTimer) clearInterval(progressTimer);
     progressTimer = setInterval(() => { if (player.currentTrack) reportProgress(); }, 10000);
   }

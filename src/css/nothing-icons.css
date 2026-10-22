@@ -14,8 +14,10 @@
 :root[data-ui="nothing"] .fi-br-angle-small-right:before { font-family: uicons-regular-rounded !important; content: "\f155"; }
 :root[data-ui="nothing"] .fi-br-arrows-repeat:before { font-family: uicons-regular-rounded !important; content: "\f1c4"; }
 :root[data-ui="nothing"] .fi-br-arrows-repeat-1:before { font-family: uicons-regular-rounded !important; content: "\f1c3"; }
+:root[data-ui="nothing"] .fi-br-calendar:before { font-family: uicons-regular-rounded !important; content: "\f339"; }
 :root[data-ui="nothing"] .fi-br-camera:before { font-family: uicons-regular-rounded !important; content: "\f348"; }
 :root[data-ui="nothing"] .fi-br-check:before { font-family: uicons-regular-rounded !important; content: "\f3c8"; }
+:root[data-ui="nothing"] .fi-br-check-circle:before { font-family: uicons-regular-rounded !important; content: "\f3c4"; }
 :root[data-ui="nothing"] .fi-br-cloud-download:before { font-family: uicons-regular-rounded !important; content: "\f464"; }
 :root[data-ui="nothing"] .fi-br-cross-small:before { font-family: uicons-regular-rounded !important; content: "\f4f6"; }
 :root[data-ui="nothing"] .fi-br-download:before { font-family: uicons-regular-rounded !important; content: "\f591"; }
@@ -27,6 +29,7 @@
 :root[data-ui="nothing"] .fi-br-headphones:before { font-family: uicons-regular-rounded !important; content: "\f793"; }
 :root[data-ui="nothing"] .fi-br-heart:before { font-family: uicons-regular-rounded !important; content: "\f7a0"; }
 :root[data-ui="nothing"] .fi-br-home:before { font-family: uicons-regular-rounded !important; content: "\f7b8"; }
+:root[data-ui="nothing"] .fi-br-hourglass-end:before { font-family: uicons-regular-rounded !important; content: "\f7ca"; }
 :root[data-ui="nothing"] .fi-br-keyboard:before { font-family: uicons-regular-rounded !important; content: "\f84c"; }
 :root[data-ui="nothing"] .fi-br-list-music:before { font-family: uicons-regular-rounded !important; content: "\f8c2"; }
 :root[data-ui="nothing"] .fi-br-mobile:before { font-family: uicons-regular-rounded !important; content: "\f953"; }

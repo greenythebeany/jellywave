@@ -111,6 +111,17 @@ npm run dist        # build a Windows installer
 
 The Android project lives in `android/` and is a standard Capacitor project — open it in Android Studio, or build from the command line with `./gradlew assembleRelease` after setting up your own signing keystore in `android/keystore/keystore.properties`.
 
+## What's new in 2.1.0
+
+- Search by lyrics: turn it on in Settings → Privacy and JellyWave quietly indexes your library's lyrics on your device; then type a line you remember in Search to find the song ("Found in lyrics", with the matching line)
+- Listening calendar on the Stats page: a dot for every day of the year, brighter the more you listened, with your number of listening days and longest streak
+- Total length on albums, playlists, mixes, Liked Songs and Downloads ("19 songs · 1 hr 14 min")
+- Only real plays count: a song counts once at least half of it (or 4 minutes) was heard; skipped songs no longer add plays or leave a resume point
+- Listening time no longer shows 0 after an update or reinstall: only one JellyWave runs at a time, Stats waits for your other devices' time, and it syncs every 30 seconds and right before an update
+- Searching an artist shows them once, not every "feat." / "&" collaboration as a separate artist
+- Discord: the cover art now reliably shows on your status for everyone (fewer, combined updates so Discord doesn't drop them)
+- Desktop: the window remembers its size, position and maximized state
+
 ## What's new in 2.0.7
 
 - Nothing style, light mode: the back/forward arrows at the top of artist pages no longer disappear over the artist photo
