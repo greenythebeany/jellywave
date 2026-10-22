@@ -11,9 +11,7 @@
   </a>
 </p>
 <p align="center">
-  <a href="https://github.com/greenythebeany/jellywave/blob/main/website/public/media/jellywave-2.1.0.mp4">
-    <img src="docs/screenshots/video-poster.jpg" width="800" alt="Watch the JellyWave 2.1.0 video" />
-  </a>
+  https://github.com/user-attachments/assets/7aa86738-c7d1-4744-b776-ef10be6dca9c
   <br />
   <sub>▶ Watch the 26-second JellyWave 2.1.0 video (click to play), or see it on the <a href="https://greenybeany.dev/jellywave/">JellyWave website</a></sub>
 </p>
