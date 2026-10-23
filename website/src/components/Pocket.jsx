@@ -16,6 +16,7 @@ export default function Pocket() {
       <div className="pocket-phone">
         <div className="phone big">
           <Shot name="p-nothing" width="585" height="1266" alt="The full-screen player on a phone, in the Nothing look" />
+          <div className={`dim${lyrics ? ' on' : ''}`} aria-hidden="true" />
           <div className={`sheet${lyrics ? ' up' : ''}`} aria-hidden={!lyrics}>
             <Shot name="p-nothing-lyrics" width="585" height="1266" alt="The lyrics sheet, with the current line lit" />
           </div>
