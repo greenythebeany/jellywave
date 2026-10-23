@@ -63,8 +63,8 @@ p { margin: 0; }
 .viz .bar-3 { background: var(--accent); animation-delay: 0.3s; }
 .hero[data-paused="true"] .viz .bar { animation-play-state: paused; }
 /* scrolled away: the bars sink back down, right to left */
-.hero.lowered .viz .bar { animation: sink 0.5s ease-in 0.2s both; }
-.hero.lowered .viz .bar-2 { animation-delay: 0.1s; }
+.hero.lowered .viz .bar { animation: sink 0.35s ease-in 0.1s both; }
+.hero.lowered .viz .bar-2 { animation-delay: 0.05s; }
 .hero.lowered .viz .bar-3 { animation-delay: 0s; }
 @keyframes sink { from { height: var(--h); } to { height: calc(var(--h) * 0.02); } }
 .track { filter: blur(6px) brightness(0.55); }
