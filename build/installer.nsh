@@ -1,4 +1,4 @@
-; electron-builder's default "is the app already running" check pipes
+﻿; electron-builder's default "is the app already running" check pipes
 ; $INSTDIR through a PowerShell one-liner (Get-CimInstance ... Path.StartsWith).
 ; $INSTDIR here contains non-ASCII characters (a Slovak/Central-European
 ; Windows username), and that PowerShell command gets built by NSIS's
@@ -78,3 +78,67 @@ Var pid
     ${endIf}
   ${endIf}
 !macroend
+
+; Welcome page with the Triptych sidebar art (the assisted installer only
+; shows one when this macro exists). Its text is picked at runtime from the
+; installer language, in the same 15 languages as the app; English otherwise.
+!macro customWelcomePage
+  !define MUI_PAGE_CUSTOMFUNCTION_PRE TriptychWelcomePre
+  !define MUI_WELCOMEPAGE_TITLE "$WelcomeTitle"
+  !define MUI_WELCOMEPAGE_TEXT "$WelcomeText"
+  !insertmacro MUI_PAGE_WELCOME
+!macroend
+
+!ifndef BUILD_UNINSTALLER
+!include "LogicLib.nsh"
+Var WelcomeTitle
+Var WelcomeText
+Function TriptychWelcomePre
+  ${If} $LANGUAGE == 1051
+    StrCpy $WelcomeTitle "Vitaj v Triptych"
+    StrCpy $WelcomeText "Triptych je hudobný prehrávač pre tvoj vlastný server Jellyfin.$\r$\n$\r$\nNainštaluje sa Triptych ${VERSION}. Ak je otvorená staršia verzia alebo JellyWave, zavrie sa a aktualizuje. Prihlásenie, nastavenia aj štatistiky počúvania ostanú.$\r$\n$\r$\nPokračuj tlačidlom Ďalej."
+  ${ElseIf} $LANGUAGE == 1029
+    StrCpy $WelcomeTitle "Vítej v Triptych"
+    StrCpy $WelcomeText "Triptych je hudební přehrávač pro tvůj vlastní server Jellyfin.$\r$\n$\r$\nNainstaluje se Triptych ${VERSION}. Pokud je otevřená starší verze nebo JellyWave, zavře se a aktualizuje. Přihlášení, nastavení i statistiky poslechu zůstanou.$\r$\n$\r$\nPokračuj tlačítkem Další."
+  ${ElseIf} $LANGUAGE == 1031
+    StrCpy $WelcomeTitle "Willkommen bei Triptych"
+    StrCpy $WelcomeText "Triptych ist ein Musikplayer für deinen eigenen Jellyfin-Server.$\r$\n$\r$\nTriptych ${VERSION} wird jetzt installiert. Ist eine ältere Version oder JellyWave geöffnet, wird sie geschlossen und aktualisiert. Anmeldung, Einstellungen und Hörstatistik bleiben erhalten.$\r$\n$\r$\nKlicke auf Weiter, um fortzufahren."
+  ${ElseIf} $LANGUAGE == 1036
+    StrCpy $WelcomeTitle "Bienvenue dans Triptych"
+    StrCpy $WelcomeText "Triptych est un lecteur de musique pour votre propre serveur Jellyfin.$\r$\n$\r$\nTriptych ${VERSION} va être installé. Si une ancienne version ou JellyWave est ouverte, elle sera fermée et mise à jour. Votre connexion, vos réglages et vos statistiques d'écoute sont conservés.$\r$\n$\r$\nCliquez sur Suivant pour continuer."
+  ${ElseIf} $LANGUAGE == 1034
+    StrCpy $WelcomeTitle "Te damos la bienvenida a Triptych"
+    StrCpy $WelcomeText "Triptych es un reproductor de música para tu propio servidor Jellyfin.$\r$\n$\r$\nSe instalará Triptych ${VERSION}. Si hay una versión anterior o JellyWave abierta, se cerrará y se actualizará. Tu sesión, ajustes y estadísticas de escucha se conservan.$\r$\n$\r$\nHaz clic en Siguiente para continuar."
+  ${ElseIf} $LANGUAGE == 1040
+    StrCpy $WelcomeTitle "Benvenuto in Triptych"
+    StrCpy $WelcomeText "Triptych è un lettore musicale per il tuo server Jellyfin.$\r$\n$\r$\nVerrà installato Triptych ${VERSION}. Se è aperta una versione precedente o JellyWave, verrà chiusa e aggiornata. Accesso, impostazioni e statistiche di ascolto restano.$\r$\n$\r$\nFai clic su Avanti per continuare."
+  ${ElseIf} $LANGUAGE == 1043
+    StrCpy $WelcomeTitle "Welkom bij Triptych"
+    StrCpy $WelcomeText "Triptych is een muziekspeler voor je eigen Jellyfin-server.$\r$\n$\r$\nTriptych ${VERSION} wordt geïnstalleerd. Is een oudere versie of JellyWave geopend, dan wordt die gesloten en bijgewerkt. Je login, instellingen en luisterstatistieken blijven bewaard.$\r$\n$\r$\nKlik op Volgende om door te gaan."
+  ${ElseIf} $LANGUAGE == 1045
+    StrCpy $WelcomeTitle "Witaj w Triptych"
+    StrCpy $WelcomeText "Triptych to odtwarzacz muzyki dla Twojego własnego serwera Jellyfin.$\r$\n$\r$\nZostanie zainstalowany Triptych ${VERSION}. Jeśli otwarta jest starsza wersja lub JellyWave, zostanie zamknięta i zaktualizowana. Logowanie, ustawienia i statystyki słuchania zostają.$\r$\n$\r$\nKliknij Dalej, aby kontynuować."
+  ${ElseIf} $LANGUAGE == 1030
+    StrCpy $WelcomeTitle "Velkommen til Triptych"
+    StrCpy $WelcomeText "Triptych er en musikafspiller til din egen Jellyfin-server.$\r$\n$\r$\nTriptych ${VERSION} bliver installeret. Hvis en ældre version eller JellyWave er åben, lukkes og opdateres den. Dit login, dine indstillinger og din lyttestatistik bevares.$\r$\n$\r$\nKlik på Næste for at fortsætte."
+  ${ElseIf} $LANGUAGE == 1053
+    StrCpy $WelcomeTitle "Välkommen till Triptych"
+    StrCpy $WelcomeText "Triptych är en musikspelare för din egen Jellyfin-server.$\r$\n$\r$\nTriptych ${VERSION} installeras. Om en äldre version eller JellyWave är öppen stängs den och uppdateras. Din inloggning, dina inställningar och din lyssningsstatistik finns kvar.$\r$\n$\r$\nKlicka på Nästa för att fortsätta."
+  ${ElseIf} $LANGUAGE == 1044
+    StrCpy $WelcomeTitle "Velkommen til Triptych"
+    StrCpy $WelcomeText "Triptych er en musikkspiller for din egen Jellyfin-server.$\r$\n$\r$\nTriptych ${VERSION} blir installert. Hvis en eldre versjon eller JellyWave er åpen, blir den lukket og oppdatert. Innloggingen, innstillingene og lyttestatistikken din beholdes.$\r$\n$\r$\nKlikk Neste for å fortsette."
+  ${ElseIf} $LANGUAGE == 1035
+    StrCpy $WelcomeTitle "Tervetuloa Triptychiin"
+    StrCpy $WelcomeText "Triptych on musiikkisoitin omalle Jellyfin-palvelimellesi.$\r$\n$\r$\nTriptych ${VERSION} asennetaan. Jos vanhempi versio tai JellyWave on auki, se suljetaan ja päivitetään. Kirjautumisesi, asetuksesi ja kuuntelutilastosi säilyvät.$\r$\n$\r$\nJatka valitsemalla Seuraava."
+  ${ElseIf} $LANGUAGE == 1049
+    StrCpy $WelcomeTitle "Добро пожаловать в Triptych"
+    StrCpy $WelcomeText "Triptych — музыкальный плеер для вашего собственного сервера Jellyfin.$\r$\n$\r$\nБудет установлен Triptych ${VERSION}. Если открыта старая версия или JellyWave, она будет закрыта и обновлена. Вход, настройки и статистика прослушивания сохранятся.$\r$\n$\r$\nНажмите «Далее», чтобы продолжить."
+  ${ElseIf} $LANGUAGE == 1058
+    StrCpy $WelcomeTitle "Ласкаво просимо до Triptych"
+    StrCpy $WelcomeText "Triptych — музичний плеєр для вашого власного сервера Jellyfin.$\r$\n$\r$\nБуде встановлено Triptych ${VERSION}. Якщо відкрита старіша версія або JellyWave, її буде закрито й оновлено. Вхід, налаштування та статистика прослуховування збережуться.$\r$\n$\r$\nНатисніть «Далі», щоб продовжити."
+  ${Else}
+    StrCpy $WelcomeTitle "Welcome to Triptych"
+    StrCpy $WelcomeText "Triptych is a music player for your own Jellyfin server.$\r$\n$\r$\nThis will install Triptych ${VERSION}. If an older version or JellyWave is open, it will be closed and updated. Your login, settings and listening stats are kept.$\r$\n$\r$\nClick Next to continue."
+  ${EndIf}
+FunctionEnd
+!endif

@@ -117,6 +117,61 @@ def download_button():
     return img
 
 
+def font(name, size):
+    path = os.path.join(ROOT, 'website/public/fonts', name)
+    try:
+        return ImageFont.truetype(path, size)
+    except OSError:
+        return ImageFont.load_default()
+
+
+def installer_sidebar():
+    """Welcome/finish page art of the Windows installer (NSIS: 164x314)."""
+    w, h = 164, 314
+    img = Image.new('RGBA', (w, h), BLACK + (255,))
+    d = ImageDraw.Draw(img)
+    for y in range(9, h, 14):  # faint dot grid, as on the website
+        for x in range(9, w, 14):
+            d.ellipse((x - 1, y - 1, x + 1, y + 1), fill=(38, 38, 40, 255))
+    mk = mark(64, WHITE)
+    img.alpha_composite(mk, (22, 40))
+    size = 30
+    while size > 12 and d.textlength('Triptych', font=font('doto-latin-700-normal.woff2', size)) > w - 22 - 30:
+        size -= 1
+    title = font('doto-latin-700-normal.woff2', size)
+    # the red full stop sits on the baseline (the bottom of the "h"), not
+    # under the descenders of "p" and "y"
+    base = 150
+    d.text((20, base), 'Triptych', font=title, fill=WHITE, anchor='ls')
+    x2 = d.textbbox((20, base), 'Triptych', font=title, anchor='ls')[2]
+    h_bottom = d.textbbox((20, base), 'h', font=title, anchor='ls')[3]
+    dot = max(4, size // 5)
+    d.ellipse((x2 + 1, h_bottom - dot, x2 + 1 + dot, h_bottom), fill=RED)
+    small = font('space-mono-latin-400-normal.woff2', 10)
+    for i, line in enumerate(('MUSIC FOR YOUR', 'OWN JELLYFIN', 'SERVER')):
+        d.text((22, 172 + i * 15), line, font=small, fill=(150, 150, 156))
+    d.text((22, h - 30), 'FREE & OPEN SOURCE', font=small, fill=(110, 110, 116))
+    return img
+
+
+def installer_header():
+    """Top-right art on the installer's inner pages (NSIS: 150x57, white header)."""
+    w, h = 150, 57
+    img = Image.new('RGBA', (w, h), WHITE + (255,))
+    mk = mark(33, BLACK)
+    img.alpha_composite(mk, (w - mk.width - 16, (h - mk.height) // 2))
+    return img
+
+
+def save_bmp(img, out, rel):
+    path = os.path.join(out, rel)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    flat = Image.new('RGB', img.size, BLACK)
+    flat.paste(img, mask=img.getchannel('A'))
+    flat.save(path, format='BMP')
+    return rel
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--out', default=ROOT)
@@ -166,6 +221,10 @@ def main():
         dark = 'night' in rel or 'dark' in rel
         done.append(save(place(size, 0.16, WHITE if dark else BLACK, BLACK if dark else WHITE), out, rel))
     done.append(save(download_button(), out, 'download_icon.png'))
+    # Windows installer art (package.json build.nsis)
+    done.append(save_bmp(installer_sidebar(), out, 'build/installerSidebar.bmp'))
+    done.append(save_bmp(installer_sidebar(), out, 'build/uninstallerSidebar.bmp'))
+    done.append(save_bmp(installer_header(), out, 'build/installerHeader.bmp'))
     print(f'{len(done)} files written')
 
 
