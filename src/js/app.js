@@ -1527,7 +1527,7 @@ async function checkForUpdatesOnMobile() {
   try {
     const appInfo = await window.Capacitor.Plugins.App.getInfo();
     const current = parseSemver(appInfo.version);
-    const res = await fetch('https://api.github.com/repos/greenythebeany/jellywave/releases/latest', {
+    const res = await fetch('https://api.github.com/repos/greenythebeany/triptych/releases/latest', {
       headers: { Accept: 'application/vnd.github+json' }
     });
     if (!res.ok) return;

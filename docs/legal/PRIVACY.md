@@ -4,7 +4,7 @@ _Last updated: 2026-09-18_
 
 Triptych is a client app for a Jellyfin media server **you host yourself**. The developer does not run any backend for Triptych, does not receive analytics or telemetry from your copy of the app, and cannot see your library, your account, or what you play.
 
-Triptych is a free, open-source (MIT-licensed) personal project maintained by one developer (GitHub: [greenythebeany](https://github.com/greenythebeany)). There is no company behind it. The only contact channel is [GitHub Issues on the jellywave repo](https://github.com/greenythebeany/jellywave/issues) — that's also where to report a privacy, accessibility, or licensing concern.
+Triptych is a free, open-source (MIT-licensed) personal project maintained by one developer (GitHub: [greenythebeany](https://github.com/greenythebeany)). There is no company behind it. The only contact channel is [GitHub Issues on the jellywave repo](https://github.com/greenythebeany/triptych/issues) — that's also where to report a privacy, accessibility, or licensing concern.
 
 This document is also available inside the app itself, under **Settings → About → Legal**.
 
