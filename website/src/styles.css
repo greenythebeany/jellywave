@@ -31,6 +31,9 @@ h2 { font: 800 var(--step-head)/0.92 var(--font-display); letter-spacing: -0.035
 h3 { font: 800 var(--step-lead)/1.15 var(--font-display); letter-spacing: -0.015em; }
 p { margin: 0; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+/* no ring on mouse clicks or taps; the red ring above stays for the keyboard */
+:focus:not(:focus-visible) { outline: none; }
+* { -webkit-tap-highlight-color: transparent; }
 :target, section[id] { scroll-margin-top: 72px; }
 .skip { position: absolute; left: -999px; top: 8px; padding: 8px 14px; background: var(--ink); color: var(--ground); z-index: 50; }
 .skip:focus { left: 8px; }

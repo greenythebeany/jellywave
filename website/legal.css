@@ -12,6 +12,9 @@ body { margin: 0; background: var(--ground); color: var(--ink); font: 400 clamp(
 a { color: inherit; text-decoration-color: var(--accent); text-underline-offset: 4px; }
 a:hover { color: var(--accent); }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+/* no ring on mouse clicks or taps; the red ring above stays for the keyboard */
+:focus:not(:focus-visible) { outline: none; }
+* { -webkit-tap-highlight-color: transparent; }
 .skip { position: absolute; left: -999px; top: 8px; padding: 8px 14px; background: var(--ink); color: var(--ground); }
 .skip:focus { left: 8px; }
 
