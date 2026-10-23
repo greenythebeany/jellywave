@@ -42,28 +42,36 @@ p { margin: 0; }
 .btn-ink { background: var(--ink); color: var(--ground); }
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--margin); align-items: end; }
 
-/* ---------- Boot: a level meter that settles into the logo ----------
-   <html class="booting"> comes from the inline script in index.html. The
-   showcase is blurred and dimmed behind a large white-and-red logo; the title
-   and controls stay sharp. */
-.boot { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; padding: calc(var(--title-top) + var(--step-display) * 0.9 + 2svh) var(--margin) 120px; color: #fff; pointer-events: none; visibility: hidden; opacity: 0; transform: scale(0.94); transition: opacity 0.6s ease, transform 0.7s cubic-bezier(0.7, 0, 0.3, 1), visibility 0s linear 0.7s; }
-html.booting .boot { visibility: visible; opacity: 1; transform: none; transition: none; }
-.boot-mark { height: 100%; max-height: 54svh; width: auto; max-width: 100%; overflow: visible; }
-.boot-mark .bar { fill: currentColor; transform-box: fill-box; transform-origin: 50% 100%; }
-.boot-mark .bar-3 { fill: var(--accent); }
+/* ---------- Visualizer: the logo in the middle of the first screen ----------
+   The bars climb up like a level meter, settle into the logo, then keep
+   moving like a music visualizer (the play button pauses them with the
+   slideshow). The showcase behind stays blurred and dimmed so the logo reads,
+   with the current look's colours showing through. On the first visit
+   (<html class="booting">, from the inline script in index.html) the blur is
+   heavier and the page waits for the intro to finish. */
+.boot { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; padding: calc(var(--title-top) + var(--step-display) * 0.9 + 2svh) var(--margin) 120px; color: #fff; pointer-events: none; }
+/* 411 x 453 like brand/triptych-*.svg: bars 113 wide (27.49%), short ones
+   350 tall (77.26%), corner radius 24 (5.84% of the mark's width). */
+.viz { container-type: inline-size; display: flex; align-items: flex-end; justify-content: space-between; height: 100%; max-height: 40svh; aspect-ratio: 411 / 453; max-width: 100%; }
+.viz .bar { --h: 77.26%; width: 27.49%; height: var(--h); border-radius: 5.84cqw; background: currentColor; animation: meter 1.15s var(--bounce) both, viz-1 0.92s ease-in-out 1.15s infinite alternate; }
+.viz .bar-2 { --h: 100%; animation: meter 1.2s var(--bounce) 0.12s both, viz-2 1.14s ease-in-out 1.32s infinite alternate; }
+.viz .bar-3 { background: var(--accent); animation: meter 1.25s var(--bounce) 0.3s both, viz-3 0.78s ease-in-out 1.55s infinite alternate; }
+.hero[data-paused="true"] .viz .bar { animation-play-state: paused; }
+.track { filter: blur(14px) brightness(0.5) saturate(0.9); }
 html.booting .track { filter: blur(30px) brightness(0.45) saturate(0.9); }
-html.booting .boot-mark .bar { animation: meter 1.15s var(--bounce) both; }
-html.booting .boot-mark .bar-2 { animation-delay: 0.12s; animation-duration: 1.2s; }
-html.booting .boot-mark .bar-3 { animation-delay: 0.3s; animation-duration: 1.25s; }
+/* each bar its own uneven rhythm, always back at full height between beats */
+@keyframes viz-1 { 0% { height: calc(var(--h) * 1); } 30% { height: calc(var(--h) * 0.55); } 55% { height: calc(var(--h) * 0.82); } 80% { height: calc(var(--h) * 0.4); } 100% { height: calc(var(--h) * 0.9); } }
+@keyframes viz-2 { 0% { height: calc(var(--h) * 1); } 25% { height: calc(var(--h) * 0.7); } 50% { height: calc(var(--h) * 0.92); } 75% { height: calc(var(--h) * 0.5); } 100% { height: calc(var(--h) * 0.78); } }
+@keyframes viz-3 { 0% { height: calc(var(--h) * 1); } 35% { height: calc(var(--h) * 0.45); } 60% { height: calc(var(--h) * 0.88); } 85% { height: calc(var(--h) * 0.6); } 100% { height: calc(var(--h) * 1.05); } }
 /* up from nothing, a few level-meter swings, then rest at full height */
 @keyframes meter {
-  0% { transform: scaleY(0.02); }
-  22% { transform: scaleY(0.62); }
-  36% { transform: scaleY(0.3); }
-  52% { transform: scaleY(0.92); }
-  66% { transform: scaleY(0.7); }
-  82% { transform: scaleY(1.07); }
-  100% { transform: scaleY(1); }
+  0% { height: calc(var(--h) * 0.02); }
+  22% { height: calc(var(--h) * 0.62); }
+  36% { height: calc(var(--h) * 0.3); }
+  52% { height: calc(var(--h) * 0.92); }
+  66% { height: calc(var(--h) * 0.7); }
+  82% { height: calc(var(--h) * 1.07); }
+  100% { height: calc(var(--h) * 1); }
 }
 
 /* ---------- Nav ---------- */
@@ -204,6 +212,7 @@ html.booting .boot-mark .bar-3 { animation-delay: 0.3s; animation-duration: 1.25
   .nav-links a:not(:last-child) { display: none; }
   .hero { min-height: 640px; }
   .boot { padding-bottom: 250px; }
+  .viz { max-width: 48vw; }
   .shot img { object-position: 50% 0; }
   .hero::after { height: 62%; }
   .caption { display: none; }
@@ -226,7 +235,6 @@ html.booting .boot-mark .bar-3 { animation-delay: 0.3s; animation-duration: 1.25
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .boot { display: none; }
-  html.booting .track { filter: none; }
+  .viz .bar { animation: none; }
   .track, .btn, .tabs button, .sheet, .faq summary::after { transition: none; }
 }

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Mark from './Mark.jsx';
 import Shot from './Shot.jsx';
 import { LOOKS } from '../content.js';
 import { reducedMotion } from '../site.js';
@@ -41,12 +40,13 @@ function useBoot(onDone) {
 }
 
 // The three looks fill the screen and lock into place, with an overshoot,
-// under the still title. Tabs (arrow keys), swipe or drag, and an autoplay
+// under the still title and the moving logo. Tabs (arrow keys), swipe or drag, and an autoplay
 // that pauses on hover and stops for good once the visitor takes over.
 export default function Hero() {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [hover, setHover] = useState(false);
+  const [still, setStill] = useState(false); // the pause button also stops the visualizer
   const track = useRef(null);
   const tabs = useRef([]);
   const drag = useRef(null);
@@ -98,6 +98,7 @@ export default function Hero() {
       aria-roledescription="carousel"
       aria-label="The three looks of Triptych"
       data-look={LOOKS[index].key}
+      data-paused={still}
       onPointerEnter={() => setHover(true)}
       onPointerLeave={() => setHover(false)}
     >
@@ -126,7 +127,10 @@ export default function Hero() {
         ))}
       </div>
 
-      <div className="boot" aria-hidden="true"><Mark className="boot-mark" /></div>
+      {/* the logo as three bars that change height (an SVG scaled per bar would squash its rounded corners) */}
+      <div className="boot" aria-hidden="true">
+        <div className="viz"><span className="bar bar-1" /><span className="bar bar-2" /><span className="bar bar-3" /></div>
+      </div>
 
       <div className="hud">
         <h1 className="title">Triptych<span className="stop" aria-hidden="true" /></h1>
@@ -155,9 +159,9 @@ export default function Hero() {
           <button
             className="play"
             type="button"
-            aria-label={playing ? 'Pause the slideshow' : 'Play the slideshow'}
+            aria-label={playing ? 'Pause the slideshow and the logo' : 'Play the slideshow'}
             data-playing={playing}
-            onClick={() => setPlaying((p) => !p)}
+            onClick={() => { setStill(playing); setPlaying(!playing); }}
           >
             <span aria-hidden="true" />
           </button>
