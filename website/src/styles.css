@@ -231,7 +231,7 @@ html.booting .lens { display: none; }
   .motion-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .hero { min-height: 640px; }
   .boot { padding-bottom: 250px; }
-  .viz { max-width: 48vw; }
+  .viz { height: auto; width: min(48vw, 30svh); max-width: none; }
   .shot img { object-position: 50% 0; }
   .hero::after { height: 62%; }
   .caption { display: none; }
