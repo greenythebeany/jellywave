@@ -43,8 +43,8 @@ p { margin: 0; }
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--margin); align-items: end; }
 
 /* ---------- Visualizer: the logo in the middle of the first screen ----------
-   The bars climb up like a level meter, move like a music visualizer for a
-   few seconds, then settle into the logo (the play button pauses them with
+   The bars rise one by one, left to right, with a small bounce and
+   settle into the logo (the play button pauses them with
    the slideshow). The showcase behind stays blurred and dimmed so the logo reads,
    with the current look's colours showing through. On the first visit
    (<html class="booting">, from the inline script in index.html) the blur is
@@ -53,30 +53,16 @@ p { margin: 0; }
 /* 411 x 453 like brand/triptych-*.svg: bars 113 wide (27.49%), short ones
    350 tall (77.26%), corner radius 24 (5.84% of the mark's width). */
 .viz { container-type: inline-size; display: flex; align-items: flex-end; justify-content: space-between; height: 100%; max-height: 40svh; aspect-ratio: 411 / 453; max-width: 100%; }
-/* The rise, then about 1.5 s of visualizer that ends back at full height (an
-   even count of alternate runs finishes on the 0% frame), then the logo
-   holds. Hero.jsx replays it when the visitor scrolls back to the top. */
-.viz .bar { --h: 77.26%; width: 27.49%; height: var(--h); border-radius: 5.84cqw; background: currentColor; animation: meter 1.15s var(--bounce) both, viz-1 0.375s ease-in-out 1.15s 4 alternate; }
-.viz .bar-2 { --h: 100%; animation: meter 1.2s var(--bounce) 0.12s both, viz-2 0.25s ease-in-out 1.32s 6 alternate; }
-.viz .bar-3 { background: var(--accent); animation: meter 1.25s var(--bounce) 0.3s both, viz-3 0.75s ease-in-out 1.55s 2 alternate; }
+/* The bars rise left to right with a small bounce, then hold as the logo.
+   Hero.jsx replays it when the visitor scrolls back to the top. */
+.viz .bar { --h: 77.26%; width: 27.49%; height: var(--h); border-radius: 5.84cqw; background: currentColor; animation: rise 1s ease-in-out both; }
+.viz .bar-2 { --h: 100%; animation-delay: 0.15s; }
+.viz .bar-3 { background: var(--accent); animation-delay: 0.3s; }
 .hero[data-paused="true"] .viz .bar { animation-play-state: paused; }
 .track { filter: blur(6px) brightness(0.55); }
 html.booting .track { filter: blur(30px) brightness(0.45) saturate(0.9); }
-/* each bar its own uneven rhythm, always back at full height between beats */
-@keyframes viz-1 { 0% { height: calc(var(--h) * 1); } 30% { height: calc(var(--h) * 0.55); } 55% { height: calc(var(--h) * 0.82); } 80% { height: calc(var(--h) * 0.4); } 100% { height: calc(var(--h) * 0.9); } }
-@keyframes viz-2 { 0% { height: calc(var(--h) * 1); } 25% { height: calc(var(--h) * 0.7); } 50% { height: calc(var(--h) * 0.92); } 75% { height: calc(var(--h) * 0.5); } 100% { height: calc(var(--h) * 0.78); } }
-@keyframes viz-3 { 0% { height: calc(var(--h) * 1); } 35% { height: calc(var(--h) * 0.45); } 60% { height: calc(var(--h) * 0.88); } 85% { height: calc(var(--h) * 0.6); } 100% { height: calc(var(--h) * 1.05); } }
-/* up from nothing, a few level-meter swings, then rest at full height */
-@keyframes rise { from { height: calc(var(--h) * 0.02); } to { height: var(--h); } }
-@keyframes meter {
-  0% { height: calc(var(--h) * 0.02); }
-  22% { height: calc(var(--h) * 0.62); }
-  36% { height: calc(var(--h) * 0.3); }
-  52% { height: calc(var(--h) * 0.92); }
-  66% { height: calc(var(--h) * 0.7); }
-  82% { height: calc(var(--h) * 1.07); }
-  100% { height: calc(var(--h) * 1); }
-}
+/* up from nothing, a small overshoot, then rest at full height */
+@keyframes rise { 0% { height: calc(var(--h) * 0.02); } 65% { height: calc(var(--h) * 1.06); } 82% { height: calc(var(--h) * 0.98); } 100% { height: var(--h); } }
 
 /* ---------- Nav ---------- */
 .nav { position: fixed; inset: 0 0 auto; z-index: 30; display: flex; justify-content: space-between; align-items: center; padding: 20px var(--margin); mix-blend-mode: difference; color: #fff; }
