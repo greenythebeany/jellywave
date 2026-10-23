@@ -73,7 +73,7 @@ em { font-style: normal; color: var(--text); border-bottom: 2px solid var(--red)
   border-bottom: 1px solid var(--line);
 }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--dot); font-weight: 700; font-size: 24px; }
-.brand img { filter: grayscale(1) brightness(1.5); }
+.brand .mark { color: var(--text); }
 .nav-links { display: flex; align-items: center; gap: clamp(10px, 2.2vw, 26px); font-family: var(--mono); font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
 .nav-links a { text-decoration: none; color: var(--text-2); }
 .nav-links a:hover { color: var(--text); }
@@ -145,7 +145,7 @@ em { font-style: normal; color: var(--text); border-bottom: 2px solid var(--red)
 .flow-card.accent { border-color: rgba(215, 25, 33, 0.55); box-shadow: 0 0 0 1px rgba(215, 25, 33, 0.2), 0 20px 60px rgba(215, 25, 33, 0.12); }
 .flow-num { position: absolute; top: 20px; right: 22px; font-family: var(--mono); color: var(--text-3); font-size: 13px; }
 .flow-icon { width: 44px; height: 44px; color: var(--text); }
-.flow-logo { width: 44px; height: 44px; }
+.flow-logo { width: 44px; height: 44px; color: var(--text); }
 .flow-card h3 { margin: 18px 0 6px; font-size: 20px; font-weight: 600; }
 .flow-card p { margin: 0; color: var(--text-2); font-size: 15.5px; }
 .flow-link { position: relative; align-self: center; height: 2px; margin: 0 8px; }
@@ -311,7 +311,7 @@ em { font-style: normal; color: var(--text); border-bottom: 2px solid var(--red)
   border-top: 1px solid var(--line);
 }
 .footer-brand { display: flex; align-items: center; gap: 14px; }
-.footer-brand img { filter: grayscale(1) brightness(1.5); }
+.footer-brand .mark { color: var(--text); }
 .footer-name { font-family: var(--dot); font-weight: 700; font-size: 24px; line-height: 1.2; }
 .footer .mono { font-size: 13px; }
 .small-text { font-size: 13.5px; margin: 0; max-width: 480px; }

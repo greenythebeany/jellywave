@@ -50,7 +50,7 @@ fn event_to_js(event: MediaControlEvent) -> Option<JsSmtcEvent> {
         MediaControlEvent::SetPosition(MediaPosition(d)) => {
             ("setposition", Some(d.as_millis() as f64))
         }
-        // Volume/OpenUri/Raise/Quit aren't wired up in JellyWave -- ignore.
+        // Volume/OpenUri/Raise/Quit aren't wired up in Triptych -- ignore.
         _ => return None,
     };
     Some(JsSmtcEvent {
@@ -60,7 +60,7 @@ fn event_to_js(event: MediaControlEvent) -> Option<JsSmtcEvent> {
 }
 
 /// Thin N-API wrapper around souvlaki's Windows SystemMediaTransportControls
-/// backend, so JellyWave (an unpackaged Win32 Electron app) can register as a
+/// backend, so Triptych (an unpackaged Win32 Electron app) can register as a
 /// real OS media session -- Electron's Chromium build never bridges
 /// navigator.mediaSession to Windows SMTC on its own (unlike stock Chrome),
 /// which is why the app plays audio fine but never shows up in the taskbar
@@ -78,7 +78,7 @@ impl Smtc {
     pub fn new(hwnd: i64) -> Result<Self> {
         let config = PlatformConfig {
             dbus_name: "jellywave",
-            display_name: "JellyWave",
+            display_name: "Triptych",
             hwnd: Some(hwnd as *mut c_void),
         };
         let controls = MediaControls::new(config).map_err(to_napi_err)?;

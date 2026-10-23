@@ -1,43 +1,46 @@
 <p align="center">
-  <img src="logo.png" width="140" alt="JellyWave logo" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/triptych-dark.png" />
+    <img src="brand/triptych-light.png" width="120" alt="Triptych logo" />
+  </picture>
 </p>
 
-<h1 align="center">JellyWave</h1>
+<h1 align="center">Triptych</h1>
 <p align="center">A sleek, Spotify-styled music client for your own Jellyfin server.</p>
 
 <p align="center">
   <a href="https://github.com/Greenythebeany/jellywave/releases">
-    <img src="download_icon.png" alt="Download JellyWave" height="160">
+    <img src="download_icon.png" alt="Download Triptych" height="160">
   </a>
 </p>
 
 https://github.com/user-attachments/assets/8dd6f05c-bb3a-4647-b9e8-6ded7564c8cb
 
 <p align="center">
-  <sub>JellyWave 2.1.0 in 26 seconds · more on the <a href="https://greenybeany.dev/jellywave/">JellyWave website</a></sub>
+  <sub>Triptych 2.1.0 in 26 seconds · more on the <a href="https://greenybeany.dev/jellywave/">Triptych website</a></sub>
 </p>
 
 ---
 
-JellyWave is a personal music client for a self-hosted Jellyfin server. It logs into your own server with your own library and gives you a modern, Spotify-like listening experience across desktop and Android, without any of the server-side bloat of a general-purpose media app.
+Triptych is a personal music client for a self-hosted Jellyfin server. It logs into your own server with your own library and gives you a modern, Spotify-like listening experience across desktop and Android, without any of the server-side bloat of a general-purpose media app.
 
 ## Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/desktop-home.png" width="800" alt="JellyWave desktop, Home view (Spotify style)" />
+  <img src="docs/screenshots/desktop-home.png" width="800" alt="Triptych desktop, Home view (Spotify style)" />
 </p>
 <p align="center">
-  <img src="docs/screenshots/desktop-apple.png" width="800" alt="JellyWave desktop, Home view with the player panel (Apple Music style)" />
+  <img src="docs/screenshots/desktop-apple.png" width="800" alt="Triptych desktop, Home view with the player panel (Apple Music style)" />
 </p>
 <p align="center">
-  <img src="docs/screenshots/desktop-settings.png" width="380" alt="JellyWave desktop, Settings" />
+  <img src="docs/screenshots/desktop-settings.png" width="380" alt="Triptych desktop, Settings" />
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/mobile-home.png" width="200" alt="JellyWave Android, Home view" />
-  <img src="docs/screenshots/mobile-library.png" width="200" alt="JellyWave Android, Library view" />
-  <img src="docs/screenshots/mobile-nowplaying.png" width="200" alt="JellyWave Android, Now Playing view (Spotify style)" />
-  <img src="docs/screenshots/mobile-nowplaying-apple.png" width="200" alt="JellyWave Android, Now Playing view (Apple Music style)" />
+  <img src="docs/screenshots/mobile-home.png" width="200" alt="Triptych Android, Home view" />
+  <img src="docs/screenshots/mobile-library.png" width="200" alt="Triptych Android, Library view" />
+  <img src="docs/screenshots/mobile-nowplaying.png" width="200" alt="Triptych Android, Now Playing view (Spotify style)" />
+  <img src="docs/screenshots/mobile-nowplaying-apple.png" width="200" alt="Triptych Android, Now Playing view (Apple Music style)" />
 </p>
 
 ## Features
@@ -66,7 +69,7 @@ On first launch, enter the address of your own Jellyfin server and sign in with 
 
 ## Themes
 
-JellyWave ships a handful of built-in accent palettes, but you can also drop in a full community color scheme through **Settings → Advanced → Custom CSS** — paste one line in and it takes effect immediately, no restart needed:
+Triptych ships a handful of built-in accent palettes, but you can also drop in a full community color scheme through **Settings → Advanced → Custom CSS** — paste one line in and it takes effect immediately, no restart needed:
 
 | Preview | Theme | `@import` line |
 | --- | --- | --- |
@@ -95,7 +98,7 @@ Start from [`src/themes/template.css`](src/themes/template.css) — it lists eve
 
 ## Discord Rich Presence
 
-On desktop, JellyWave shows your currently playing track on your Discord profile, with cover art. It connects to your local Discord client automatically — the one extra step is authorizing the app once via **Settings → Audio → Discord Rich Presence → Connect** (or open [this link](https://discord.com/oauth2/authorize?client_id=1534197353056174180) directly).
+On desktop, Triptych shows your currently playing track on your Discord profile, with cover art. It connects to your local Discord client automatically — the one extra step is authorizing the app once via **Settings → Audio → Discord Rich Presence → Connect** (or open [this link](https://discord.com/oauth2/authorize?client_id=1534197353056174180) directly).
 
 Cover art is looked up externally by artist/album rather than pulled from your Jellyfin server, since Discord requires images to be served over HTTPS and most self-hosted Jellyfin setups are plain HTTP/LAN-only.
 
@@ -109,13 +112,19 @@ npm run dist        # build a Windows installer
 
 The Android project lives in `android/` and is a standard Capacitor project — open it in Android Studio, or build from the command line with `./gradlew assembleRelease` after setting up your own signing keystore in `android/keystore/keystore.properties`.
 
+## What's new in 2.2.0
+
+- JellyWave is now **Triptych**: new name, new logo (three bars; in the app the right one takes your accent colour). Your login, settings, downloads and listening stats carry over, and 2.1.0 updates to it like any other version
+- Every language fully translated: all 15 languages now cover every screen, setting and message (Wrapped, Import, Storage, the legal menu and more), instead of falling back to English
+- Listening calendar by month: each month is its own labelled block, and the calendar wraps on phones instead of needing a sideways scroll
+
 ## What's new in 2.1.0
 
-- Search by lyrics: turn it on in Settings → Privacy and JellyWave quietly indexes your library's lyrics on your device; then type a line you remember in Search to find the song ("Found in lyrics", with the matching line)
+- Search by lyrics: turn it on in Settings → Privacy and Triptych quietly indexes your library's lyrics on your device; then type a line you remember in Search to find the song ("Found in lyrics", with the matching line)
 - Listening calendar on the Stats page: a dot for every day of the year, brighter the more you listened, with your number of listening days and longest streak
 - Total length on albums, playlists, mixes, Liked Songs and Downloads ("19 songs · 1 hr 14 min")
 - Only real plays count: a song counts once at least half of it (or 4 minutes) was heard; skipped songs no longer add plays or leave a resume point
-- Listening time no longer shows 0 after an update or reinstall: only one JellyWave runs at a time, Stats waits for your other devices' time, and it syncs every 30 seconds and right before an update
+- Listening time no longer shows 0 after an update or reinstall: only one Triptych runs at a time, Stats waits for your other devices' time, and it syncs every 30 seconds and right before an update
 - Searching an artist shows them once, not every "feat." / "&" collaboration as a separate artist
 - Discord: the cover art now reliably shows on your status for everyone (fewer, combined updates so Discord doesn't drop them)
 - Desktop: the window remembers its size, position and maximized state
@@ -146,7 +155,7 @@ The Android project lives in `android/` and is a standard Capacitor project — 
 
 ## What's new in 2.0.3
 
-- Pick up where you left off: the queue, song and position are restored (paused) the next time you open JellyWave
+- Pick up where you left off: the queue, song and position are restored (paused) the next time you open Triptych
 - A smarter Home: Jump Back In, "Because you listened to…" and Newly Added rows
 - Wrapped: on December 31 your year in music arrives as a tap-through story (minutes listened, a drumroll for your top artist over their own background and logo, top songs, biggest month), and stays on Home/Stats until January 7
 - Real listening time: stats count the seconds you actually listen, summed across your devices, instead of plays × track length
@@ -156,7 +165,7 @@ The Android project lives in `android/` and is a standard Capacitor project — 
 ## What's new in 2.0.2
 
 - Accent colors are back, for both interface styles: Default (Spotify green / Apple red), Blue, Green, Red, Magenta, Purple, Pink, Orange, Yellow, Teal, Brown and Monochrome
-- More lyrics sources: if lrclib.net doesn't have a song, JellyWave now also checks your own Jellyfin server's lyrics (`.lrc` files / embedded lyrics) and then lyrics.ovh
+- More lyrics sources: if lrclib.net doesn't have a song, Triptych now also checks your own Jellyfin server's lyrics (`.lrc` files / embedded lyrics) and then lyrics.ovh
 - Phone volume: the slider now follows the volume buttons instantly on Android, and controls and follows the iPhone's volume on iOS
 - iPhone: logging in with a server IP address (e.g. a Tailscale `100.x` address) now works, not just a hostname
 - Library is now a clean list (icon, name, chevron) in both styles, and genre tiles lose their gradient
@@ -202,7 +211,7 @@ A big one. Highlights:
 - A play only counts once a track actually finishes, not just when it starts
 - Top Artists now counts each artist on a collab track individually instead of treating "A, B, feat. C" as one distinct artist per lineup
 - Connect now properly hands off playback — the sending device stops local audio, and play/pause/skip/seek/volume (desktop, mobile, hardware media keys) all control the connected device until you disconnect or pick something new to play locally
-- Connect's device list is now scoped to other JellyWave instances only, and has a mobile entry point (it previously lived in a desktop-only part of the player bar)
+- Connect's device list is now scoped to other Triptych instances only, and has a mobile entry point (it previously lived in a desktop-only part of the player bar)
 - Fixed Connect's now-playing display going stale (an HTTP caching issue on repeated session polls)
 - Fixed the app reporting itself as "Desktop" to Jellyfin on every platform, and a stale client version number
 - Fixed the installer sometimes being unable to close a running instance during an update
@@ -223,7 +232,7 @@ A big one. Highlights:
 - Built-in 5-band equalizer (desktop)
 - Right-click context menu on desktop for tracks and queue items
 - Drag-and-drop a track onto a playlist in the sidebar or a playlist card, on desktop
-- Spotify Connect-style device handoff, built on Jellyfin's own `/Sessions` API — hand off playback to another device, or let another Jellyfin client cast to JellyWave
+- Spotify Connect-style device handoff, built on Jellyfin's own `/Sessions` API — hand off playback to another device, or let another Jellyfin client cast to Triptych
 
 ## Acknowledgements
 
@@ -233,7 +242,7 @@ A big one. Highlights:
 
 ## Legal & Privacy
 
-JellyWave is free, open-source, and doesn't run any backend of its own — see [`docs/legal/`](docs/legal/) for the full [Privacy Policy](docs/legal/PRIVACY.md), [Terms of Service](docs/legal/TERMS.md), [Refund Policy](docs/legal/REFUNDS.md), [Cookie & Local Storage Policy](docs/legal/COOKIES.md), [Data Deletion](docs/legal/DATA_DELETION.md), [Third-Party Notices & Licenses](docs/legal/THIRD_PARTY_NOTICES.md), and [Accessibility Statement](docs/legal/ACCESSIBILITY.md). These are also viewable inside the app under **Settings → About → Legal**.
+Triptych is free, open-source, and doesn't run any backend of its own — see [`docs/legal/`](docs/legal/) for the full [Privacy Policy](docs/legal/PRIVACY.md), [Terms of Service](docs/legal/TERMS.md), [Refund Policy](docs/legal/REFUNDS.md), [Cookie & Local Storage Policy](docs/legal/COOKIES.md), [Data Deletion](docs/legal/DATA_DELETION.md), [Third-Party Notices & Licenses](docs/legal/THIRD_PARTY_NOTICES.md), and [Accessibility Statement](docs/legal/ACCESSIBILITY.md). These are also viewable inside the app under **Settings → About → Legal**.
 
 ## License
 

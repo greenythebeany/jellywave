@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' http: https: data:; media-src 'self' http: https: file: content: blob:; connect-src 'self' http: https: ws: wss:; style-src 'self' 'unsafe-inline' https:; script-src 'self';" />
-  <title>JellyWave</title>
+  <title>Triptych</title>
   <link rel="stylesheet" href="vendor/poppins/latin-400.css" />
   <link rel="stylesheet" href="vendor/poppins/latin-500.css" />
   <link rel="stylesheet" href="vendor/poppins/latin-600.css" />
@@ -35,7 +35,7 @@
        this discloses them up front instead of leaving people to find out
        from a settings menu they may never open. -->
   <div id="privacy-notice" class="privacy-notice" hidden role="region" aria-label="Privacy notice">
-    <p data-i18n="privacyNotice.text">JellyWave keeps everything on your own device and your own Jellyfin server. A couple of background lookups (album art, update checks) talk to outside services — see the Privacy Policy for exactly what's sent, and turn them off any time in Settings.</p>
+    <p data-i18n="privacyNotice.text">Triptych keeps everything on your own device and your own Jellyfin server. A couple of background lookups (album art, update checks) talk to outside services — see the Privacy Policy for exactly what's sent, and turn them off any time in Settings.</p>
     <div class="privacy-notice-actions">
       <button type="button" id="privacy-notice-view" class="attribution-link" data-i18n="privacyNotice.viewPolicy">Privacy Policy</button>
       <button type="button" id="privacy-notice-dismiss" class="btn-primary" data-i18n="privacyNotice.dismiss">Got it</button>
@@ -45,8 +45,8 @@
   <!-- Custom title bar -->
   <div class="titlebar">
     <div class="titlebar-drag">
-      <img id="titlebar-icon" class="titlebar-app-icon" src="assets/icon.png" alt="" />
-      <span class="titlebar-logo">JellyWave</span>
+      <svg id="titlebar-icon" class="brand-mark titlebar-app-icon" viewBox="0 0 411 453" aria-hidden="true"><rect y="103" width="113" height="350" rx="24"/><rect x="149" width="113" height="453" rx="24"/><rect class="brand-accent" x="298" y="103" width="113" height="350" rx="24"/></svg>
+      <span class="titlebar-logo">Triptych</span>
     </div>
     <div class="titlebar-controls">
       <button id="btn-min" class="titlebar-btn" data-i18n-title="titlebar.minimize" title="Minimize">
@@ -66,15 +66,15 @@
        so the login form only ever appears when there's no saved session or
        the saved one was rejected. -->
   <div id="boot-splash" class="boot-splash">
-    <img src="assets/icon.png" alt="" class="boot-splash-icon" />
+    <svg class="brand-mark boot-splash-icon" viewBox="0 0 411 453" aria-hidden="true"><rect y="103" width="113" height="350" rx="24"/><rect x="149" width="113" height="453" rx="24"/><rect class="brand-accent" x="298" y="103" width="113" height="350" rx="24"/></svg>
     <div class="boot-splash-spinner" aria-hidden="true"></div>
   </div>
 
   <div id="login-screen" class="login-screen" hidden>
     <div class="login-card">
       <div class="login-logo">
-        <img id="login-icon" src="assets/icon.png" alt="" />
-        <h1>JellyWave</h1>
+        <svg id="login-icon" class="brand-mark login-icon" viewBox="0 0 411 453" aria-hidden="true"><rect y="103" width="113" height="350" rx="24"/><rect x="149" width="113" height="453" rx="24"/><rect class="brand-accent" x="298" y="103" width="113" height="350" rx="24"/></svg>
+        <h1>Triptych</h1>
       </div>
       <p class="login-sub" data-i18n="login.subtitle">Sign in to your Jellyfin server</p>
       <form id="login-form" class="login-form">
@@ -473,7 +473,7 @@
             </div>
             <div class="crossfade-control">
               <input type="range" id="crossfade-slider" class="seek-bar" min="0" max="12" step="1" value="0" />
-              <span id="crossfade-value" class="crossfade-value">Off</span>
+              <span id="crossfade-value" class="crossfade-value" data-i18n="settings.crossfadeOff">Off</span>
             </div>
           </div>
           <div class="settings-row">
@@ -581,7 +581,7 @@
           <div class="settings-row" id="auto-update-check-row">
             <div>
               <div class="settings-row-label" data-i18n="settings.autoUpdateCheck">Automatic update check</div>
-              <div class="settings-row-desc" data-i18n="settings.autoUpdateCheckDesc">Checks GitHub in the background for a newer JellyWave release. No personal data is sent, just a version lookup. Turn off to check manually via the Releases page instead.</div>
+              <div class="settings-row-desc" data-i18n="settings.autoUpdateCheckDesc">Checks GitHub in the background for a newer Triptych release. No personal data is sent, just a version lookup. Turn off to check manually via the Releases page instead.</div>
             </div>
             <label class="switch">
               <input type="checkbox" id="toggle-auto-update-check" />
@@ -622,7 +622,7 @@
         <section class="settings-section">
           <h3 data-i18n="settings.about">About</h3>
           <div class="settings-row">
-            <div class="settings-row-label">JellyWave</div>
+            <div class="settings-row-label">Triptych</div>
             <a href="https://www.flaticon.com/uicons" target="_blank" rel="noopener noreferrer" class="attribution-link">Uicons by Flaticon</a>
           </div>
           <div class="settings-row">
@@ -648,7 +648,7 @@
   <div id="whats-new-overlay" class="modal-overlay" hidden>
     <div class="modal-card whats-new-card" role="dialog" aria-modal="true" aria-labelledby="whats-new-title">
       <div class="whats-new-hero">
-        <img src="assets/icon.png" alt="" class="whats-new-icon" />
+        <svg class="brand-mark whats-new-icon" viewBox="0 0 411 453" aria-hidden="true"><rect y="103" width="113" height="350" rx="24"/><rect x="149" width="113" height="453" rx="24"/><rect class="brand-accent" x="298" y="103" width="113" height="350" rx="24"/></svg>
         <h2 id="whats-new-title"></h2>
         <p id="whats-new-subtitle" class="whats-new-subtitle"></p>
       </div>
@@ -675,39 +675,39 @@
         <a href="#legal-accessibility" data-i18n="legal.navAccessibility">Accessibility Statement</a>
       </nav>
       <div class="modal-body legal-body" id="legal-body" tabindex="-1">
-        <p class="legal-meta">Last updated: 2026-09-18. JellyWave is a free, open-source (MIT-licensed) personal project maintained by one developer (GitHub: <a href="https://github.com/greenythebeany" target="_blank" rel="noopener noreferrer">greenythebeany</a>). There is no company behind it. The only contact channel is <a href="https://github.com/greenythebeany/jellywave/issues" target="_blank" rel="noopener noreferrer">GitHub Issues on the jellywave repo</a> — that's also where to report a privacy, accessibility, or licensing concern.</p>
+        <p class="legal-meta">Last updated: 2026-09-18. Triptych is a free, open-source (MIT-licensed) personal project maintained by one developer (GitHub: <a href="https://github.com/greenythebeany" target="_blank" rel="noopener noreferrer">greenythebeany</a>). There is no company behind it. The only contact channel is <a href="https://github.com/greenythebeany/jellywave/issues" target="_blank" rel="noopener noreferrer">GitHub Issues on the jellywave repo</a> — that's also where to report a privacy, accessibility, or licensing concern.</p>
 
         <section id="legal-privacy">
           <h3>Privacy Policy</h3>
-          <p>JellyWave is a client app for a Jellyfin media server <strong>you host yourself</strong>. The developer does not run any backend for JellyWave, does not receive analytics or telemetry from your copy of the app, and cannot see your library, your account, or what you play. Everything below is a complete list of where data goes — nothing happens beyond it.</p>
+          <p>Triptych is a client app for a Jellyfin media server <strong>you host yourself</strong>. The developer does not run any backend for Triptych, does not receive analytics or telemetry from your copy of the app, and cannot see your library, your account, or what you play. Everything below is a complete list of where data goes — nothing happens beyond it.</p>
           <h4>Data that stays on your device</h4>
           <ul>
-            <li><strong>Your Jellyfin session</strong> (server address, username, access token) — saved to a local file (<code>session.dat</code> in JellyWave's app-data folder) using your OS's encryption (Electron <code>safeStorage</code>) when the OS supports it. If your OS doesn't support that encryption, the file is saved as plain text instead — worth knowing if your device disk itself isn't encrypted.</li>
+            <li><strong>Your Jellyfin session</strong> (server address, username, access token) — saved to a local file (<code>session.dat</code> in Triptych's app-data folder) using your OS's encryption (Electron <code>safeStorage</code>) when the OS supports it. If your OS doesn't support that encryption, the file is saved as plain text instead — worth knowing if your device disk itself isn't encrypted.</li>
             <li><strong>App preferences</strong> (theme, language, audio settings, etc.) — stored in local browser storage on desktop, and via the Capacitor Preferences plugin on Android. These also sync to your own Jellyfin server's user-data store so they follow you between your own devices — that sync target is your server, never the developer.</li>
-            <li><strong>Downloaded tracks</strong> — saved as ordinary audio files in JellyWave's app-data folder for offline playback.</li>
+            <li><strong>Downloaded tracks</strong> — saved as ordinary audio files in Triptych's app-data folder for offline playback.</li>
             <li><strong>Listening stats</strong> (top artists/tracks, play history) — computed from your local playback and stored the same way as preferences, above.</li>
           </ul>
           <h4>Data sent to other services (never to the developer)</h4>
           <ul>
             <li><strong>Your own Jellyfin server</strong> — the app talks to it directly with your credentials to stream your library. This is infrastructure you control.</li>
-            <li><strong>GitHub (api.github.com)</strong> — a background check for a newer JellyWave release. Sends a generic app identifier, nothing that identifies you. Can be turned off in Settings → Privacy.</li>
+            <li><strong>GitHub (api.github.com)</strong> — a background check for a newer Triptych release. Sends a generic app identifier, nothing that identifies you. Can be turned off in Settings → Privacy.</li>
             <li><strong>Deezer (api.deezer.com)</strong> — when your server has no cover art for a track, the current artist/album/track name is sent to Deezer's public search to find one. No account or personal identifier is sent. Can be turned off in Settings → Privacy.</li>
             <li><strong>Lyrics: lrclib.net, then lyrics.ovh</strong> — when you view lyrics, the current track's title, artist, album and length are sent to lrclib.net's public lyrics API to find them. If lrclib and your own Jellyfin server don't have them, the title and first artist are also sent to lyrics.ovh. No account or personal identifier is sent; lyrics are only kept in memory while the app is open. If you turn on <strong>Search by lyrics</strong> (Settings → Privacy, off by default), the same lookups also run in the background for the songs in your library, about one per second, and the lyrics found are stored on your device so you can search them; turning it off stops this.</li>
             <li><strong>Discord</strong> — only if you explicitly connect it in Settings → Audio → Discord Rich Presence. While connected, the currently playing track/artist and its cover art URL are sent to your local Discord client so it can show on your Discord profile. Off by default; disconnect any time.</li>
             <li><strong>YouTube / YouTube Music / SoundCloud</strong> — only if you use the "Import" feature to paste a link, which fetches that specific media directly to your device. See the Terms of Service section below for the responsibility that comes with this feature.</li>
           </ul>
           <h4>Children's data</h4>
-          <p>JellyWave has no sign-up, no account creation of its own, and no data collection by the developer, so there's nothing here that depends on a user's age — the developer never receives personal data regardless of who's using the app. That said, JellyWave is not directed at children, and using it requires access to a Jellyfin server, which should be set up and supervised by an adult.</p>
+          <p>Triptych has no sign-up, no account creation of its own, and no data collection by the developer, so there's nothing here that depends on a user's age — the developer never receives personal data regardless of who's using the app. That said, Triptych is not directed at children, and using it requires access to a Jellyfin server, which should be set up and supervised by an adult.</p>
           <h4>Email</h4>
-          <p>JellyWave does not send email, does not run a mailing list, and does not collect email addresses. There's no "unsubscribe" link anywhere because no such messages exist.</p>
+          <p>Triptych does not send email, does not run a mailing list, and does not collect email addresses. There's no "unsubscribe" link anywhere because no such messages exist.</p>
         </section>
 
         <section id="legal-terms">
           <h3>Terms of Service</h3>
           <ul>
-            <li>JellyWave is provided <strong>as-is, free of charge, under the MIT license</strong> (see the repository's <code>LICENSE</code>/README) — no warranty of any kind, to the extent the law allows.</li>
-            <li>You need your own Jellyfin server and account; JellyWave is an independent, unofficial client and is not affiliated with, endorsed by, or supported by the Jellyfin project.</li>
-            <li>Discord, Deezer, GitHub, lrclib.net, lyrics.ovh, YouTube, YouTube Music, and SoundCloud are third-party services referenced only to describe how JellyWave integrates with them. JellyWave is not affiliated with or endorsed by any of them, and each remains governed by its own terms.</li>
+            <li>Triptych is provided <strong>as-is, free of charge, under the MIT license</strong> (see the repository's <code>LICENSE</code>/README) — no warranty of any kind, to the extent the law allows.</li>
+            <li>You need your own Jellyfin server and account; Triptych is an independent, unofficial client and is not affiliated with, endorsed by, or supported by the Jellyfin project.</li>
+            <li>Discord, Deezer, GitHub, lrclib.net, lyrics.ovh, YouTube, YouTube Music, and SoundCloud are third-party services referenced only to describe how Triptych integrates with them. Triptych is not affiliated with or endorsed by any of them, and each remains governed by its own terms.</li>
             <li>The "Import" feature downloads media from a URL you provide, using the open-source <code>yt-dlp</code> engine. <strong>You are solely responsible</strong> for having the right to download that media and for complying with the source platform's terms of service and applicable copyright law in your country. The developer does not host, index, or distribute any third-party media.</li>
             <li>You're responsible for the security of your own Jellyfin server and account credentials.</li>
           </ul>
@@ -715,12 +715,12 @@
 
         <section id="legal-refunds">
           <h3>Refund Policy</h3>
-          <p>Not applicable. JellyWave is free, open-source, and distributed only through <a href="https://github.com/greenythebeany/jellywave/releases" target="_blank" rel="noopener noreferrer">GitHub Releases</a>. There is no purchase, subscription, or in-app payment of any kind, so there is nothing to refund. If that ever changes, this section will be updated first.</p>
+          <p>Not applicable. Triptych is free, open-source, and distributed only through <a href="https://github.com/greenythebeany/jellywave/releases" target="_blank" rel="noopener noreferrer">GitHub Releases</a>. There is no purchase, subscription, or in-app payment of any kind, so there is nothing to refund. If that ever changes, this section will be updated first.</p>
         </section>
 
         <section id="legal-cookies">
           <h3>Cookie &amp; Local Storage Policy</h3>
-          <p>JellyWave does not use cookies, and does not use any advertising or analytics trackers. The app does use ordinary local storage mechanisms that exist to make it function at all, not to track you across sessions or devices:</p>
+          <p>Triptych does not use cookies, and does not use any advertising or analytics trackers. The app does use ordinary local storage mechanisms that exist to make it function at all, not to track you across sessions or devices:</p>
           <ul>
             <li>Local storage / Capacitor Preferences — app settings and cached UI state, kept only on your device.</li>
             <li>An encrypted local file — your Jellyfin session, so you don't have to log in every launch.</li>
@@ -732,7 +732,7 @@
           <h3>Data Deletion</h3>
           <p>Because the developer never receives or stores your data in the first place, there is nothing for the developer to delete on your behalf. Deleting it means clearing what's on your own device and your own server:</p>
           <ul>
-            <li><strong>On this device</strong> — Settings → Log Out clears your saved session immediately. Uninstalling JellyWave (or deleting its app-data folder — on Windows, typically <code>%APPDATA%\JellyWave</code>) removes all local settings, downloads, and cached data.</li>
+            <li><strong>On this device</strong> — Settings → Log Out clears your saved session immediately. Uninstalling Triptych (or deleting its app-data folder — on Windows, typically <code>%APPDATA%\Triptych</code>) removes all local settings, downloads, and cached data.</li>
             <li><strong>Synced settings/stats on your Jellyfin server</strong> — since these live in your own server's user-data store, delete them from your Jellyfin server directly (its admin dashboard or database), the same as any other Jellyfin client's data. The developer has no access to your server and cannot delete anything on it.</li>
           </ul>
           <p>Questions about this can be raised via <a href="https://github.com/greenythebeany/jellywave/issues" target="_blank" rel="noopener noreferrer">GitHub Issues</a>.</p>
@@ -741,23 +741,23 @@
         <section id="legal-thirdparty">
           <h3>Third-Party Notices &amp; Licenses</h3>
           <ul>
-            <li><strong>Jellyfin</strong> — the media server this app connects to. JellyWave is an independent, unofficial client, not affiliated with or endorsed by the Jellyfin project. See <a href="https://jellyfin.org/" target="_blank" rel="noopener noreferrer">jellyfin.org</a>.</li>
+            <li><strong>Jellyfin</strong> — the media server this app connects to. Triptych is an independent, unofficial client, not affiliated with or endorsed by the Jellyfin project. See <a href="https://jellyfin.org/" target="_blank" rel="noopener noreferrer">jellyfin.org</a>.</li>
             <li><strong>Electron</strong> and <strong>Capacitor</strong> (and its official plugins: app, filesystem, haptics, local-notifications, preferences, android/ios core) — open-source app runtimes, MIT-licensed.</li>
             <li><strong>@xhayper/discord-rpc</strong> — MIT-licensed library used for the optional Discord Rich Presence integration.</li>
             <li><strong>Poppins</strong> font, via Fontsource — licensed under the SIL Open Font License 1.1, bundled and self-hosted (never loaded from Google Fonts or any other third-party CDN).</li>
             <li><strong>Doto</strong> (dot-matrix headings) and <strong>Space Mono</strong> (labels) fonts, used by the Nothing interface style, via Fontsource — licensed under the SIL Open Font License 1.1, bundled and self-hosted like Poppins.</li>
-            <li>The <strong>Nothing</strong> interface style is inspired by the look of Nothing OS. JellyWave is not affiliated with or endorsed by Nothing Technology Limited, and uses none of its fonts or artwork.</li>
+            <li>The <strong>Nothing</strong> interface style is inspired by the look of Nothing OS. Triptych is not affiliated with or endorsed by Nothing Technology Limited, and uses none of its fonts or artwork.</li>
             <li><strong>Drum roll sound</strong> (Wrapped) — "Assorted Rimshots: 4-second roll" by Kevin MacLeod (<a href="https://incompetech.com" target="_blank" rel="noopener noreferrer">incompetech.com</a>), licensed under <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener noreferrer">Creative Commons Attribution 3.0</a>; trimmed and converted to MP3.</li>
             <li><strong>Uicons by Flaticon</strong> — the app's icon set, used and credited per Flaticon's license (see the credit in Settings → About, and in the README).</li>
             <li><strong>yt-dlp</strong> and <strong>Pillow</strong> — used by the optional "Import" feature's Python helper script to fetch and process media. yt-dlp is released into the public domain (Unlicense). Neither is bundled inside the app — the Import feature requires a separate Python installation on your system.</li>
             <li><strong>"Cat Jam" animation</strong> (the optional "Jam on paw level" easter egg) — adapted from <a href="https://github.com/BlafKing/spicetify-cat-jam-synced" target="_blank" rel="noopener noreferrer">BlafKing's spicetify-cat-jam-synced</a>.</li>
-            <li><strong>Deezer</strong>, <strong>Discord</strong>, <strong>GitHub</strong>, <strong>lrclib.net</strong>, <strong>lyrics.ovh</strong>, <strong>YouTube</strong>, <strong>YouTube Music</strong>, and <strong>SoundCloud</strong> — third-party services JellyWave can optionally talk to (see Privacy Policy above). Their names and logos belong to their respective owners; JellyWave is not affiliated with or endorsed by any of them.</li>
+            <li><strong>Deezer</strong>, <strong>Discord</strong>, <strong>GitHub</strong>, <strong>lrclib.net</strong>, <strong>lyrics.ovh</strong>, <strong>YouTube</strong>, <strong>YouTube Music</strong>, and <strong>SoundCloud</strong> — third-party services Triptych can optionally talk to (see Privacy Policy above). Their names and logos belong to their respective owners; Triptych is not affiliated with or endorsed by any of them.</li>
           </ul>
         </section>
 
         <section id="legal-accessibility">
           <h3>Accessibility Statement</h3>
-          <p>JellyWave aims to meet WCAG 2.1 AA where it reasonably can for a native desktop/mobile app: real alt text on cover art, labeled icon-only controls, keyboard-operable menus and dialogs (including closing any overlay with Escape), and color combinations checked against the 4.5:1 contrast minimum for normal text. This is an ongoing, best-effort goal from a one-person project rather than a certified compliance claim. If you hit an accessibility barrier, please report it via <a href="https://github.com/greenythebeany/jellywave/issues" target="_blank" rel="noopener noreferrer">GitHub Issues</a> — real reports are the fastest way to get something fixed.</p>
+          <p>Triptych aims to meet WCAG 2.1 AA where it reasonably can for a native desktop/mobile app: real alt text on cover art, labeled icon-only controls, keyboard-operable menus and dialogs (including closing any overlay with Escape), and color combinations checked against the 4.5:1 contrast minimum for normal text. This is an ongoing, best-effort goal from a one-person project rather than a certified compliance claim. If you hit an accessibility barrier, please report it via <a href="https://github.com/greenythebeany/jellywave/issues" target="_blank" rel="noopener noreferrer">GitHub Issues</a> — real reports are the fastest way to get something fixed.</p>
         </section>
       </div>
     </div>

@@ -162,6 +162,11 @@ const whatsNewClose = document.getElementById('whats-new-close');
 // Highlights per release, as icon + i18n key pairs (whatsNew.<key>Title /
 // whatsNew.<key>Desc). Only versions listed here get a popup.
 const WHATS_NEW = {
+  '2.2.0': [
+    { icon: 'fi-br-magic-wand', key: 'rename' },
+    { icon: 'fi-br-language', key: 'languages' },
+    { icon: 'fi-br-calendar', key: 'calendarMonths' }
+  ],
   '2.1.0': [
     { icon: 'fi-br-quote-right', key: 'lyricsSearch' },
     { icon: 'fi-br-calendar', key: 'listeningCalendar' },
@@ -353,19 +358,6 @@ document.getElementById('btn-max').addEventListener('click', () => windowControl
 document.getElementById('btn-close').addEventListener('click', () => windowControls.close());
 if (!isDesktop) document.body.classList.add('platform-' + platform);
 
-// ---------- App icon (falls back gracefully until assets/icon.png exists) ----------
-const titlebarIcon = document.getElementById('titlebar-icon');
-titlebarIcon?.addEventListener('error', () => { titlebarIcon.style.display = 'none'; }, { once: true });
-
-const loginIcon = document.getElementById('login-icon');
-loginIcon?.addEventListener('error', () => {
-  const fallback = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  fallback.setAttribute('viewBox', '0 0 24 24');
-  fallback.setAttribute('width', '48');
-  fallback.setAttribute('height', '48');
-  fallback.innerHTML = '<circle cx="12" cy="12" r="11" fill="currentColor"/>';
-  loginIcon.replaceWith(fallback);
-}, { once: true });
 
 // ---------- Utilities ----------
 function ticksToSeconds(ticks) {
@@ -433,7 +425,7 @@ function artistNames(item, fallback) {
   let raw;
   if (item.Artists && item.Artists.length) raw = item.Artists.join(', ');
   else if (item.AlbumArtist) raw = item.AlbumArtist;
-  else raw = fallback || 'Unknown Artist';
+  else raw = fallback || t('common.unknownArtist');
   return formatDisplayName(raw);
 }
 
@@ -857,7 +849,7 @@ function wireSettingsUI() {
 
   crossfadeSlider.addEventListener('input', () => {
     const seconds = Number(crossfadeSlider.value);
-    crossfadeValue.textContent = seconds === 0 ? 'Off' : `${seconds}s`;
+    crossfadeValue.textContent = seconds === 0 ? t('settings.crossfadeOff') : `${seconds}s`;
     crossfadeSlider.style.setProperty('--pct', rangeFillPercent((seconds / 12) * 100, crossfadeSlider, 13));
     player?.setCrossfadeSeconds(seconds);
   });
@@ -1206,7 +1198,7 @@ async function sendDiscordPresence(seq) {
     largeImageKey: art || 'logo',
     largeImageText: album || undefined,
     smallImageKey: 'logo',
-    smallImageText: 'JellyWave',
+    smallImageText: 'Triptych',
     startTimestamp,
     endTimestamp: durationSeconds ? startTimestamp + durationSeconds * 1000 : undefined,
     instance: false
@@ -1496,7 +1488,7 @@ function isNewerVersion(a, b) {
 function showUpdateToast(version, url, canInstall = false) {
   updateToastText.textContent = t('update.available', { version });
   updateToastLink.href = url;
-  // Desktop installs in place (download -> run installer -> JellyWave quits
+  // Desktop installs in place (download -> run installer -> Triptych quits
   // itself, see update-checker.js); elsewhere it's just the release link.
   updateToastInstall.hidden = !canInstall;
   updateToast.hidden = false;
@@ -1917,7 +1909,7 @@ function refreshSettingsUI() {
   toggleArtBackground.checked = !!s.artBackground;
   toggleDynamicAccentColor.checked = !!s.dynamicAccentColor;
   crossfadeSlider.value = s.crossfadeSeconds || 0;
-  crossfadeValue.textContent = s.crossfadeSeconds ? `${s.crossfadeSeconds}s` : 'Off';
+  crossfadeValue.textContent = s.crossfadeSeconds ? `${s.crossfadeSeconds}s` : t('settings.crossfadeOff');
   crossfadeSlider.style.setProperty('--pct', rangeFillPercent(((s.crossfadeSeconds || 0) / 12) * 100, crossfadeSlider, 13));
   toggleOfflineMode.checked = !!s.offlineMode;
   toggleAlbumArtLookup.checked = s.albumArtLookupEnabled !== false;
@@ -2728,7 +2720,8 @@ async function renderDownloads() {
 }
 
 // Listening calendar: one dot per day of the current year, brighter the more
-// was heard that day (GitHub-style, in weeks top-to-bottom Mon..Sun), with
+// was heard that day, as one small block per month (weeks as columns, Mon..Sun
+// top to bottom, month name above) that wrap onto new lines on narrow screens, with
 // the number of days listened and the longest streak. Per-day totals only
 // exist from 2.0.8 on, so earlier days stay empty.
 function buildListeningCalendar(listened) {
@@ -2737,10 +2730,9 @@ function buildListeningCalendar(listened) {
   const days = listened.years[year]?.days || {};
   const wrap = el('div', 'listen-cal-wrap');
   wrap.appendChild(el('div', 'section-title', escapeHtml(t('stats.calendar'))));
-  const grid = el('div', 'listen-cal');
+  const months = el('div', 'listen-cal');
   const start = new Date(year, 0, 1);
-  const lead = (start.getDay() + 6) % 7; // Monday-first offset of Jan 1
-  for (let i = 0; i < lead; i++) grid.appendChild(el('span', 'cal-cell cal-pad'));
+  let grid = null;
   const values = Object.values(days);
   const max = Math.max(1, ...values);
   let listenedDays = 0;
@@ -2748,6 +2740,15 @@ function buildListeningCalendar(listened) {
   let best = 0;
   const locale = document.documentElement.lang || undefined;
   for (let d = new Date(start); d.getFullYear() === year; d.setDate(d.getDate() + 1)) {
+    if (d.getDate() === 1) {
+      const month = el('div', `cal-month${d.getMonth() === now.getMonth() ? ' cal-month-now' : ''}`);
+      month.appendChild(el('div', 'cal-month-name', escapeHtml(d.toLocaleDateString(locale, { month: 'short' }))));
+      grid = el('div', 'cal-grid');
+      const lead = (d.getDay() + 6) % 7; // Monday-first offset of the 1st
+      for (let i = 0; i < lead; i++) grid.appendChild(el('span', 'cal-cell cal-pad'));
+      month.appendChild(grid);
+      months.appendChild(month);
+    }
     const secs = days[dayKey(d)] || 0;
     const future = d > now;
     const level = secs >= 60 ? Math.min(4, 1 + Math.floor((secs / max) * 4)) : 0;
@@ -2763,9 +2764,7 @@ function buildListeningCalendar(listened) {
       streak = 0;
     }
   }
-  const scroller = el('div', 'listen-cal-scroll');
-  scroller.appendChild(grid);
-  wrap.appendChild(scroller);
+  wrap.appendChild(months);
   wrap.appendChild(el('div', 'stat-note listen-cal-note', escapeHtml(listenedDays
     ? t('stats.calendarNote', { days: listenedDays, streak: best })
     : t('stats.calendarEmpty'))));
@@ -3325,7 +3324,7 @@ function buildCard(item, kind) {
   }
   card.appendChild(artWrap);
 
-  const title = el('div', 'card-title', escapeHtml(formatDisplayName(item.Name) || 'Unknown'));
+  const title = el('div', 'card-title', escapeHtml(formatDisplayName(item.Name) || t('common.unknown')));
   card.appendChild(title);
 
   let subtitle = '';
@@ -4957,7 +4956,7 @@ function wrappedSlides(data) {
   const monthName = (i) => new Date(2000, i, 1).toLocaleDateString(document.documentElement.lang || undefined, { month: 'long' });
   slides.push({
     theme: 'a',
-    html: `<div class="wr-kicker">JellyWave</div>
+    html: `<div class="wr-kicker">Triptych</div>
       <div class="wr-big">${escapeHtml(data.allTime ? t('wrapped.introAllTime') : t('wrapped.introTitle', { year: data.year }))}</div>
       <div class="wr-sub">${escapeHtml(t('wrapped.tapToContinue'))}</div>`
   });

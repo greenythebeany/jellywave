@@ -5,6 +5,11 @@ const { spawn } = require('child_process');
 const { Client: DiscordRpcClient } = require('@xhayper/discord-rpc');
 const { checkForUpdates, downloadUpdate, installAndQuit } = require('./update-checker');
 
+// The app was called JellyWave before 2.2. Its data folder (login, settings,
+// downloads, listening stats) keeps that name so the rename loses nothing;
+// this must run before anything reads userData or takes the instance lock.
+app.setPath('userData', path.join(app.getPath('appData'), 'JellyWave'));
+
 const CONFIG_PATH = path.join(app.getPath('userData'), 'session.dat');
 const DISCORD_CLIENT_ID = '1534197353056174180';
 const DOWNLOADS_DIR = path.join(app.getPath('userData'), 'downloads');
@@ -45,7 +50,7 @@ let mainWindow;
 let autoUpdateCheckEnabled = true;
 let smtc = null;
 
-// Registers JellyWave as a real Windows SMTC (System Media Transport
+// Registers Triptych as a real Windows SMTC (System Media Transport
 // Controls) provider -- the same OS-level session the taskbar media flyout,
 // lock screen, Xbox Game Bar, and third-party readers (e.g. Windhawk's
 // Island Media Controls) all read from. Electron never does this on its own
@@ -167,7 +172,7 @@ ipcMain.on('smtc:setPlayback', (_event, state, positionMs) => {
   }
 });
 
-// One JellyWave at a time. A second copy (opened twice, or started by the
+// One Triptych at a time. A second copy (opened twice, or started by the
 // installer while the old one is still closing) can't open the locked
 // local storage, so it ran on empty, throwaway storage: a new device id,
 // 0 minutes listened, no downloads list. Instead it just brings the running
@@ -234,7 +239,7 @@ app.on('window-all-closed', () => {
 // Kills a running Import (Python/yt-dlp) along with any ffmpeg it spawned.
 // Child processes outlive the app on Windows, and a leftover python.exe
 // keeps files under app.asar.unpacked\downloader open -- the installer's
-// "close JellyWave" step only targets JellyWave.exe, so it would then fail
+// "close Triptych" step only targets Triptych.exe, so it would then fail
 // to replace those files.
 function killGrabProcess() {
   if (!grabProcess) return;
@@ -251,7 +256,7 @@ function killGrabProcess() {
   try { process.kill(pid); } catch (err) { /* already gone */ }
 }
 
-// Fully closes JellyWave for the updater: children killed, Discord/SMTC
+// Fully closes Triptych for the updater: children killed, Discord/SMTC
 // released (via will-quit), then a hard exit if a graceful quit is still
 // hanging on something (an open stream to the server, a native handle...)
 // a couple of seconds later.

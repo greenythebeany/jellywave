@@ -1,6 +1,11 @@
 {
   "app": {
-    "name": "JellyWave"
+    "name": "Triptych"
+  },
+  "common": {
+    "close": "Sulje",
+    "unknown": "Tuntematon",
+    "unknownArtist": "Tuntematon artisti"
   },
   "titlebar": {
     "minimize": "Pienennä",
@@ -39,7 +44,9 @@
     "back": "Takaisin",
     "forward": "Eteenpäin",
     "stats": "Tilastot",
-    "downloads": "Lataukset"
+    "downloads": "Lataukset",
+    "grab": "Tuo",
+    "pinnedAlbums": "Kiinnitetyt albumit"
   },
   "header": {
     "searchPlaceholder": "Mitä haluat kuunnella?"
@@ -51,18 +58,22 @@
   "home": {
     "greeting": "Mukava nähdä sinua",
     "recentlyPlayed": "Äskettäin toistetut",
-    "yourPlaylists": "Soittolistasi",
-    "recentAlbums": "Äskettäin lisätyt albumit",
     "madeForYou": "Sinulle tehty",
     "mostPlayed": "Eniten soitetut",
     "onRepeat": "Toistuvasti kuunneltu",
     "genreMix": "Genresekoitus",
-    "songsCount": "{count} kappaletta"
+    "songsCount": "{count} kappaletta",
+    "yourPlaylists": "Soittolistasi",
+    "recentAlbums": "Äskettäin lisätyt albumit",
+    "jumpBackIn": "Jatka kuuntelua",
+    "becauseYouListened": "Koska kuuntelit artistia {artist}"
   },
   "search": {
     "title": "Hae kirjastostasi",
     "noResults": "Tuloksia ei löytynyt.",
-    "failed": "Haku epäonnistui: {error}"
+    "failed": "Haku epäonnistui: {error}",
+    "lyricsMatches": "Löytyi sanoituksista",
+    "lyricsOff": "Etsitkö kappaletta sanoitusten perusteella? Ota käyttöön ”Haku sanoituksista” kohdassa Asetukset → Yksityisyys."
   },
   "songs": {
     "title": "Kaikki kappaleet",
@@ -97,7 +108,9 @@
     "songCountPlural": "{count} kappaletta"
   },
   "album": {
-    "empty": "Tällä albumilla ei ole kappaleita."
+    "empty": "Tällä albumilla ei ole kappaleita.",
+    "pin": "Kiinnitä sivupalkkiin",
+    "unpin": "Irrota sivupalkista"
   },
   "kind": {
     "playlist": "Soittolista",
@@ -128,10 +141,15 @@
     "upNext": "Seuraavaksi",
     "lookingUpLyrics": "Etsitään sanoitusta…",
     "noLyrics": "Tälle kappaleelle ei löytynyt sanoitusta.",
+    "lyricsFailed": "Sanoituksia ei voitu ladata juuri nyt.",
+    "retry": "Yritä uudelleen",
     "queueEmpty": "Jono on tyhjä.",
-    "title": "Nyt soi"
+    "title": "Nyt soi",
+    "nextInQueue": "Seuraavana jonossa",
+    "clearQueue": "Tyhjennä"
   },
   "player": {
+    "coverArtAlt": "Kansikuva: {name}, {artist}",
     "shuffle": "Sekoita",
     "previous": "Edellinen",
     "play": "Toista",
@@ -140,13 +158,21 @@
     "repeat": "Toisto",
     "sleepTimer": "Uniajastin",
     "sleepEndOfTrack": "Kappaleen loppuun",
-    "sleepOff": "Pois päältä"
+    "sleepOff": "Pois päältä",
+    "volume": "Äänenvoimakkuus"
   },
   "settings": {
     "title": "Asetukset",
     "appearance": "Ulkoasu",
     "theme": "Teema",
     "themeDesc": "Vaalea, tumma tai järjestelmän mukaan",
+    "uiStyle": "Käyttöliittymän tyyli",
+    "uiStyleDesc": "Spotifyn, Apple Musicin tai Nothingin ulkoasu",
+    "uiSpotify": "Spotify",
+    "uiApple": "Apple Music",
+    "uiNothing": "Nothing",
+    "nothingDots": "Pisteliukusäätimet",
+    "nothingDotsDesc": "Edistymis- ja äänenvoimakkuuspalkit pistematriisina; pois päältä näyttää tavalliset viivat",
     "dark": "Tumma",
     "light": "Vaalea",
     "system": "Järjestelmä",
@@ -163,11 +189,14 @@
     "qualityDesc": "Alempi laatu käyttää vähemmän dataa",
     "crossfade": "Ristihäivytys",
     "crossfadeDesc": "Häivyttää kappaleen lopun seuraavan alkuun",
+    "crossfadeOff": "Pois",
     "replayGain": "Äänenvoimakkuuden normalisointi",
     "replayGainDesc": "Tasoittaa kappaleiden välisiä äänenvoimakkuuseroja (vaatii ReplayGain-tiedot palvelimella)",
     "equalizer": "Taajuuskorjain",
     "equalizerDesc": "Muokkaa ääntä 5-kaistaisella graafisella taajuuskorjaimella (vain työpöytä)",
     "equalizerReset": "Palauta",
+    "loudnessBoost": "Äänenvoimakkuuden vahvistin",
+    "loudnessBoostDesc": "Järjestelmän oma äänenvahvistus tavallisen äänenvoimakkuussäätimen lisäksi (vain Android)",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Näyttää mitä kuuntelet Discord-profiilissasi (vain työpöytä)",
     "discordConnect": "Yhdistä",
@@ -179,7 +208,46 @@
     "customCssDesc": "Kirjoita oma CSS hienosäätääksesi sovelluksen ulkoasua. Otetaan käyttöön heti.",
     "about": "Tietoja",
     "offlineMode": "Offline-tila",
-    "offlineModeDesc": "Näyttää ja toistaa vain ladatut kappaleet — muut on himmennetty"
+    "offlineModeDesc": "Näyttää ja toistaa vain ladatut kappaleet — muut on himmennetty",
+    "privacy": "Yksityisyys",
+    "albumArtLookup": "Kansikuvahaku verkosta",
+    "albumArtLookupDesc": "Lähettää artistin/albumin nimen Deezerin julkiseen haku-API:in, kun Jellyfin-palvelimellasi ei ole kansikuvaa. Poista käytöstä, jotta tiedot eivät koskaan poistu laitteeltasi.",
+    "autoUpdateCheck": "Automaattinen päivitysten tarkistus",
+    "autoUpdateCheckDesc": "Tarkistaa taustalla GitHubista, onko Triptychistä uudempaa versiota. Henkilötietoja ei lähetetä, vain versiokysely. Poista käytöstä, jos haluat tarkistaa itse Releases-sivulta.",
+    "catJamCredit": "”Cat Jam” -animaatio mukailtu BlafKingin spicetify-cat-jam-synced-projektista",
+    "legalHeading": "Oikeudelliset tiedot",
+    "privacyPolicy": "Tietosuojakäytäntö",
+    "termsOfService": "Käyttöehdot",
+    "thirdPartyNotices": "Kolmansien osapuolten huomautukset ja lisenssit",
+    "dataDeletion": "Poista tietosi",
+    "storage": "Tallennustila",
+    "downloadsLabel": "Ladatut kappaleet",
+    "downloadsUsage": "{count} kappaletta · {size} tällä laitteella",
+    "clearDownloads": "Poista kaikki",
+    "clearDownloadsConfirm": "Poistetaanko kaikki {count} ladattua kappaletta tältä laitteelta? Ne pysyvät kirjastossasi ja voit ladata ne uudelleen.",
+    "haptics": "Haptinen palaute",
+    "hapticsDesc": "Lyhyet värinät pyyhkäisyissä, pitkän painalluksen valikoissa ja vedä päivittääksesi -eleessä",
+    "qualityNow": "Nyt: {level} · yhteytesi ≈ {speed} Mbit/s",
+    "qualityKbps": "{kbps} kbps",
+    "qualityOriginal": "alkuperäinen laatu",
+    "lyricsSearch": "Haku sanoituksista",
+    "lyricsSearchDesc": "Löydä kappaleita sanoitusten rivin perusteella. Hakee kirjastosi sanoitukset taustalla (kappaleiden nimet ja artistit lähetetään palveluihin lrclib.net ja lyrics.ovh) ja tallentaa ne tälle laitteelle.",
+    "lyricsSearchStatus": "{done}/{total} kappaletta käsitelty ({found} sanoitusten kanssa)."
+  },
+  "privacyNotice": {
+    "text": "Triptych säilyttää kaiken omalla laitteellasi ja omalla Jellyfin-palvelimellasi. Muutama taustahaku (kansikuvat, päivitysten tarkistus) on yhteydessä ulkoisiin palveluihin — tietosuojakäytännöstä näet tarkalleen, mitä lähetetään, ja voit poistaa ne käytöstä milloin tahansa asetuksista.",
+    "viewPolicy": "Tietosuojakäytäntö",
+    "dismiss": "Selvä"
+  },
+  "legal": {
+    "overlayTitle": "Oikeudelliset tiedot ja yksityisyys",
+    "navPrivacy": "Tietosuojakäytäntö",
+    "navTerms": "Käyttöehdot",
+    "navRefunds": "Palautuskäytäntö",
+    "navCookies": "Evästeiden ja paikallisen tallennuksen käytäntö",
+    "navDeletion": "Tietojen poistaminen",
+    "navThirdParty": "Kolmansien osapuolten huomautukset ja lisenssit",
+    "navAccessibility": "Saavutettavuusseloste"
   },
   "audioQuality": {
     "auto": "Automaattinen (paras saatavilla oleva laatu)",
@@ -188,10 +256,20 @@
     "low": "Matala — 96 kbps"
   },
   "palette": {
-    "jellyfin": "Jellyfin",
-    "spotify": "Spotify",
+    "default": "Oletus",
+    "blue": "Sininen",
+    "green": "Vihreä",
+    "red": "Punainen",
+    "magenta": "Magenta",
     "purple": "Violetti",
-    "mono": "Monokromi"
+    "pink": "Vaaleanpunainen",
+    "orange": "Oranssi",
+    "yellow": "Keltainen",
+    "teal": "Sinivihreä",
+    "brown": "Ruskea",
+    "mono": "Monokromi",
+    "jellyfin": "Jellyfin",
+    "spotify": "Spotify"
   },
   "errors": {
     "generic": "Jokin meni pieleen: {error}",
@@ -203,8 +281,12 @@
     "couldNotDownload": "Kappaletta ei voitu ladata."
   },
   "update": {
-    "available": "JellyWave {version} on saatavilla.",
-    "view": "Näytä"
+    "available": "Triptych {version} on saatavilla.",
+    "view": "Näytä",
+    "install": "Päivitä nyt",
+    "downloading": "Ladataan… {percent} %",
+    "installing": "Käynnistetään asennusohjelmaa…",
+    "failed": "Päivitys epäonnistui: {error}"
   },
   "stats": {
     "title": "Omat tilastosi",
@@ -217,7 +299,12 @@
     "topAlbums": "Kuunnelluimmat albumit",
     "plays": "{count} toisto",
     "playsPlural": "{count} toistoa",
-    "empty": "Kuuntele musiikkia aloittaaksesi tilastojesi kerryttämisen."
+    "empty": "Kuuntele musiikkia aloittaaksesi tilastojesi kerryttämisen.",
+    "since": "{date} alkaen",
+    "estimated": "arvioitu toistokerroista",
+    "calendar": "Kuuntelukalenteri",
+    "calendarNote": "Musiikkipäiviä tänä vuonna {days} · pisin putki {streak} päivää",
+    "calendarEmpty": "Kalenterisi täyttyy, kun kuuntelet."
   },
   "queue": {
     "addToQueue": "Lisää jonoon",
@@ -248,5 +335,107 @@
   "downloads": {
     "title": "Lataukset",
     "empty": "Ei vielä ladattuja kappaleita."
+  },
+  "grab": {
+    "title": "Tuo",
+    "subtitle": "Hae kappale, soittolista tai albumi YouTubesta, YouTube Musicista tai SoundCloudista MP3-tiedostoina paikalliseen kansioon.",
+    "desktopOnly": "Tuonti on käytettävissä vain työpöytäsovelluksessa.",
+    "urlLabel": "Videon, soittolistan tai kappaleen URL",
+    "urlPlaceholder": "https://...",
+    "folderLabel": "Tallenna kohteeseen",
+    "folderPlaceholder": "Valitse kansio…",
+    "browse": "Selaa…",
+    "start": "Aloita",
+    "cancel": "Peruuta",
+    "starting": "Aloitetaan…",
+    "missingFields": "Anna ensin URL ja valitse kohdekansio.",
+    "progressStatus": "{done}/{total} valmis",
+    "doneStatus": "Valmis: {done}/{total} onnistui",
+    "cancelled": "Peruutettu."
+  },
+  "whatsNew": {
+    "title": "Uutta versiossa {version}",
+    "subtitle": "Tässä uudet asiat.",
+    "continue": "Jatka",
+    "appleStyleTitle": "Apple Music -tyyli",
+    "appleStyleDesc": "Kohdassa Asetukset → Ulkoasu → Käyttöliittymän tyyli voit nyt vaihtaa Spotifyn ulkoasun ja uuden Apple Music -ulkoasun välillä.",
+    "instantSkipTitle": "Välitön ohitus",
+    "instantSkipDesc": "Seuraava kappale puskuroidaan taustalla, joten Seuraava (ja Edellinen) alkaa heti.",
+    "sheetsTitle": "Jono ja sanoitukset paneeleina",
+    "sheetsDesc": "Puhelimissa jono ja koko näytön sanoitukset liukuvat soittimen alareunasta.",
+    "gesturesTitle": "Pyyhkäisyeleet",
+    "gesturesDesc": "Pyyhkäise kansikuvaa vaihtaaksesi kappaletta, pyyhkäise alas sulkeaksesi soittimen ja vedä mitä tahansa sivua alas päivittääksesi sen.",
+    "phoneVolumeTitle": "Puhelimen äänenvoimakkuus",
+    "phoneVolumeDesc": "Androidilla äänenvoimakkuussäädin ohjaa puhelimen äänenvoimakkuutta ja seuraa äänenvoimakkuuspainikkeita.",
+    "updatesTitle": "Päivitykset yhdellä napsautuksella",
+    "updatesDesc": "PC:llä uudet versiot latautuvat ja asentuvat nyt suoraan sovelluksesta.",
+    "shortcutsTitle": "Pikanäppäimet",
+    "shortcutsDesc": "Välilyönti toistaa ja keskeyttää, Ctrl + ← ja Ctrl + → siirtyvät edelliseen tai seuraavaan kappaleeseen.",
+    "polishTitle": "Sujuvampi ja luotettavampi",
+    "polishDesc": "Uusia animaatioita, latausnäyttö kirjautumisen välähdyksen sijaan, luotettavammat sanoitukset, nopeampi lataus ja paljon korjauksia.",
+    "resumeTitle": "Jatka siitä mihin jäit",
+    "resumeDesc": "Triptych muistaa jonosi, kappaleen ja kohdan ja pitää ne valmiina, kun avaat sen seuraavan kerran.",
+    "smartHomeTitle": "Älykkäämpi etusivu",
+    "smartHomeDesc": "Uudet rivit: Jatka kuuntelua, Koska kuuntelit… ja Äskettäin lisätyt.",
+    "wrappedTitle": "Wrapped",
+    "wrappedDesc": "31. joulukuuta musiikkivuotesi saapuu tarinana: minuutit, suosikkiartisti (rumpujen pärinää, kiitos), suosikkikappaleet ja paljon muuta.",
+    "listenTimeTitle": "Todellinen kuunteluaika",
+    "listenTimeDesc": "Tilastot laskevat nyt ajan, jonka oikeasti kuuntelet, kaikilla laitteillasi, sen sijaan että arvioisivat sen toistokerroista.",
+    "storageTitle": "Tallennus- ja haptiikka-asetukset",
+    "storageDesc": "Katso, paljonko tilaa lataukset vievät, poista ne ja ota värinä käyttöön tai pois.",
+    "queueOrderTitle": "Jono, joka pitää järjestyksesi",
+    "queueOrderDesc": "Lisäämäsi kappaleet soivat siinä järjestyksessä kuin lisäsit ne, ennen albumin loppua. Jono näyttää ne erikseen kohdassa ”Seuraavana jonossa”.",
+    "adaptiveQualityTitle": "Mukautuva automaattinen laatu",
+    "adaptiveQualityDesc": "Automaattinen suoratoistolaatu mittaa nyt yhteytesi ja laskee bittinopeutta hitailla tai mobiiliyhteyksillä.",
+    "fasterLoadingTitle": "Nopeampi hitailla yhteyksillä",
+    "fasterLoadingDesc": "Kansikuvat ladataan näytöllesi sopivan kokoisina, ja seuraava kappale esiladataan vasta, kun nykyinen on ladattu.",
+    "nothingStyleTitle": "Uusi ulkoasu: Nothing",
+    "nothingStyleDesc": "Kolmas käyttöliittymätyyli Spotifyn ja Apple Musicin rinnalle, Nothing OS:n inspiroimana: mustavalkoinen, pistematriisiotsikot ja -sanoitukset, ohuet ääriviivakuvakkeet ja punainen korostusväri, jota voit vaihtaa. Valitse se kohdasta Asetukset → Ulkoasu.",
+    "smallScreensTitle": "Sopii pieniin puhelimiin",
+    "smallScreensDesc": "Matalilla näytöillä koko näytön soitin säilyttää ison kansikuvan ja tiivistää muun, joten säätimet, äänenvoimakkuus ja sanoitukset pysyvät näkyvissä. Myös asetukset sopivat kapeille näytöille.",
+    "iosPlaybackTitle": "Parempi toisto iPhonella",
+    "iosPlaybackDesc": "Musiikki soi taustalla, lukitusnäytön ja Ohjauskeskuksen säätimet toimivat aina, ja äänenvoimakkuussäädin seuraa äänenvoimakkuuspainikkeita.",
+    "nothingSlidersTitle": "Piste- tai tavalliset liukusäätimet",
+    "nothingSlidersDesc": "Nothing-tyylissä voit nyt vaihtaa pisteistä koostuvat edistymis- ja äänenvoimakkuuspalkit tavallisiksi viivoiksi: Asetukset → Ulkoasu → Pisteliukusäätimet.",
+    "lyricsSearchTitle": "Haku sanoituksista",
+    "lyricsSearchDesc": "Muistatko rivin mutta et nimeä? Ota käyttöön ”Haku sanoituksista” kohdassa Asetukset → Yksityisyys ja kirjoita rivi hakuun.",
+    "listeningCalendarTitle": "Kuuntelukalenteri",
+    "listeningCalendarDesc": "Tilastot näyttävät nyt pisteen jokaiselle päivälle, jona kuuntelit, sitä kirkkaampana mitä enemmän soitit, sekä pisimmän putkesi.",
+    "listTotalsTitle": "Kuinka pitkä se on?",
+    "listTotalsDesc": "Albumit, soittolistat, Tykätyt kappaleet ja Lataukset näyttävät kokonaiskestonsa, esimerkiksi ”19 kappaletta · 1 h 14 min”.",
+    "realPlaysTitle": "Vain oikeat toistot lasketaan",
+    "realPlaysDesc": "Kappale lasketaan soitetuksi, kun olet kuullut siitä vähintään puolet. Ohitetut kappaleet eivät enää lisää toistoja, eikä kuunteluaikasi enää nollaudu päivityksen jälkeen.",
+    "renameTitle": "JellyWave on nyt Triptych",
+    "renameDesc": "Sama sovellus, uusi nimi ja logo. Kirjautumisesi, asetuksesi, latauksesi ja kuuntelutilastosi säilyvät.",
+    "languagesTitle": "Jokainen kieli täysin käännettynä",
+    "languagesDesc": "Kaikki 15 kieltä kattavat nyt jokaisen näkymän, asetuksen ja viestin, myös Wrappedin, Tuonnin ja oikeudellisten sivujen valikon.",
+    "calendarMonthsTitle": "Kalenteri kuukausittain",
+    "calendarMonthsDesc": "Kuuntelukalenteri näyttää jokaisen kuukauden omana lohkonaan ja mahtuu mihin tahansa puhelimeen ilman sivuttaisvieritystä."
+  },
+  "wrapped": {
+    "bannerTitle": "Sinun Wrapped {year}",
+    "bannerSub": "Suosikkikappaleesi, -artistisi ja minuuttisi tarinana",
+    "introTitle": "Sinun vuotesi {year} musiikissa",
+    "introAllTime": "Sinun musiikkisi, kaikkien aikojen",
+    "tapToContinue": "Napauta jatkaaksesi",
+    "minutesTitle": "Kuuntelit",
+    "minutesUnit": "minuuttia",
+    "hoursNote": "Se on noin {hours} tuntia musiikkia.",
+    "estimatedNote": "Arvioitu toistokerroistasi. Tarkka kuunteluaika lasketaan tästä eteenpäin, joten ensi kerralla tulos on tarkempi.",
+    "topArtistTitle": "Suosikkiartistisi",
+    "minutesTogether": "{minutes} minuuttia yhdessä",
+    "minutesShort": "{minutes} min",
+    "topSongsTitle": "Suosikkikappaleesi",
+    "topMonthTitle": "Suurin kuukautesi",
+    "topMonthNote": "{minutes} minuuttia musiikkia",
+    "outroTitle": "Siinä se",
+    "outroSub": "Kiitos, että kuuntelit Triptychillä.",
+    "playTop": "Soita suosikkikappaleesi",
+    "drumrollKicker": "Ja suosikkiartistisi on…",
+    "drumroll": "Rumpujen pärinää, kiitos…"
+  },
+  "duration": {
+    "hoursMinutes": "{h} h {m} min",
+    "minutes": "{m} min"
   }
 }

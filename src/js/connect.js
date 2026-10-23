@@ -7,7 +7,7 @@
 // 2. Inbound: report this device's own playback over REST so it shows up as
 //    a controllable target to other clients, and listen on a WebSocket for
 //    Play/Playstate/GeneralCommand messages so another client (the official
-//    app, or another JellyWave instance) can drive this one.
+//    app, or another Triptych instance) can drive this one.
 //
 // Both directions are best-effort — a server that's unreachable, or a
 // WebSocket that won't connect, should never interrupt local playback.
@@ -21,7 +21,7 @@ export function createConnect(jellyfin, player) {
   let playSessionId = null;
   let stopped = false;
 
-  // ---------- Remote control (this device driving another JellyWave) ----------
+  // ---------- Remote control (this device driving another Triptych) ----------
   let connectedDevice = null; // { id, name }
   let lastRemoteState = null; // last polled SessionInfo for connectedDevice
   let remotePollTimer = null;

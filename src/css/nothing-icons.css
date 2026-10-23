@@ -31,7 +31,9 @@
 :root[data-ui="nothing"] .fi-br-home:before { font-family: uicons-regular-rounded !important; content: "\f7b8"; }
 :root[data-ui="nothing"] .fi-br-hourglass-end:before { font-family: uicons-regular-rounded !important; content: "\f7ca"; }
 :root[data-ui="nothing"] .fi-br-keyboard:before { font-family: uicons-regular-rounded !important; content: "\f84c"; }
+:root[data-ui="nothing"] .fi-br-language:before { font-family: uicons-regular-rounded !important; content: "\f868"; }
 :root[data-ui="nothing"] .fi-br-list-music:before { font-family: uicons-regular-rounded !important; content: "\f8c2"; }
+:root[data-ui="nothing"] .fi-br-magic-wand:before { font-family: uicons-regular-rounded !important; content: "\f8e1"; }
 :root[data-ui="nothing"] .fi-br-mobile:before { font-family: uicons-regular-rounded !important; content: "\f953"; }
 :root[data-ui="nothing"] .fi-br-moon:before { font-family: uicons-regular-rounded !important; content: "\f972"; }
 :root[data-ui="nothing"] .fi-br-palette:before { font-family: uicons-regular-rounded !important; content: "\f9ed"; }

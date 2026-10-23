@@ -1,6 +1,11 @@
 {
   "app": {
-    "name": "JellyWave"
+    "name": "Triptych"
+  },
+  "common": {
+    "close": "Zavřít",
+    "unknown": "Neznámé",
+    "unknownArtist": "Neznámý interpret"
   },
   "titlebar": {
     "minimize": "Minimalizovat",
@@ -39,7 +44,9 @@
     "back": "Zpět",
     "forward": "Vpřed",
     "stats": "Statistiky",
-    "downloads": "Stažené"
+    "downloads": "Stažené",
+    "grab": "Import",
+    "pinnedAlbums": "Připnutá alba"
   },
   "header": {
     "searchPlaceholder": "Co si chcete poslechnout?"
@@ -51,18 +58,22 @@
   "home": {
     "greeting": "Rádi vás vidíme",
     "recentlyPlayed": "Nedávno přehrané",
-    "yourPlaylists": "Vaše playlisty",
-    "recentAlbums": "Nedávno přidaná alba",
     "madeForYou": "Vytvořeno pro tebe",
     "mostPlayed": "Nejhranější",
     "onRepeat": "Pořád dokola",
     "genreMix": "Žánrový mix",
-    "songsCount": "{count} skladeb"
+    "songsCount": "{count} skladeb",
+    "yourPlaylists": "Vaše playlisty",
+    "recentAlbums": "Nedávno přidaná alba",
+    "jumpBackIn": "Pokračovat v poslechu",
+    "becauseYouListened": "Protože jsi poslouchal {artist}"
   },
   "search": {
     "title": "Prohledat vaši knihovnu",
     "noResults": "Nebyly nalezeny žádné výsledky.",
-    "failed": "Vyhledávání se nezdařilo: {error}"
+    "failed": "Vyhledávání se nezdařilo: {error}",
+    "lyricsMatches": "Nalezeno v textech",
+    "lyricsOff": "Hledáš skladbu podle textu? Zapni „Hledání podle textu“ v Nastavení → Soukromí."
   },
   "songs": {
     "title": "Všechny skladby",
@@ -97,7 +108,9 @@
     "songCountPlural": "{count} skladeb"
   },
   "album": {
-    "empty": "Toto album neobsahuje žádné skladby."
+    "empty": "Toto album neobsahuje žádné skladby.",
+    "pin": "Připnout na postranní panel",
+    "unpin": "Odepnout z postranního panelu"
   },
   "kind": {
     "playlist": "Playlist",
@@ -128,10 +141,15 @@
     "upNext": "Další v pořadí",
     "lookingUpLyrics": "Hledám text písně…",
     "noLyrics": "Pro tuto skladbu nebyl nalezen žádný text.",
+    "lyricsFailed": "Text se teď nepodařilo načíst.",
+    "retry": "Zkusit znovu",
     "queueEmpty": "Fronta je prázdná.",
-    "title": "Právě se přehrává"
+    "title": "Právě se přehrává",
+    "nextInQueue": "Další ve frontě",
+    "clearQueue": "Vymazat"
   },
   "player": {
+    "coverArtAlt": "Obal {name} od {artist}",
     "shuffle": "Náhodné přehrávání",
     "previous": "Předchozí",
     "play": "Přehrát",
@@ -140,13 +158,21 @@
     "repeat": "Opakovat",
     "sleepTimer": "Časovač spánku",
     "sleepEndOfTrack": "Konec skladby",
-    "sleepOff": "Vypnout"
+    "sleepOff": "Vypnout",
+    "volume": "Hlasitost"
   },
   "settings": {
     "title": "Nastavení",
     "appearance": "Vzhled",
     "theme": "Motiv",
     "themeDesc": "Světlý, tmavý, nebo podle systému",
+    "uiStyle": "Styl rozhraní",
+    "uiStyleDesc": "Vzhled Spotify, Apple Music nebo Nothing",
+    "uiSpotify": "Spotify",
+    "uiApple": "Apple Music",
+    "uiNothing": "Nothing",
+    "nothingDots": "Tečkované posuvníky",
+    "nothingDotsDesc": "Lišta průběhu a hlasitosti z teček; vypnuto zobrazí obyčejné čáry",
     "dark": "Tmavý",
     "light": "Světlý",
     "system": "Systémový",
@@ -163,11 +189,14 @@
     "qualityDesc": "Nižší kvalita spotřebuje méně dat",
     "crossfade": "Prolínání",
     "crossfadeDesc": "Plynule prolne konec jedné skladby se začátkem další",
+    "crossfadeOff": "Vyp.",
     "replayGain": "Normalizace hlasitosti",
     "replayGainDesc": "Vyrovnává rozdíly v hlasitosti mezi skladbami (vyžaduje data ReplayGain na serveru)",
     "equalizer": "Ekvalizér",
     "equalizerDesc": "Uprav zvuk pomocí 5pásmového grafického ekvalizéru (pouze na počítači)",
     "equalizerReset": "Obnovit",
+    "loudnessBoost": "Zesilovač hlasitosti",
+    "loudnessBoostDesc": "Nativní zesílení hlasitosti navíc k běžnému posuvníku hlasitosti (jen Android)",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Zobrazí na tvém Discord profilu, co právě posloucháš (pouze desktop)",
     "discordConnect": "Připojit",
@@ -179,7 +208,46 @@
     "customCssDesc": "Napište si vlastní CSS pro další úpravu vzhledu aplikace. Použije se okamžitě.",
     "about": "O aplikaci",
     "offlineMode": "Režim offline",
-    "offlineModeDesc": "Zobrazí a přehraje jen stažené skladby — ostatní jsou šedé"
+    "offlineModeDesc": "Zobrazí a přehraje jen stažené skladby — ostatní jsou šedé",
+    "privacy": "Soukromí",
+    "albumArtLookup": "Hledání obalů online",
+    "albumArtLookupDesc": "Pošle jméno interpreta/alba do veřejného vyhledávacího API Deezeru, když tvůj server Jellyfin nemá obal. Vypni, aby tato data nikdy neopustila tvé zařízení.",
+    "autoUpdateCheck": "Automatická kontrola aktualizací",
+    "autoUpdateCheckDesc": "Na pozadí kontroluje na GitHubu, zda existuje novější verze Triptych. Neposílají se žádné osobní údaje, jen dotaz na verzi. Vypni a kontroluj ručně na stránce Releases.",
+    "catJamCredit": "Animace „Cat Jam“ upravená z spicetify-cat-jam-synced od BlafKing",
+    "legalHeading": "Právní informace",
+    "privacyPolicy": "Zásady ochrany osobních údajů",
+    "termsOfService": "Podmínky služby",
+    "thirdPartyNotices": "Upozornění a licence třetích stran",
+    "dataDeletion": "Smazat tvá data",
+    "storage": "Úložiště",
+    "downloadsLabel": "Stažené skladby",
+    "downloadsUsage": "{count} skladeb · {size} v tomto zařízení",
+    "clearDownloads": "Odstranit vše",
+    "clearDownloadsConfirm": "Odstranit všech {count} stažených skladeb z tohoto zařízení? Zůstanou ve tvé knihovně a můžeš je stáhnout znovu.",
+    "haptics": "Haptická odezva",
+    "hapticsDesc": "Krátké vibrace při přejetí, nabídkách po dlouhém stisku a stažení pro obnovení",
+    "qualityNow": "Právě teď: {level} · tvé připojení ≈ {speed} Mbit/s",
+    "qualityKbps": "{kbps} kb/s",
+    "qualityOriginal": "původní kvalita",
+    "lyricsSearch": "Hledání podle textu",
+    "lyricsSearchDesc": "Najdi skladby podle řádku z textu. Na pozadí stahuje texty tvé knihovny (názvy skladeb a interpreti jdou na lrclib.net a lyrics.ovh) a ukládá je v tomto zařízení.",
+    "lyricsSearchStatus": "Zpracováno {done} z {total} skladeb ({found} s textem)."
+  },
+  "privacyNotice": {
+    "text": "Triptych uchovává vše ve tvém zařízení a na tvém vlastním serveru Jellyfin. Několik dotazů na pozadí (obaly, kontrola aktualizací) komunikuje s externími službami — co přesně se posílá, najdeš v zásadách ochrany osobních údajů, a v Nastavení je můžeš kdykoli vypnout.",
+    "viewPolicy": "Zásady ochrany osobních údajů",
+    "dismiss": "Rozumím"
+  },
+  "legal": {
+    "overlayTitle": "Právní informace a soukromí",
+    "navPrivacy": "Zásady ochrany osobních údajů",
+    "navTerms": "Podmínky služby",
+    "navRefunds": "Zásady vracení peněz",
+    "navCookies": "Zásady cookies a místního úložiště",
+    "navDeletion": "Smazání dat",
+    "navThirdParty": "Upozornění a licence třetích stran",
+    "navAccessibility": "Prohlášení o přístupnosti"
   },
   "audioQuality": {
     "auto": "Automaticky (nejlepší dostupná kvalita)",
@@ -188,10 +256,20 @@
     "low": "Nízká — 96 kb/s"
   },
   "palette": {
-    "jellyfin": "Jellyfin",
-    "spotify": "Spotify",
+    "default": "Výchozí",
+    "blue": "Modrá",
+    "green": "Zelená",
+    "red": "Červená",
+    "magenta": "Purpurová",
     "purple": "Fialová",
-    "mono": "Monochromatická"
+    "pink": "Růžová",
+    "orange": "Oranžová",
+    "yellow": "Žlutá",
+    "teal": "Modrozelená",
+    "brown": "Hnědá",
+    "mono": "Monochromatická",
+    "jellyfin": "Jellyfin",
+    "spotify": "Spotify"
   },
   "errors": {
     "generic": "Něco se pokazilo: {error}",
@@ -203,8 +281,12 @@
     "couldNotDownload": "Skladbu se nepodařilo stáhnout."
   },
   "update": {
-    "available": "JellyWave {version} je dostupný.",
-    "view": "Zobrazit"
+    "available": "Triptych {version} je dostupný.",
+    "view": "Zobrazit",
+    "install": "Aktualizovat",
+    "downloading": "Stahování… {percent} %",
+    "installing": "Spouštění instalátoru…",
+    "failed": "Aktualizace selhala: {error}"
   },
   "stats": {
     "title": "Tvoje statistiky",
@@ -217,7 +299,12 @@
     "topAlbums": "Nejposlouchanější alba",
     "plays": "{count} přehrání",
     "playsPlural": "{count} přehrání",
-    "empty": "Poslouchej hudbu a začni budovat své statistiky."
+    "empty": "Poslouchej hudbu a začni budovat své statistiky.",
+    "since": "od {date}",
+    "estimated": "odhadnuto z přehrání",
+    "calendar": "Kalendář poslechu",
+    "calendarNote": "Dny s hudbou letos: {days} · nejdelší série: {streak} dní",
+    "calendarEmpty": "Tvůj kalendář se plní, jak posloucháš."
   },
   "queue": {
     "addToQueue": "Přidat do fronty",
@@ -248,5 +335,107 @@
   "downloads": {
     "title": "Stažené",
     "empty": "Zatím žádné stažené skladby."
+  },
+  "grab": {
+    "title": "Import",
+    "subtitle": "Stáhni skladbu, playlist nebo album z YouTube, YouTube Music nebo SoundCloud jako MP3 do místní složky.",
+    "desktopOnly": "Import je dostupný jen v desktopové aplikaci.",
+    "urlLabel": "URL videa, playlistu nebo skladby",
+    "urlPlaceholder": "https://...",
+    "folderLabel": "Uložit do",
+    "folderPlaceholder": "Vyber složku…",
+    "browse": "Procházet…",
+    "start": "Spustit",
+    "cancel": "Zrušit",
+    "starting": "Spouštění…",
+    "missingFields": "Nejdřív zadej URL a vyber cílovou složku.",
+    "progressStatus": "Hotovo {done} z {total}",
+    "doneStatus": "Dokončeno: úspěšně {done} z {total}",
+    "cancelled": "Zrušeno."
+  },
+  "whatsNew": {
+    "title": "Novinky ve verzi {version}",
+    "subtitle": "Tohle je nové.",
+    "continue": "Pokračovat",
+    "appleStyleTitle": "Styl Apple Music",
+    "appleStyleDesc": "V Nastavení → Vzhled → Styl rozhraní teď můžeš přepínat mezi vzhledem Spotify a novým vzhledem Apple Music.",
+    "instantSkipTitle": "Okamžité přeskakování",
+    "instantSkipDesc": "Další skladba se načítá na pozadí, takže Další (i Předchozí) začne hned.",
+    "sheetsTitle": "Panely fronty a textu",
+    "sheetsDesc": "Na telefonech se fronta a text na celou obrazovku vysouvají zespodu přehrávače.",
+    "gesturesTitle": "Gesta přejetím",
+    "gesturesDesc": "Přejetím po obalu změníš skladbu, přejetím dolů zavřeš přehrávač a stažením libovolné stránky dolů ji obnovíš.",
+    "phoneVolumeTitle": "Hlasitost telefonu",
+    "phoneVolumeDesc": "Na Androidu ovládá posuvník hlasitost telefonu a reaguje na tlačítka hlasitosti.",
+    "updatesTitle": "Aktualizace jedním kliknutím",
+    "updatesDesc": "Na PC se nové verze teď stahují a instalují přímo z aplikace.",
+    "shortcutsTitle": "Klávesové zkratky",
+    "shortcutsDesc": "Mezerník přehrává a pozastavuje, Ctrl + ← a Ctrl + → přeskočí na předchozí nebo další skladbu.",
+    "polishTitle": "Plynulejší a spolehlivější",
+    "polishDesc": "Nové animace, načítací obrazovka místo probliknutí přihlášení, spolehlivější texty, rychlejší načítání a spousta oprav.",
+    "resumeTitle": "Pokračuj, kde jsi skončil",
+    "resumeDesc": "Triptych si pamatuje tvou frontu, skladbu i pozici a má je připravené při dalším otevření.",
+    "smartHomeTitle": "Chytřejší domovská stránka",
+    "smartHomeDesc": "Nové řady: Pokračovat v poslechu, Protože jsi poslouchal… a Nově přidané.",
+    "wrappedTitle": "Wrapped",
+    "wrappedDesc": "31. prosince přijde tvůj hudební rok jako příběh: minuty, nejoblíbenější interpret (víření bubnů, prosím), nejoblíbenější skladby a další.",
+    "listenTimeTitle": "Skutečný čas poslechu",
+    "listenTimeDesc": "Statistiky teď počítají čas, kdy opravdu posloucháš, na všech tvých zařízeních, místo odhadu z přehrání.",
+    "storageTitle": "Nastavení úložiště a vibrací",
+    "storageDesc": "Zjisti, kolik místa zabírají stažené skladby, odstraň je a zapni nebo vypni vibrace.",
+    "queueOrderTitle": "Fronta, která drží tvé pořadí",
+    "queueOrderDesc": "Přidané skladby hrají v pořadí, v jakém jsi je přidal, před zbytkem alba. Fronta je ukazuje zvlášť pod „Další ve frontě“.",
+    "adaptiveQualityTitle": "Automatická kvalita, která se přizpůsobí",
+    "adaptiveQualityDesc": "Automatická kvalita streamování teď měří tvé připojení a na pomalém nebo mobilním připojení sníží datový tok.",
+    "fasterLoadingTitle": "Rychlejší na pomalém připojení",
+    "fasterLoadingDesc": "Obaly mají velikost podle tvé obrazovky a další skladba se přednačte až po stažení té aktuální.",
+    "nothingStyleTitle": "Nový vzhled: Nothing",
+    "nothingStyleDesc": "Třetí styl rozhraní vedle Spotify a Apple Music, inspirovaný Nothing OS: černá a bílá, tečkované nadpisy a texty, tenké obrysové ikony a červený akcent, který můžeš změnit. Vyber ho v Nastavení → Vzhled.",
+    "smallScreensTitle": "Vejde se na malé telefony",
+    "smallScreensDesc": "Na nízkých obrazovkách si přehrávač na celou obrazovku nechá velký obal a vše ostatní zhustí, takže ovládání, hlasitost i text zůstanou vidět. Nastavení se vejde i na úzké obrazovky.",
+    "iosPlaybackTitle": "Lepší přehrávání na iPhonu",
+    "iosPlaybackDesc": "Hudba hraje dál na pozadí, ovládání na zamčené obrazovce a v Ovládacím centru vždy funguje a posuvník hlasitosti reaguje na tlačítka hlasitosti.",
+    "nothingSlidersTitle": "Tečkované nebo obyčejné posuvníky",
+    "nothingSlidersDesc": "Ve stylu Nothing teď můžeš přepnout tečkované lišty průběhu a hlasitosti na obyčejné čáry: Nastavení → Vzhled → Tečkované posuvníky.",
+    "lyricsSearchTitle": "Hledání podle textu",
+    "lyricsSearchDesc": "Pamatuješ si řádek, ale ne název? Zapni „Hledání podle textu“ v Nastavení → Soukromí a napiš ten řádek do Hledání.",
+    "listeningCalendarTitle": "Kalendář poslechu",
+    "listeningCalendarDesc": "Statistiky teď ukazují tečku za každý den, kdy jsi poslouchal, tím jasnější, čím víc jsi hrál, a tvou nejdelší sérii.",
+    "listTotalsTitle": "Jak dlouho to trvá?",
+    "listTotalsDesc": "Alba, playlisty, Oblíbené skladby a Stažené ukazují celkovou délku, například „19 skladeb · 1 h 14 min“.",
+    "realPlaysTitle": "Počítají se jen skutečná přehrání",
+    "realPlaysDesc": "Skladba se počítá jako přehraná, když si poslechneš aspoň polovinu. Přeskočené už nepřidávají přehrání a čas poslechu se po aktualizaci už nevynuluje.",
+    "renameTitle": "Z JellyWave je Triptych",
+    "renameDesc": "Stejná aplikace, nový název a logo. Přihlášení, nastavení, stažené skladby i statistiky poslechu zůstávají.",
+    "languagesTitle": "Každý jazyk, plně přeložený",
+    "languagesDesc": "Všech 15 jazyků teď pokrývá každou obrazovku, nastavení i zprávu včetně Wrapped, Importu a nabídky právních stránek.",
+    "calendarMonthsTitle": "Kalendář po měsících",
+    "calendarMonthsDesc": "Kalendář poslechu ukazuje každý měsíc jako samostatný blok a vejde se na každý telefon bez posouvání do strany."
+  },
+  "wrapped": {
+    "bannerTitle": "Tvůj Wrapped {year}",
+    "bannerSub": "Tvé top skladby, interpreti a minuty jako příběh",
+    "introTitle": "Tvůj rok {year} v hudbě",
+    "introAllTime": "Tvá hudba za celou dobu",
+    "tapToContinue": "Klepni pro pokračování",
+    "minutesTitle": "Poslouchal jsi",
+    "minutesUnit": "minut",
+    "hoursNote": "To je asi {hours} hodin hudby.",
+    "estimatedNote": "Odhadnuto z tvých přehrání. Přesný čas poslechu se počítá od teď, takže příště to bude přesnější.",
+    "topArtistTitle": "Tvůj top interpret",
+    "minutesTogether": "{minutes} minut spolu",
+    "minutesShort": "{minutes} min",
+    "topSongsTitle": "Tvé top skladby",
+    "topMonthTitle": "Tvůj nejsilnější měsíc",
+    "topMonthNote": "{minutes} minut hudby",
+    "outroTitle": "A to je vše",
+    "outroSub": "Díky, že posloucháš s Triptych.",
+    "playTop": "Přehrát tvé top skladby",
+    "drumrollKicker": "A tvůj top interpret je…",
+    "drumroll": "Víření bubnů, prosím…"
+  },
+  "duration": {
+    "hoursMinutes": "{h} h {m} min",
+    "minutes": "{m} min"
   }
 }
