@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Shot from './Shot.jsx';
 import { LOOKS } from '../content.js';
-import { reducedMotion } from '../site.js';
+import { motionOff } from '../site.js';
 
 const BOOT_KEY = 'triptych-booted';
 const BOOT_MS = 2700; // ~1.2 s of level meter, then the settled logo holds for ~1.5 s
 const SLIDE_MS = 5200;
 
 // The boot, the same way as on greenybeany.dev/me: the inline script in
-// index.html decides before the first paint (once per tab, never with reduced
-// motion, ?boot forces it) and puts `booting` on <html>; the CSS then shows the
+// index.html decides before the first paint (once per tab, never with
+// animations switched off, ?boot forces it) and puts `booting` on <html>; the CSS then shows the
 // meter. Here the page is kept out of reach until it lifts, any click or key
 // skips it, and onDone starts the slideshow.
 function useBoot(onDone) {
@@ -47,11 +47,38 @@ export default function Hero() {
   const [playing, setPlaying] = useState(false);
   const [hover, setHover] = useState(false);
   const [still, setStill] = useState(false); // the pause button also stops the visualizer
-  const track = useRef(null);
+  const hero = useRef(null);
   const tabs = useRef([]);
   const drag = useRef(null);
 
-  useBoot(useCallback(() => { if (!reducedMotion()) setPlaying(true); }, []));
+  useBoot(useCallback(() => { if (!motionOff()) setPlaying(true); }, []));
+
+  // Back at the top after scrolling away: play the logo's rise and
+  // visualizer again (clearing the animation restarts it).
+  useEffect(() => {
+    let away = false;
+    const onScroll = () => {
+      if (scrollY > innerHeight * 0.6) away = true;
+      else if (away && scrollY < 40) {
+        away = false;
+        if (motionOff()) return;
+        hero.current.querySelectorAll('.viz .bar').forEach((bar) => {
+          bar.style.animation = 'none';
+          void bar.offsetHeight;
+          bar.style.animation = '';
+        });
+      }
+    };
+    addEventListener('scroll', onScroll, { passive: true });
+    return () => removeEventListener('scroll', onScroll);
+  }, []);
+
+  // The navbar switch starts or stops the slideshow with everything else.
+  useEffect(() => {
+    const onMotion = (e) => { setPlaying(e.detail); setStill(!e.detail); };
+    addEventListener('triptych:motion', onMotion);
+    return () => removeEventListener('triptych:motion', onMotion);
+  }, []);
 
   useEffect(() => {
     if (!playing || hover) return undefined;
@@ -72,23 +99,33 @@ export default function Hero() {
   };
 
   // Swipe / drag: follow the finger, then snap to the nearest slide.
+  // --drag sits on the hero so the lens copy of the slides follows too.
   const onPointerDown = (e) => {
     drag.current = { x: e.clientX, dx: 0 };
-    track.current.classList.add('dragging');
-    track.current.setPointerCapture(e.pointerId);
+    hero.current.classList.add('dragging');
+    e.currentTarget.setPointerCapture(e.pointerId);
   };
-  const onPointerMove = (e) => {
+  const onDrag = (e) => {
     if (!drag.current) return;
     drag.current.dx = e.clientX - drag.current.x;
-    track.current.style.setProperty('--drag', `${drag.current.dx}px`);
+    hero.current.style.setProperty('--drag', `${drag.current.dx}px`);
   };
   const onPointerUp = () => {
     if (!drag.current) return;
     const { dx } = drag.current;
     drag.current = null;
-    track.current.classList.remove('dragging');
-    track.current.style.setProperty('--drag', '0px');
+    hero.current.classList.remove('dragging');
+    hero.current.style.setProperty('--drag', '0px');
     if (Math.abs(dx) > Math.min(120, innerWidth * 0.15)) go(index + (dx < 0 ? 1 : -1));
+  };
+
+  // The lens follows a mouse (not touch) without re-rendering.
+  const onLens = (e) => {
+    if (e.pointerType !== 'mouse') return;
+    const box = hero.current.getBoundingClientRect();
+    hero.current.style.setProperty('--mx', `${e.clientX - box.left}px`);
+    hero.current.style.setProperty('--my', `${e.clientY - box.top}px`);
+    hero.current.classList.add('lensing');
   };
 
   return (
@@ -99,15 +136,16 @@ export default function Hero() {
       aria-label="The three looks of Triptych"
       data-look={LOOKS[index].key}
       data-paused={still}
+      ref={hero}
+      style={{ '--i': index }}
       onPointerEnter={() => setHover(true)}
-      onPointerLeave={() => setHover(false)}
+      onPointerLeave={() => { setHover(false); hero.current.classList.remove('lensing'); }}
+      onPointerMove={onLens}
     >
       <div
         className="track"
-        ref={track}
-        style={{ '--i': index }}
         onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
+        onPointerMove={onDrag}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
       >
@@ -124,6 +162,17 @@ export default function Hero() {
             <Shot className="shot" name={`d-${look.key}`} phone={`p-${look.key}`} width="1600" height="900" alt={look.alt} eager={i === 0} />
           </div>
         ))}
+      </div>
+
+      {/* The lens: the same slides, sharp, seen through a circle around the mouse. */}
+      <div className="lens" aria-hidden="true">
+        <div className="lens-track">
+          {LOOKS.map((look) => (
+            <div className="slide" key={look.key}>
+              <Shot className="shot" name={`d-${look.key}`} phone={`p-${look.key}`} width="1600" height="900" alt="" />
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* the logo as three bars that change height (an SVG scaled per bar would squash its rounded corners) */}

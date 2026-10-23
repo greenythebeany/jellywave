@@ -32,4 +32,12 @@ export function useLatestRelease() {
   };
 }
 
-export const reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Animations on or off: the navbar switch, remembered in this browser.
+// <html class="still"> is set before the first paint by index.html.
+export const MOTION_KEY = 'triptych-motion';
+export const motionOff = () => typeof document !== 'undefined' && document.documentElement.classList.contains('still');
+export function setMotion(on) {
+  document.documentElement.classList.toggle('still', !on);
+  try { localStorage.setItem(MOTION_KEY, on ? 'on' : 'off'); } catch { /* storage blocked: this visit only */ }
+  dispatchEvent(new CustomEvent('triptych:motion', { detail: on }));
+}

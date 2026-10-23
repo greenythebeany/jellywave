@@ -66,13 +66,15 @@
     </script>
 
     <!-- Boot: decided before the first paint, so the page never flashes first.
-         Once per tab, never with reduced motion, ?boot forces it. The timeout
+         Once per tab, never with animations switched off, ?boot forces it. The timeout
          lifts it even if the app script never runs. -->
     <script>
       (function () {
-        var root = document.documentElement, seen = false;
+        var root = document.documentElement, seen = false, still = false;
         try { seen = !!sessionStorage.getItem('triptych-booted'); } catch (e) { /* storage blocked: show it */ }
-        var skip = seen || matchMedia('(prefers-reduced-motion: reduce)').matches;
+        try { still = localStorage.getItem('triptych-motion') === 'off'; } catch (e) { /* storage blocked */ }
+        if (still) root.classList.add('still');
+        var skip = seen || still;
         if (skip && !/[?&]boot\b/.test(location.search)) return;
         root.classList.add('booting');
         setTimeout(function () { root.classList.remove('booting'); }, 6000);
