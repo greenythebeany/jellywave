@@ -12,13 +12,9 @@ export default defineConfig({
   define: { __BUILD__: JSON.stringify(Date.now().toString(36)) },
   build: {
     rollupOptions: {
-      // Design exploration (Phase 2): one page per direction, plus a gallery.
+      // Design exploration: the chosen direction (D) until the rebuild replaces it.
       input: {
         main: resolve(__dirname, 'index.html'),
-        variants: resolve(__dirname, 'variants/index.html'),
-        a: resolve(__dirname, 'variants/a.html'),
-        b: resolve(__dirname, 'variants/b.html'),
-        c: resolve(__dirname, 'variants/c.html'),
         d: resolve(__dirname, 'variants/d.html')
       }
     }
