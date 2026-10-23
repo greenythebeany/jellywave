@@ -53,22 +53,11 @@ export default function Hero() {
 
   useBoot(useCallback(() => { if (!motionOff()) setPlaying(true); }, []));
 
-  // Back at the top after scrolling away: play the logo's rise and
-  // visualizer again (clearing the animation restarts it).
+  // Scrolling down lowers the bars back to where they start; back near the
+  // top they rise again (removing .lowered restarts the CSS animation).
   useEffect(() => {
-    let away = false;
-    const onScroll = () => {
-      if (scrollY > innerHeight * 0.6) away = true;
-      else if (away && scrollY < 40) {
-        away = false;
-        if (motionOff()) return;
-        hero.current.querySelectorAll('.viz .bar').forEach((bar) => {
-          bar.style.animation = 'none';
-          void bar.offsetHeight;
-          bar.style.animation = '';
-        });
-      }
-    };
+    const onScroll = () => hero.current.classList.toggle('lowered', scrollY > 60);
+    onScroll();
     addEventListener('scroll', onScroll, { passive: true });
     return () => removeEventListener('scroll', onScroll);
   }, []);
