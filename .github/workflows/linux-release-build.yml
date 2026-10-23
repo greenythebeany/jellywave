@@ -39,7 +39,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: JellyWave-${{ steps.ver.outputs.version }}-linux
+          name: Triptych-${{ steps.ver.outputs.version }}-linux
           path: |
             dist/*.AppImage
             dist/*.snap

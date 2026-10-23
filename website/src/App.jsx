@@ -7,6 +7,17 @@ const PRIVACY = `${GITHUB}/blob/main/docs/legal/PRIVACY.md`;
 const JELLYFIN = 'https://jellyfin.org/downloads/server';
 const media = (file) => `${import.meta.env.BASE_URL}media/${file}?v=${__BUILD__}`;
 
+// Triptych mark: three bars, the right one in the accent red.
+function Mark({ size, className = 'mark' }) {
+  return (
+    <svg className={className} width={size} height={size} viewBox="0 0 411 453" aria-hidden="true">
+      <rect y="103" width="113" height="350" rx="24" fill="currentColor" />
+      <rect x="149" width="113" height="453" rx="24" fill="currentColor" />
+      <rect x="298" y="103" width="113" height="350" rx="24" fill="var(--red)" />
+    </svg>
+  );
+}
+
 // Adds the "in" class once an element scrolls into view (one-shot reveal).
 function useReveal(threshold = 0.15) {
   const ref = useRef(null);
@@ -101,8 +112,8 @@ function Nav() {
   return (
     <nav className="nav">
       <a className="brand" href="#top">
-        <img src={media('icon.png')} alt="" width="30" height="30" />
-        <span>JellyWave</span>
+        <Mark size={30} />
+        <span>Triptych</span>
       </a>
       <div className="nav-links">
         <a href="#what">What it is</a>
@@ -133,11 +144,11 @@ function Hero() {
       <div className="label hero-label">Music app for Jellyfin</div>
       <Typewriter />
       <p className="hero-sub">
-        JellyWave plays the music <em>you own</em>. Keep your songs on your own Jellyfin server, and listen
+        Triptych plays the music <em>you own</em>. Keep your songs on your own Jellyfin server, and listen
         to them on your computer and phone in an app that feels like Spotify or Apple Music. No subscription, no ads.
       </p>
       <div className="hero-cta">
-        <a className="btn btn-white" href="#download">Download JellyWave</a>
+        <a className="btn btn-white" href="#download">Download Triptych</a>
         <a className="btn btn-line" href="#how">How it works</a>
       </div>
       <div className="hero-video">
@@ -159,9 +170,9 @@ function What() {
   const ref = useReveal();
   return (
     <section className="section reveal" id="what" ref={ref}>
-      <Heading index="01" label="What is JellyWave">A player for your own music</Heading>
+      <Heading index="01" label="What is Triptych">A player for your own music</Heading>
       <p className="lead">
-        Streaming apps rent you music. JellyWave plays the files you already have: your MP3s and FLACs, ripped CDs,
+        Streaming apps rent you music. Triptych plays the files you already have: your MP3s and FLACs, ripped CDs,
         old downloads. It works together with <a href="https://jellyfin.org" target="_blank" rel="noreferrer">Jellyfin</a>,
         free software that keeps your library on a computer you control.
       </p>
@@ -182,8 +193,8 @@ function What() {
         <div className="flow-link" aria-hidden="true"><span /></div>
         <div className="flow-card accent">
           <div className="flow-num">C</div>
-          <img src={media('icon.png')} alt="" className="flow-logo" />
-          <h3>JellyWave</h3>
+          <Mark className="flow-logo" />
+          <h3>Triptych</h3>
           <p>The app you listen with, on Windows, Linux, Android and iPhone.</p>
         </div>
       </div>
@@ -225,7 +236,7 @@ function How() {
         <div className="step">
           <div className="step-text">
             <div className="step-num">Step 2</div>
-            <h3>Install JellyWave</h3>
+            <h3>Install Triptych</h3>
             <p>
               Download it for your devices: an installer for Windows, an APK for Android, an AppImage or snap for Linux,
               and an .ipa you can sideload on iPhone. Install it on as many devices as you like.
@@ -248,13 +259,13 @@ function How() {
             <div className="step-num">Step 3</div>
             <h3>Sign in and press play</h3>
             <p>
-              Open JellyWave, type your server's address and your Jellyfin username and password. Your whole library shows up:
+              Open Triptych, type your server's address and your Jellyfin username and password. Your whole library shows up:
               artists, albums, playlists and liked songs. Your settings follow you to every device.
             </p>
           </div>
           <div className="step-visual phones-pair">
-            <Phone src="phone-login.jpg" alt="JellyWave sign-in screen with an example server address" />
-            <Phone src="phone-nothing-home.jpg" alt="An artist page in JellyWave after signing in" className="lift" />
+            <Phone src="phone-login.jpg" alt="Triptych sign-in screen with an example server address" />
+            <Phone src="phone-nothing-home.jpg" alt="An artist page in Triptych after signing in" className="lift" />
           </div>
         </div>
       </div>
@@ -305,7 +316,7 @@ function Looks() {
           <img
             key={s.key}
             src={media(`desktop-${s.key}.jpg`)}
-            alt={`JellyWave on desktop in the ${s.label} style, on an artist page with lyrics on the right`}
+            alt={`Triptych on desktop in the ${s.label} style, on an artist page with lyrics on the right`}
             className="window-layer"
             style={{ clipPath: i <= active ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)', zIndex: i }}
             loading="lazy"
@@ -414,9 +425,9 @@ function Features() {
 
 // ---------- 06: FAQ ----------
 const FAQ = [
-  ['Is JellyWave free?', 'Yes. It is free and open source, with no subscription, ads or account of ours to sign up for.'],
-  ['Do I need a Jellyfin server?', 'Yes. JellyWave plays music from a Jellyfin server, and does not include music of its own. Jellyfin is free too, and runs on Windows, macOS, Linux and most NAS boxes.'],
-  ['Can I play Spotify or Apple Music songs with it?', 'No. JellyWave plays music files you own that are on your Jellyfin server. The Spotify, Apple Music and Nothing options only change how the app looks.'],
+  ['Is Triptych free?', 'Yes. It is free and open source, with no subscription, ads or account of ours to sign up for.'],
+  ['Do I need a Jellyfin server?', 'Yes. Triptych plays music from a Jellyfin server, and does not include music of its own. Jellyfin is free too, and runs on Windows, macOS, Linux and most NAS boxes.'],
+  ['Can I play Spotify or Apple Music songs with it?', 'No. Triptych plays music files you own that are on your Jellyfin server. The Spotify, Apple Music and Nothing options only change how the app looks.'],
   ['Does it work away from home?', 'Yes, as long as your phone can reach your server, for example through a VPN like Tailscale or a public address. Songs you download play with no connection at all.'],
   ['What happens to my data?', 'Your library and listening history stay on your device and your own server. A few optional lookups (missing cover art, lyrics and update checks) talk to outside services, and the Privacy Policy lists exactly what is sent.'],
   ['Which devices are supported?', 'Windows, Linux, Android and iPhone. On iPhone the app is installed by sideloading an unsigned .ipa, for example with AltStore or Sideloadly.']
@@ -451,7 +462,7 @@ function Download() {
   ];
   return (
     <section className="section reveal" id="download" ref={ref}>
-      <Heading index="07" label={r.version ? `Latest · ${r.version}` : 'Latest release'}>Get JellyWave</Heading>
+      <Heading index="07" label={r.version ? `Latest · ${r.version}` : 'Latest release'}>Get Triptych</Heading>
       <div className="platforms">
         {platforms.map((p) => (
           <div className="platform" key={p.name}>
@@ -465,7 +476,7 @@ function Download() {
           </div>
         ))}
       </div>
-      <p className="fine">After installing: open JellyWave, enter your Jellyfin server address, and sign in. That's it.</p>
+      <p className="fine">After installing: open Triptych, enter your Jellyfin server address, and sign in. That's it.</p>
     </section>
   );
 }
@@ -474,9 +485,9 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="footer-brand">
-        <img src={media('icon.png')} alt="" width="36" height="36" />
+        <Mark size={36} />
         <div>
-          <div className="footer-name">JellyWave<span className="rdot" /></div>
+          <div className="footer-name">Triptych<span className="rdot" /></div>
           <a className="mono dim" href={GITHUB}>github.com/{REPO}</a>
         </div>
       </div>

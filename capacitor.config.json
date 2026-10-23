@@ -1,6 +1,6 @@
 {
   "appId": "com.jellywave.app",
-  "appName": "JellyWave",
+  "appName": "Triptych",
   "webDir": "src",
   "server": {
     "androidScheme": "http"

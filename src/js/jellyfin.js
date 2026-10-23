@@ -4,7 +4,7 @@ import { isMobile } from './platform.js';
 
 // Must be unique per install, not per app — the Connect feature (Sessions
 // API) tells devices apart by DeviceId, and a shared constant here would
-// make every JellyWave install look like the same device reconnecting,
+// make every Triptych install look like the same device reconnecting,
 // breaking both the "other devices" list and self-exclusion from it.
 const DEVICE_ID_KEY = 'jellywave:deviceId';
 function loadOrCreateDeviceId() {
@@ -35,7 +35,8 @@ function dedupeCollabArtists(artists) {
     return !parts.some((part) => single.has(part));
   });
 }
-const CLIENT_NAME = 'JellyWave';
+const CLIENT_NAME = 'Triptych';
+const LEGACY_CLIENT_NAME = 'JellyWave'; // before 2.2; still used as the key for synced settings/stats
 // Was previously a hardcoded string that had to be bumped by hand on every
 // release and repeatedly drifted out of sync with the app's real version
 // (stuck reporting 1.0.0, then stuck reporting 1.0.5, both while newer
@@ -46,7 +47,7 @@ const CLIENT_NAME = 'JellyWave';
 // literal below is only the fallback for the brief window before that
 // resolves (or if neither bridge is available, e.g. running in a plain
 // browser during development).
-let CLIENT_VERSION = '2.1.0';
+let CLIENT_VERSION = '2.2.0';
 
 export function getClientVersion() {
   return CLIENT_VERSION;
@@ -530,9 +531,9 @@ export class JellyfinClient {
     const data = await this._get('/Sessions', { ControllableByUserId: this.userId });
     // ControllableByUserId returns every session this account can control —
     // including plain jellyfin-web browser tabs and other official clients,
-    // not just JellyWave. Device handoff only makes sense between JellyWave
+    // not just Triptych. Device handoff only makes sense between Triptych
     // instances, so narrow it to that.
-    return (data || []).filter((s) => s.DeviceId !== DEVICE_ID && s.Client === CLIENT_NAME);
+    return (data || []).filter((s) => s.DeviceId !== DEVICE_ID && (s.Client === CLIENT_NAME || s.Client === LEGACY_CLIENT_NAME));
   }
 
   async sendPlayCommand(sessionId, itemIds, startPositionTicks = 0) {
@@ -611,7 +612,7 @@ export class JellyfinClient {
   // DisplayPreferences record, so devices never overwrite each other.
   async getListeningLogs() {
     try {
-      const data = await this._get(`/DisplayPreferences/JellyWaveListening`, { userId: this.userId, client: 'JellyWave' });
+      const data = await this._get(`/DisplayPreferences/JellyWaveListening`, { userId: this.userId, client: LEGACY_CLIENT_NAME });
       const logs = {};
       for (const [key, raw] of Object.entries(data?.CustomPrefs || {})) {
         if (!key.startsWith('log_')) continue;
@@ -624,18 +625,18 @@ export class JellyfinClient {
   }
 
   async saveListeningLog(log) {
-    const params = new URLSearchParams({ userId: this.userId, client: 'JellyWave' });
+    const params = new URLSearchParams({ userId: this.userId, client: LEGACY_CLIENT_NAME });
     // Read-modify-write so the other devices' entries are kept.
     let prefs = {};
     try {
-      const data = await this._get(`/DisplayPreferences/JellyWaveListening`, { userId: this.userId, client: 'JellyWave' });
+      const data = await this._get(`/DisplayPreferences/JellyWaveListening`, { userId: this.userId, client: LEGACY_CLIENT_NAME });
       prefs = { ...(data?.CustomPrefs || {}) };
     } catch (err) { /* none yet */ }
     prefs[`log_${DEVICE_ID}`] = JSON.stringify(log);
     const res = await fetch(`${this.serverUrl}/DisplayPreferences/JellyWaveListening?${params.toString()}`, {
       method: 'POST',
       headers: this._headers(),
-      body: JSON.stringify({ Id: 'JellyWaveListening', Client: 'JellyWave', CustomPrefs: prefs }),
+      body: JSON.stringify({ Id: 'JellyWaveListening', Client: LEGACY_CLIENT_NAME, CustomPrefs: prefs }),
       keepalive: true
     });
     if (!res.ok) throw new Error(`Could not sync listening time (${res.status}).`);
@@ -659,7 +660,7 @@ export class JellyfinClient {
     try {
       const data = await this._get(`/DisplayPreferences/JellyWaveSettings`, {
         userId: this.userId,
-        client: 'JellyWave'
+        client: LEGACY_CLIENT_NAME
       });
       const raw = data?.CustomPrefs?.settings;
       return raw ? JSON.parse(raw) : null;
@@ -669,13 +670,13 @@ export class JellyfinClient {
   }
 
   async saveSyncedSettings(settings) {
-    const params = new URLSearchParams({ userId: this.userId, client: 'JellyWave' });
+    const params = new URLSearchParams({ userId: this.userId, client: LEGACY_CLIENT_NAME });
     const res = await fetch(`${this.serverUrl}/DisplayPreferences/JellyWaveSettings?${params.toString()}`, {
       method: 'POST',
       headers: this._headers(),
       body: JSON.stringify({
         Id: 'JellyWaveSettings',
-        Client: 'JellyWave',
+        Client: LEGACY_CLIENT_NAME,
         CustomPrefs: { settings: JSON.stringify(settings) }
       })
     });

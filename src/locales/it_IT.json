@@ -1,6 +1,11 @@
 {
   "app": {
-    "name": "JellyWave"
+    "name": "Triptych"
+  },
+  "common": {
+    "close": "Chiudi",
+    "unknown": "Sconosciuto",
+    "unknownArtist": "Artista sconosciuto"
   },
   "titlebar": {
     "minimize": "Riduci a icona",
@@ -39,7 +44,9 @@
     "back": "Indietro",
     "forward": "Avanti",
     "stats": "Statistiche",
-    "downloads": "Download"
+    "downloads": "Download",
+    "grab": "Importa",
+    "pinnedAlbums": "Album fissati"
   },
   "header": {
     "searchPlaceholder": "Cosa vuoi ascoltare?"
@@ -51,18 +58,22 @@
   "home": {
     "greeting": "Bello rivederti",
     "recentlyPlayed": "Ascoltati di recente",
-    "yourPlaylists": "Le tue playlist",
-    "recentAlbums": "Album aggiunti di recente",
     "madeForYou": "Fatto per te",
     "mostPlayed": "Più ascoltati",
     "onRepeat": "In loop",
     "genreMix": "Mix per genere",
-    "songsCount": "{count} brani"
+    "songsCount": "{count} brani",
+    "yourPlaylists": "Le tue playlist",
+    "recentAlbums": "Album aggiunti di recente",
+    "jumpBackIn": "Riprendi l'ascolto",
+    "becauseYouListened": "Perché hai ascoltato {artist}"
   },
   "search": {
     "title": "Cerca nella tua libreria",
     "noResults": "Nessun risultato trovato.",
-    "failed": "Ricerca non riuscita: {error}"
+    "failed": "Ricerca non riuscita: {error}",
+    "lyricsMatches": "Trovato nei testi",
+    "lyricsOff": "Cerchi un brano dal testo? Attiva «Cerca per testo» in Impostazioni → Privacy."
   },
   "songs": {
     "title": "Tutti i brani",
@@ -97,7 +108,9 @@
     "songCountPlural": "{count} brani"
   },
   "album": {
-    "empty": "Questo album non contiene brani."
+    "empty": "Questo album non contiene brani.",
+    "pin": "Fissa nella barra laterale",
+    "unpin": "Rimuovi dalla barra laterale"
   },
   "kind": {
     "playlist": "Playlist",
@@ -128,10 +141,15 @@
     "upNext": "A seguire",
     "lookingUpLyrics": "Ricerca del testo in corso…",
     "noLyrics": "Nessun testo trovato per questo brano.",
+    "lyricsFailed": "Impossibile caricare il testo in questo momento.",
+    "retry": "Riprova",
     "queueEmpty": "La coda è vuota.",
-    "title": "In riproduzione"
+    "title": "In riproduzione",
+    "nextInQueue": "Prossimi in coda",
+    "clearQueue": "Svuota"
   },
   "player": {
+    "coverArtAlt": "Copertina di {name} di {artist}",
     "shuffle": "Riproduzione casuale",
     "previous": "Precedente",
     "play": "Riproduci",
@@ -140,13 +158,21 @@
     "repeat": "Ripeti",
     "sleepTimer": "Timer di spegnimento",
     "sleepEndOfTrack": "Fine del brano",
-    "sleepOff": "Disattiva"
+    "sleepOff": "Disattiva",
+    "volume": "Volume"
   },
   "settings": {
     "title": "Impostazioni",
     "appearance": "Aspetto",
     "theme": "Tema",
     "themeDesc": "Chiaro, scuro, o secondo il sistema",
+    "uiStyle": "Stile interfaccia",
+    "uiStyleDesc": "Aspetto Spotify, Apple Music o Nothing",
+    "uiSpotify": "Spotify",
+    "uiApple": "Apple Music",
+    "uiNothing": "Nothing",
+    "nothingDots": "Cursori a puntini",
+    "nothingDotsDesc": "Barre di avanzamento e volume a matrice di punti; disattivato mostra linee semplici",
     "dark": "Scuro",
     "light": "Chiaro",
     "system": "Sistema",
@@ -163,11 +189,14 @@
     "qualityDesc": "Una qualità inferiore consuma meno dati",
     "crossfade": "Dissolvenza incrociata",
     "crossfadeDesc": "Sfuma la fine di un brano nell'inizio del successivo",
+    "crossfadeOff": "Disattivato",
     "replayGain": "Normalizzazione del volume",
     "replayGainDesc": "Uniforma le differenze di volume tra i brani (richiede dati ReplayGain sul server)",
     "equalizer": "Equalizzatore",
     "equalizerDesc": "Modella il suono con un equalizzatore grafico a 5 bande (solo desktop)",
     "equalizerReset": "Ripristina",
+    "loudnessBoost": "Amplificatore volume",
+    "loudnessBoostDesc": "Amplificazione nativa del volume, in aggiunta al normale cursore del volume (solo Android)",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Mostra cosa stai ascoltando sul tuo profilo Discord (solo desktop)",
     "discordConnect": "Connetti",
@@ -179,7 +208,46 @@
     "customCssDesc": "Scrivi il tuo CSS per personalizzare ulteriormente laspetto dellapp. Applicato in tempo reale.",
     "about": "Informazioni",
     "offlineMode": "Modalità offline",
-    "offlineModeDesc": "Mostra e riproduce solo i brani scaricati — il resto è in grigio"
+    "offlineModeDesc": "Mostra e riproduce solo i brani scaricati — il resto è in grigio",
+    "privacy": "Privacy",
+    "albumArtLookup": "Ricerca copertine online",
+    "albumArtLookupDesc": "Invia il nome dell'artista/album all'API di ricerca pubblica di Deezer quando il tuo server Jellyfin non ha la copertina. Disattiva per non far mai uscire questi dati dal tuo dispositivo.",
+    "autoUpdateCheck": "Controllo automatico aggiornamenti",
+    "autoUpdateCheckDesc": "Controlla in background su GitHub se esiste una versione più recente di Triptych. Non vengono inviati dati personali, solo una verifica della versione. Disattiva per controllare tu stesso dalla pagina Releases.",
+    "catJamCredit": "Animazione «Cat Jam» adattata da spicetify-cat-jam-synced di BlafKing",
+    "legalHeading": "Note legali",
+    "privacyPolicy": "Informativa sulla privacy",
+    "termsOfService": "Termini di servizio",
+    "thirdPartyNotices": "Avvisi e licenze di terze parti",
+    "dataDeletion": "Elimina i tuoi dati",
+    "storage": "Archiviazione",
+    "downloadsLabel": "Brani scaricati",
+    "downloadsUsage": "{count} brani · {size} su questo dispositivo",
+    "clearDownloads": "Rimuovi tutto",
+    "clearDownloadsConfirm": "Rimuovere tutti i {count} brani scaricati da questo dispositivo? Restano nella tua libreria e potrai scaricarli di nuovo.",
+    "haptics": "Feedback aptico",
+    "hapticsDesc": "Brevi vibrazioni con gli swipe, i menu a pressione prolungata e il trascina per aggiornare",
+    "qualityNow": "Adesso: {level} · la tua connessione ≈ {speed} Mbit/s",
+    "qualityKbps": "{kbps} kbps",
+    "qualityOriginal": "qualità originale",
+    "lyricsSearch": "Cerca per testo",
+    "lyricsSearchDesc": "Trova i brani da una riga del testo. Scarica i testi della tua libreria in background (titoli e artisti vengono inviati a lrclib.net e lyrics.ovh) e li conserva su questo dispositivo.",
+    "lyricsSearchStatus": "{done} brani su {total} indicizzati ({found} con testo)."
+  },
+  "privacyNotice": {
+    "text": "Triptych conserva tutto sul tuo dispositivo e sul tuo server Jellyfin. Alcune richieste in background (copertine, controllo aggiornamenti) contattano servizi esterni: consulta l'informativa sulla privacy per sapere esattamente cosa viene inviato, e disattivale quando vuoi nelle Impostazioni.",
+    "viewPolicy": "Informativa sulla privacy",
+    "dismiss": "Ho capito"
+  },
+  "legal": {
+    "overlayTitle": "Note legali e privacy",
+    "navPrivacy": "Informativa sulla privacy",
+    "navTerms": "Termini di servizio",
+    "navRefunds": "Politica di rimborso",
+    "navCookies": "Politica su cookie e archiviazione locale",
+    "navDeletion": "Eliminazione dei dati",
+    "navThirdParty": "Avvisi e licenze di terze parti",
+    "navAccessibility": "Dichiarazione di accessibilità"
   },
   "audioQuality": {
     "auto": "Automatica (migliore qualità disponibile)",
@@ -188,10 +256,20 @@
     "low": "Bassa — 96 kbps"
   },
   "palette": {
-    "jellyfin": "Jellyfin",
-    "spotify": "Spotify",
+    "default": "Predefinito",
+    "blue": "Blu",
+    "green": "Verde",
+    "red": "Rosso",
+    "magenta": "Magenta",
     "purple": "Viola",
-    "mono": "Monocromatico"
+    "pink": "Rosa",
+    "orange": "Arancione",
+    "yellow": "Giallo",
+    "teal": "Verde acqua",
+    "brown": "Marrone",
+    "mono": "Monocromatico",
+    "jellyfin": "Jellyfin",
+    "spotify": "Spotify"
   },
   "errors": {
     "generic": "Qualcosa è andato storto: {error}",
@@ -203,8 +281,12 @@
     "couldNotDownload": "Impossibile scaricare il brano."
   },
   "update": {
-    "available": "JellyWave {version} è disponibile.",
-    "view": "Visualizza"
+    "available": "Triptych {version} è disponibile.",
+    "view": "Visualizza",
+    "install": "Aggiorna ora",
+    "downloading": "Download in corso… {percent}%",
+    "installing": "Avvio del programma di installazione…",
+    "failed": "Aggiornamento non riuscito: {error}"
   },
   "stats": {
     "title": "Le tue statistiche",
@@ -217,7 +299,12 @@
     "topAlbums": "Album più ascoltati",
     "plays": "{count} riproduzione",
     "playsPlural": "{count} riproduzioni",
-    "empty": "Ascolta musica per iniziare a costruire le tue statistiche."
+    "empty": "Ascolta musica per iniziare a costruire le tue statistiche.",
+    "since": "dal {date}",
+    "estimated": "stimato dagli ascolti",
+    "calendar": "Calendario di ascolto",
+    "calendarNote": "{days} giorni con musica quest'anno · serie più lunga {streak} giorni",
+    "calendarEmpty": "Il tuo calendario si riempie man mano che ascolti."
   },
   "queue": {
     "addToQueue": "Aggiungi alla coda",
@@ -248,5 +335,107 @@
   "downloads": {
     "title": "Download",
     "empty": "Nessuna canzone scaricata ancora."
+  },
+  "grab": {
+    "title": "Importa",
+    "subtitle": "Scarica un brano, una playlist o un album da YouTube, YouTube Music o SoundCloud in MP3 in una cartella locale.",
+    "desktopOnly": "L'importazione è disponibile solo nell'app desktop.",
+    "urlLabel": "URL di video, playlist o brano",
+    "urlPlaceholder": "https://...",
+    "folderLabel": "Salva in",
+    "folderPlaceholder": "Scegli una cartella…",
+    "browse": "Sfoglia…",
+    "start": "Avvia",
+    "cancel": "Annulla",
+    "starting": "Avvio…",
+    "missingFields": "Inserisci prima un URL e scegli una cartella di destinazione.",
+    "progressStatus": "{done} di {total} completati",
+    "doneStatus": "Finito: {done} di {total} riusciti",
+    "cancelled": "Annullato."
+  },
+  "whatsNew": {
+    "title": "Novità della versione {version}",
+    "subtitle": "Ecco le novità.",
+    "continue": "Continua",
+    "appleStyleTitle": "Stile Apple Music",
+    "appleStyleDesc": "In Impostazioni → Aspetto → Stile interfaccia ora puoi passare dall'aspetto Spotify a un nuovo aspetto Apple Music.",
+    "instantSkipTitle": "Salti istantanei",
+    "instantSkipDesc": "Il brano successivo viene caricato in background, quindi Avanti (e Indietro) parte subito.",
+    "sheetsTitle": "Pannelli per coda e testo",
+    "sheetsDesc": "Sui telefoni, la coda e il testo a schermo intero scorrono dal basso del player.",
+    "gesturesTitle": "Gesti di scorrimento",
+    "gesturesDesc": "Scorri sulla copertina per cambiare brano, scorri verso il basso per chiudere il player e trascina giù qualsiasi pagina per aggiornarla.",
+    "phoneVolumeTitle": "Volume del telefono",
+    "phoneVolumeDesc": "Su Android, il cursore del volume controlla il volume del telefono e segue i tasti del volume.",
+    "updatesTitle": "Aggiornamenti con un clic",
+    "updatesDesc": "Su PC, le nuove versioni ora si scaricano e si installano direttamente dall'app.",
+    "shortcutsTitle": "Scorciatoie da tastiera",
+    "shortcutsDesc": "Spazio avvia e mette in pausa, Ctrl + ← e Ctrl + → passano al brano precedente o successivo.",
+    "polishTitle": "Più fluida e affidabile",
+    "polishDesc": "Nuove animazioni, una schermata di caricamento al posto del lampo del login, testi più affidabili, caricamento più rapido e molte correzioni.",
+    "resumeTitle": "Riprendi da dove avevi lasciato",
+    "resumeDesc": "Triptych ricorda coda, brano e posizione e li tiene pronti la prossima volta che la apri.",
+    "smartHomeTitle": "Una Home più intelligente",
+    "smartHomeDesc": "Nuove righe: Riprendi l'ascolto, Perché hai ascoltato… e Aggiunti di recente.",
+    "wrappedTitle": "Wrapped",
+    "wrappedDesc": "Il 31 dicembre il tuo anno in musica arriva come una storia: minuti, artista preferito (rullo di tamburi, prego), brani preferiti e altro.",
+    "listenTimeTitle": "Tempo di ascolto reale",
+    "listenTimeDesc": "Le statistiche ora contano il tempo che ascolti davvero, su tutti i tuoi dispositivi, invece di stimarlo dagli ascolti.",
+    "storageTitle": "Impostazioni di archiviazione e vibrazione",
+    "storageDesc": "Guarda quanto spazio occupano i download, rimuovili e attiva o disattiva la vibrazione.",
+    "queueOrderTitle": "Una coda che rispetta il tuo ordine",
+    "queueOrderDesc": "I brani aggiunti vengono riprodotti nell'ordine in cui li hai aggiunti, prima del resto dell'album. La coda li mostra a parte in «Prossimi in coda».",
+    "adaptiveQualityTitle": "Qualità automatica che si adatta",
+    "adaptiveQualityDesc": "La qualità di streaming automatica ora misura la tua connessione e abbassa il bitrate sulle connessioni lente o mobili.",
+    "fasterLoadingTitle": "Più veloce con connessioni lente",
+    "fasterLoadingDesc": "Le copertine sono dimensionate per il tuo schermo e il brano successivo viene precaricato solo dopo che quello attuale è stato scaricato.",
+    "nothingStyleTitle": "Nuovo look: Nothing",
+    "nothingStyleDesc": "Un terzo stile di interfaccia accanto a Spotify e Apple Music, ispirato a Nothing OS: bianco e nero, titoli e testi a matrice di punti, icone sottili a contorno e un accento rosso che puoi cambiare. Sceglilo in Impostazioni → Aspetto.",
+    "smallScreensTitle": "Adatta ai telefoni piccoli",
+    "smallScreensDesc": "Sugli schermi bassi il player a schermo intero mantiene la copertina grande e stringe il resto, così comandi, volume e testo restano visibili. Anche le Impostazioni si adattano agli schermi stretti.",
+    "iosPlaybackTitle": "Riproduzione migliore su iPhone",
+    "iosPlaybackDesc": "La musica continua in background, i comandi della schermata di blocco e del Centro di Controllo funzionano sempre e il cursore del volume segue i tasti del volume.",
+    "nothingSlidersTitle": "Cursori a puntini o semplici",
+    "nothingSlidersDesc": "Nello stile Nothing ora puoi trasformare le barre a puntini di avanzamento e volume in linee semplici: Impostazioni → Aspetto → Cursori a puntini.",
+    "lyricsSearchTitle": "Cerca per testo",
+    "lyricsSearchDesc": "Ricordi una riga ma non il titolo? Attiva «Cerca per testo» in Impostazioni → Privacy, poi scrivi la riga in Cerca.",
+    "listeningCalendarTitle": "Calendario di ascolto",
+    "listeningCalendarDesc": "Le statistiche ora mostrano un punto per ogni giorno di ascolto, più luminoso quanto più hai ascoltato, oltre alla tua serie più lunga.",
+    "listTotalsTitle": "Quanto dura?",
+    "listTotalsDesc": "Album, playlist, Brani preferiti e Download mostrano la durata totale, ad esempio «19 brani · 1 h 14 min».",
+    "realPlaysTitle": "Contano solo gli ascolti veri",
+    "realPlaysDesc": "Un brano conta come ascoltato quando ne hai sentito almeno metà. I brani saltati non aggiungono più ascolti e il tuo tempo di ascolto non si azzera più dopo un aggiornamento.",
+    "renameTitle": "JellyWave ora si chiama Triptych",
+    "renameDesc": "Stessa app, nuovo nome e nuovo logo. Accesso, impostazioni, download e statistiche di ascolto restano tutti.",
+    "languagesTitle": "Ogni lingua, tradotta completamente",
+    "languagesDesc": "Tutte le 15 lingue coprono ora ogni schermata, impostazione e messaggio, inclusi Wrapped, Importa e il menu delle pagine legali.",
+    "calendarMonthsTitle": "Un calendario per mesi",
+    "calendarMonthsDesc": "Il calendario di ascolto mostra ogni mese come un blocco a sé e sta su qualsiasi telefono senza scorrere di lato."
+  },
+  "wrapped": {
+    "bannerTitle": "Il tuo Wrapped {year}",
+    "bannerSub": "I tuoi brani, artisti e minuti principali, come una storia",
+    "introTitle": "Il tuo {year} in musica",
+    "introAllTime": "La tua musica, da sempre",
+    "tapToContinue": "Tocca per continuare",
+    "minutesTitle": "Hai ascoltato per",
+    "minutesUnit": "minuti",
+    "hoursNote": "Sono circa {hours} ore di musica.",
+    "estimatedNote": "Stimato dai tuoi ascolti. Da ora in poi viene contato il tempo di ascolto esatto, quindi la prossima volta sarà più preciso.",
+    "topArtistTitle": "Il tuo artista preferito",
+    "minutesTogether": "{minutes} minuti insieme",
+    "minutesShort": "{minutes} min",
+    "topSongsTitle": "I tuoi brani preferiti",
+    "topMonthTitle": "Il tuo mese più intenso",
+    "topMonthNote": "{minutes} minuti di musica",
+    "outroTitle": "È tutto",
+    "outroSub": "Grazie per aver ascoltato con Triptych.",
+    "playTop": "Riproduci i tuoi brani preferiti",
+    "drumrollKicker": "E il tuo artista preferito è…",
+    "drumroll": "Rullo di tamburi, prego…"
+  },
+  "duration": {
+    "hoursMinutes": "{h} h {m} min",
+    "minutes": "{m} min"
   }
 }

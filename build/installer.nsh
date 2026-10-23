@@ -18,7 +18,7 @@ Var pid
 ; The default _CHECK_APP_RUNNING macro (allowOnlyOneInstallerInstance.nsh)
 ; only closes a running instance silently when electron-builder's own
 ; ${isUpdated} check recognizes this as an update over an existing install;
-; otherwise it shows a blocking "please close JellyWave first" OK/Cancel
+; otherwise it shows a blocking "please close Triptych first" OK/Cancel
 ; dialog and just Quits if the app is still running by the time the user
 ; dismisses it. That detection wasn't reliably kicking in for every install
 ; here, so closing the running app before upgrading kept requiring a manual
@@ -28,6 +28,14 @@ Var pid
 !macro customCheckAppRunning
   Var /GLOBAL IsPowerShellAvailable
   StrCpy $IsPowerShellAvailable 1
+
+  ; Before 2.2 the app was JellyWave.exe; close that one too so an upgrade
+  ; over an old install that is still open doesn't hit locked files.
+  !insertmacro FIND_PROCESS "JellyWave.exe" $R0
+  ${if} $R0 == 0
+    !insertmacro KILL_PROCESS "JellyWave.exe" 1
+    Sleep 1000
+  ${endIf}
 
   ${GetProcessInfo} 0 $pid $1 $2 $3 $4
   ${if} $3 != "${APP_EXECUTABLE_FILENAME}"

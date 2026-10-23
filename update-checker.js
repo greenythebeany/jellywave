@@ -1,7 +1,7 @@
 // Update checks + in-app download/install from GitHub releases (same
 // approach as BeanyIK's updater.js). Instead of sending the user to the
-// release page to run the installer by hand while JellyWave is still open,
-// the installer is downloaded here, verified, started, and JellyWave quits
+// release page to run the installer by hand while Triptych is still open,
+// the installer is downloaded here, verified, started, and Triptych quits
 // itself so the installer never has to fight a running instance.
 const { app } = require('electron');
 const fs = require('fs');
@@ -11,7 +11,7 @@ const { spawn } = require('child_process');
 
 const REPO = 'greenythebeany/jellywave';
 const API_URL = `https://api.github.com/repos/${REPO}/releases/latest`;
-const HEADERS = { Accept: 'application/vnd.github+json', 'User-Agent': 'JellyWave-updater' };
+const HEADERS = { Accept: 'application/vnd.github+json', 'User-Agent': 'Triptych-updater' };
 
 function parseSemver(str) {
   const m = String(str || '').match(/(\d+)\.(\d+)\.(\d+)/);
@@ -42,7 +42,7 @@ async function checkForUpdates() {
   if (!latest || !current || !isNewer(latest, current)) return { status: 'up-to-date', current: currentVersion() };
 
   const assets = release.assets || [];
-  // GitHub turns the spaces in "JellyWave Setup 1.2.3.exe" into dots.
+  // GitHub turns the spaces in "Triptych Setup 1.2.3.exe" into dots.
   const asset = process.platform === 'win32' ? assets.find((a) => /setup.*\.exe$/i.test(a.name)) : null;
   const yml = assets.find((a) => a.name === 'latest.yml');
   lastRelease = { asset, yml, version: latest.join('.') };
@@ -82,7 +82,7 @@ async function downloadUpdate(onProgress) {
   if (downloading) return downloading;
   const { asset } = lastRelease;
   downloading = (async () => {
-    const dir = path.join(app.getPath('temp'), 'JellyWave-update');
+    const dir = path.join(app.getPath('temp'), 'Triptych-update');
     fs.mkdirSync(dir, { recursive: true });
     const target = path.join(dir, asset.name);
     const partial = `${target}.part`;
@@ -128,7 +128,7 @@ async function downloadUpdate(onProgress) {
 }
 
 // Starts the installer detached, then hands off to `shutdown`, which must
-// fully close JellyWave (child processes included) so nothing of it is
+// fully close Triptych (child processes included) so nothing of it is
 // still running -- or holding files open -- when the installer gets going.
 function installAndQuit(file, shutdown) {
   if (!file || !fs.existsSync(file)) throw new Error('Update file is missing');

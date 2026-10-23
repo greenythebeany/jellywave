@@ -1,9 +1,11 @@
 {
   "app": {
-    "name": "JellyWave"
+    "name": "Triptych"
   },
   "common": {
-    "close": "Close"
+    "close": "Close",
+    "unknown": "Unknown",
+    "unknownArtist": "Unknown Artist"
   },
   "titlebar": {
     "minimize": "Minimize",
@@ -187,6 +189,7 @@
     "qualityDesc": "Lower quality uses less bandwidth",
     "crossfade": "Crossfade",
     "crossfadeDesc": "Blend the end of one song into the start of the next",
+    "crossfadeOff": "Off",
     "replayGain": "Volume normalization",
     "replayGainDesc": "Even out loudness differences between tracks (needs ReplayGain data on the server)",
     "equalizer": "Equalizer",
@@ -210,7 +213,7 @@
     "albumArtLookup": "Online album art lookup",
     "albumArtLookupDesc": "Sends the artist/album name to Deezer's public search API when your Jellyfin server doesn't have cover art. Turn off to keep that from ever leaving your device.",
     "autoUpdateCheck": "Automatic update check",
-    "autoUpdateCheckDesc": "Checks GitHub in the background for a newer JellyWave release. No personal data is sent, just a version lookup. Turn off to check manually via the Releases page instead.",
+    "autoUpdateCheckDesc": "Checks GitHub in the background for a newer Triptych release. No personal data is sent, just a version lookup. Turn off to check manually via the Releases page instead.",
     "catJamCredit": "\"Cat Jam\" animation adapted from BlafKing's spicetify-cat-jam-synced",
     "legalHeading": "Legal",
     "privacyPolicy": "Privacy Policy",
@@ -232,7 +235,7 @@
     "lyricsSearchStatus": "Indexed {done} of {total} songs ({found} with lyrics)."
   },
   "privacyNotice": {
-    "text": "JellyWave keeps everything on your own device and your own Jellyfin server. A couple of background lookups (album art, update checks) talk to outside services — see the Privacy Policy for exactly what's sent, and turn them off any time in Settings.",
+    "text": "Triptych keeps everything on your own device and your own Jellyfin server. A couple of background lookups (album art, update checks) talk to outside services — see the Privacy Policy for exactly what's sent, and turn them off any time in Settings.",
     "viewPolicy": "Privacy Policy",
     "dismiss": "Got it"
   },
@@ -276,7 +279,7 @@
     "couldNotDownload": "Could not download song."
   },
   "update": {
-    "available": "JellyWave {version} is available.",
+    "available": "Triptych {version} is available.",
     "view": "View",
     "install": "Update now",
     "downloading": "Downloading… {percent}%",
@@ -369,7 +372,7 @@
     "polishTitle": "Smoother and more reliable",
     "polishDesc": "New animations, a loading screen instead of the login flash, more reliable lyrics, faster loading and lots of fixes.",
     "resumeTitle": "Pick up where you left off",
-    "resumeDesc": "JellyWave remembers your queue, song and position, and has them ready the next time you open it.",
+    "resumeDesc": "Triptych remembers your queue, song and position, and has them ready the next time you open it.",
     "smartHomeTitle": "A smarter Home",
     "smartHomeDesc": "New rows: Jump Back In, Because you listened to…, and Newly Added.",
     "wrappedTitle": "Wrapped",
@@ -399,7 +402,13 @@
     "listTotalsTitle": "How long is it?",
     "listTotalsDesc": "Albums, playlists, Liked Songs and Downloads show their total length, like \"19 songs · 1 hr 14 min\".",
     "realPlaysTitle": "Only real plays count",
-    "realPlaysDesc": "A song counts as played once you have heard at least half of it. Skips no longer add plays, and your listening time no longer resets after an update."
+    "realPlaysDesc": "A song counts as played once you have heard at least half of it. Skips no longer add plays, and your listening time no longer resets after an update.",
+    "renameTitle": "JellyWave is now Triptych",
+    "renameDesc": "Same app, new name and logo. Your login, settings, downloads and listening stats all carry over.",
+    "languagesTitle": "Every language, fully translated",
+    "languagesDesc": "All 15 languages now cover every screen, setting and message, including Wrapped, Import and the legal pages' menu.",
+    "calendarMonthsTitle": "A calendar by month",
+    "calendarMonthsDesc": "The listening calendar shows each month as its own block and fits on any phone without scrolling sideways."
   },
   "wrapped": {
     "bannerTitle": "Your {year} Wrapped",
@@ -418,7 +427,7 @@
     "topMonthTitle": "Your biggest month",
     "topMonthNote": "{minutes} minutes of music",
     "outroTitle": "That's a wrap",
-    "outroSub": "Thanks for listening with JellyWave.",
+    "outroSub": "Thanks for listening with Triptych.",
     "playTop": "Play your top songs",
     "drumrollKicker": "And your top artist is…",
     "drumroll": "Drumroll, please…"

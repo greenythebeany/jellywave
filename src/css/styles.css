@@ -125,7 +125,10 @@ svg { fill: currentColor; width: 100%; height: 100%; }
   z-index: 100;
 }
 .titlebar-drag { padding-left: 12px; display: flex; align-items: center; gap: 8px; }
-.titlebar-app-icon { width: 16px; height: 16px; border-radius: 4px; }
+/* Triptych mark (inline SVG): bars in the text colour, the right one in the accent. */
+.brand-mark { display: block; fill: var(--text-primary); }
+.brand-mark .brand-accent { fill: var(--accent); }
+.titlebar-app-icon { width: 14px; height: 14px; }
 .titlebar-logo { font-size: 12px; font-weight: 700; letter-spacing: 0.4px; color: var(--text-secondary); }
 .titlebar-controls { display: flex; -webkit-app-region: no-drag; }
 .titlebar-btn {
@@ -151,7 +154,7 @@ svg { fill: currentColor; width: 100%; height: 100%; }
   transition: opacity 0.25s ease;
 }
 .boot-splash.leaving { opacity: 0; pointer-events: none; }
-.boot-splash-icon { width: 84px; height: 84px; border-radius: 22px; animation: boot-pulse 1.6s ease-in-out infinite; }
+.boot-splash-icon { width: 72px; height: 72px; animation: boot-pulse 1.6s ease-in-out infinite; }
 .view-loading { display: flex; justify-content: center; padding: 72px 0; }
 
 /* Pull-to-refresh indicator (phone layout): sits just under the sticky
@@ -184,7 +187,7 @@ svg { fill: currentColor; width: 100%; height: 100%; }
   backdrop-filter: blur(14px);
 }
 .login-logo { display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--accent); }
-.login-logo img { width: 52px; height: 52px; border-radius: 14px; }
+.login-logo .login-icon { width: 48px; height: 48px; }
 .login-logo h1 { margin: 0; font-size: 22px; color: var(--text-primary); letter-spacing: 0.3px; }
 .login-sub { text-align: center; color: var(--text-secondary); font-size: 13.5px; margin: 6px 0 26px; }
 .login-form { display: flex; flex-direction: column; gap: 16px; }
@@ -441,8 +444,15 @@ svg { fill: currentColor; width: 100%; height: 100%; }
 .lyric-hint { text-align: left; margin-top: 18px; }
 
 /* Listening calendar (Stats): one dot per day, weeks as columns. */
-.listen-cal-scroll { overflow-x: auto; padding-bottom: 6px; }
-.listen-cal { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 11px); grid-auto-columns: 11px; gap: 4px; width: max-content; }
+.listen-cal { display: flex; flex-wrap: wrap; gap: 14px 18px; }
+.cal-month-name { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; text-transform: capitalize; }
+.cal-month-now .cal-month-name { color: var(--text-primary); }
+.cal-grid { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 11px); grid-auto-columns: 11px; gap: 3px; }
+@media (max-width: 480px) {
+  .listen-cal { gap: 12px 14px; }
+  .cal-grid { grid-template-rows: repeat(7, 9px); grid-auto-columns: 9px; }
+  .cal-cell { width: 9px; height: 9px; }
+}
 .cal-cell { width: 11px; height: 11px; border-radius: 50%; background: var(--bg-highlight); }
 .cal-cell.cal-pad { visibility: hidden; }
 .cal-cell.cal-future { opacity: 0.35; }
@@ -1063,7 +1073,7 @@ input[type="range"].volume-bar { width: 110px; flex: none; }
 /* What's new popup */
 .whats-new-card { width: 440px; max-width: calc(100vw - 32px); max-height: 86vh; display: flex; flex-direction: column; }
 .whats-new-hero { text-align: center; padding: 28px 28px 8px; }
-.whats-new-icon { width: 64px; height: 64px; border-radius: 16px; margin-bottom: 14px; }
+.whats-new-icon { width: 56px; height: 56px; margin-bottom: 14px; }
 .whats-new-hero h2 { margin: 0; font-size: 22px; font-weight: 800; }
 .whats-new-subtitle { margin: 6px 0 0; color: var(--text-secondary); font-size: 13.5px; }
 .whats-new-list { list-style: none; margin: 0; padding: 12px 28px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }

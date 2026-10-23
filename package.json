@@ -1,6 +1,6 @@
 {
   "name": "jellywave",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "A sleek, Spotify-style desktop client for your own Jellyfin music server",
   "main": "main.js",
   "author": "",
@@ -33,7 +33,7 @@
   },
   "build": {
     "appId": "com.jellywave.app",
-    "productName": "JellyWave",
+    "productName": "Triptych",
     "directories": {
       "output": "dist"
     },

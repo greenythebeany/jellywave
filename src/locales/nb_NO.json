@@ -1,6 +1,11 @@
 {
   "app": {
-    "name": "JellyWave"
+    "name": "Triptych"
+  },
+  "common": {
+    "close": "Lukk",
+    "unknown": "Ukjent",
+    "unknownArtist": "Ukjent artist"
   },
   "titlebar": {
     "minimize": "Minimer",
@@ -39,7 +44,9 @@
     "back": "Tilbake",
     "forward": "Fremover",
     "stats": "Statistikk",
-    "downloads": "Nedlastinger"
+    "downloads": "Nedlastinger",
+    "grab": "Importer",
+    "pinnedAlbums": "Festede album"
   },
   "header": {
     "searchPlaceholder": "Hva vil du høre på?"
@@ -51,18 +58,22 @@
   "home": {
     "greeting": "Godt å se deg",
     "recentlyPlayed": "Nylig spilt",
-    "yourPlaylists": "Dine spillelister",
-    "recentAlbums": "Nylig lagt til album",
     "madeForYou": "Laget for deg",
     "mostPlayed": "Mest spilt",
     "onRepeat": "På repeat",
     "genreMix": "Sjangermiks",
-    "songsCount": "{count} sanger"
+    "songsCount": "{count} sanger",
+    "yourPlaylists": "Dine spillelister",
+    "recentAlbums": "Nylig lagt til album",
+    "jumpBackIn": "Fortsett å lytte",
+    "becauseYouListened": "Fordi du lyttet til {artist}"
   },
   "search": {
     "title": "Søk i biblioteket ditt",
     "noResults": "Ingen resultater funnet.",
-    "failed": "Søket mislyktes: {error}"
+    "failed": "Søket mislyktes: {error}",
+    "lyricsMatches": "Funnet i sangtekster",
+    "lyricsOff": "Leter du etter en sang ut fra teksten? Slå på «Søk etter sangtekst» under Innstillinger → Personvern."
   },
   "songs": {
     "title": "Alle sanger",
@@ -97,7 +108,9 @@
     "songCountPlural": "{count} sanger"
   },
   "album": {
-    "empty": "Dette albumet har ingen sanger."
+    "empty": "Dette albumet har ingen sanger.",
+    "pin": "Fest til sidefeltet",
+    "unpin": "Løsne fra sidefeltet"
   },
   "kind": {
     "playlist": "Spilleliste",
@@ -128,10 +141,15 @@
     "upNext": "Neste",
     "lookingUpLyrics": "Søker etter sangtekst…",
     "noLyrics": "Fant ingen sangtekst for denne sangen.",
+    "lyricsFailed": "Kunne ikke laste inn sangteksten akkurat nå.",
+    "retry": "Prøv igjen",
     "queueEmpty": "Køen er tom.",
-    "title": "Spilles nå"
+    "title": "Spilles nå",
+    "nextInQueue": "Neste i køen",
+    "clearQueue": "Tøm"
   },
   "player": {
+    "coverArtAlt": "Omslag for {name} av {artist}",
     "shuffle": "Shuffle",
     "previous": "Forrige",
     "play": "Spill av",
@@ -140,13 +158,21 @@
     "repeat": "Gjenta",
     "sleepTimer": "Sovetimer",
     "sleepEndOfTrack": "Slutten av sporet",
-    "sleepOff": "Slå av"
+    "sleepOff": "Slå av",
+    "volume": "Volum"
   },
   "settings": {
     "title": "Innstillinger",
     "appearance": "Utseende",
     "theme": "Tema",
     "themeDesc": "Lyst, mørkt, eller basert på systemet ditt",
+    "uiStyle": "Grensesnittstil",
+    "uiStyleDesc": "Spotify-, Apple Music- eller Nothing-utseende",
+    "uiSpotify": "Spotify",
+    "uiApple": "Apple Music",
+    "uiNothing": "Nothing",
+    "nothingDots": "Prikkede glidebrytere",
+    "nothingDotsDesc": "Fremdrifts- og volumlinjer som punktmatrise; av viser vanlige linjer",
     "dark": "Mørkt",
     "light": "Lyst",
     "system": "System",
@@ -163,11 +189,14 @@
     "qualityDesc": "Lavere kvalitet bruker mindre data",
     "crossfade": "Krysstoning",
     "crossfadeDesc": "Toner slutten av én sang over i starten av neste",
+    "crossfadeOff": "Av",
     "replayGain": "Volumnormalisering",
     "replayGainDesc": "Jevner ut volumforskjeller mellom sanger (krever ReplayGain-data på serveren)",
     "equalizer": "Lydjustering",
     "equalizerDesc": "Form lyden med en 5-bånds grafisk lydjustering (kun stasjonær)",
     "equalizerReset": "Tilbakestill",
+    "loudnessBoost": "Volumforsterker",
+    "loudnessBoostDesc": "Innebygd volumforsterkning i tillegg til den vanlige volumkontrollen (kun Android)",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Viser hva du hører på i Discord-profilen din (kun stasjonær)",
     "discordConnect": "Koble til",
@@ -179,7 +208,46 @@
     "customCssDesc": "Skriv din egen CSS for å finjustere utseendet til appen ytterligere. Brukes umiddelbart.",
     "about": "Om",
     "offlineMode": "Offline-modus",
-    "offlineModeDesc": "Viser og spiller kun nedlastede sanger — resten er nedtonet"
+    "offlineModeDesc": "Viser og spiller kun nedlastede sanger — resten er nedtonet",
+    "privacy": "Personvern",
+    "albumArtLookup": "Søk etter omslag på nett",
+    "albumArtLookupDesc": "Sender artist-/albumnavnet til Deezers offentlige søke-API når Jellyfin-serveren din mangler omslag. Slå av så de dataene aldri forlater enheten din.",
+    "autoUpdateCheck": "Automatisk oppdateringssjekk",
+    "autoUpdateCheckDesc": "Sjekker i bakgrunnen på GitHub om det finnes en nyere Triptych-versjon. Ingen personopplysninger sendes, bare et versjonsoppslag. Slå av for å sjekke selv på Releases-siden.",
+    "catJamCredit": "«Cat Jam»-animasjon tilpasset fra BlafKings spicetify-cat-jam-synced",
+    "legalHeading": "Juridisk",
+    "privacyPolicy": "Personvernerklæring",
+    "termsOfService": "Vilkår for bruk",
+    "thirdPartyNotices": "Tredjepartsmerknader og lisenser",
+    "dataDeletion": "Slett dataene dine",
+    "storage": "Lagring",
+    "downloadsLabel": "Nedlastede sanger",
+    "downloadsUsage": "{count} sanger · {size} på denne enheten",
+    "clearDownloads": "Fjern alle",
+    "clearDownloadsConfirm": "Fjerne alle {count} nedlastede sanger fra denne enheten? De blir værende i biblioteket ditt og kan lastes ned igjen.",
+    "haptics": "Haptisk tilbakemelding",
+    "hapticsDesc": "Korte vibrasjoner ved sveip, menyer med langt trykk og dra for å oppdatere",
+    "qualityNow": "Akkurat nå: {level} · tilkoblingen din ≈ {speed} Mbit/s",
+    "qualityKbps": "{kbps} kbps",
+    "qualityOriginal": "original kvalitet",
+    "lyricsSearch": "Søk etter sangtekst",
+    "lyricsSearchDesc": "Finn sanger ut fra en linje i teksten. Henter sangtekstene i biblioteket ditt i bakgrunnen (titler og artister sendes til lrclib.net og lyrics.ovh) og lagrer dem på denne enheten.",
+    "lyricsSearchStatus": "{done} av {total} sanger behandlet ({found} med tekst)."
+  },
+  "privacyNotice": {
+    "text": "Triptych lagrer alt på din egen enhet og din egen Jellyfin-server. Noen få oppslag i bakgrunnen (omslag, oppdateringssjekk) snakker med eksterne tjenester — se personvernerklæringen for nøyaktig hva som sendes, og slå dem av når som helst i Innstillinger.",
+    "viewPolicy": "Personvernerklæring",
+    "dismiss": "Skjønner"
+  },
+  "legal": {
+    "overlayTitle": "Juridisk og personvern",
+    "navPrivacy": "Personvernerklæring",
+    "navTerms": "Vilkår for bruk",
+    "navRefunds": "Refusjonsregler",
+    "navCookies": "Retningslinjer for informasjonskapsler og lokal lagring",
+    "navDeletion": "Sletting av data",
+    "navThirdParty": "Tredjepartsmerknader og lisenser",
+    "navAccessibility": "Tilgjengelighetserklæring"
   },
   "audioQuality": {
     "auto": "Automatisk (best tilgjengelige kvalitet)",
@@ -188,10 +256,20 @@
     "low": "Lav — 96 kbps"
   },
   "palette": {
-    "jellyfin": "Jellyfin",
-    "spotify": "Spotify",
+    "default": "Standard",
+    "blue": "Blå",
+    "green": "Grønn",
+    "red": "Rød",
+    "magenta": "Magenta",
     "purple": "Lilla",
-    "mono": "Monokrom"
+    "pink": "Rosa",
+    "orange": "Oransje",
+    "yellow": "Gul",
+    "teal": "Blågrønn",
+    "brown": "Brun",
+    "mono": "Monokrom",
+    "jellyfin": "Jellyfin",
+    "spotify": "Spotify"
   },
   "errors": {
     "generic": "Noe gikk galt: {error}",
@@ -203,8 +281,12 @@
     "couldNotDownload": "Kunne ikke laste ned sangen."
   },
   "update": {
-    "available": "JellyWave {version} er tilgjengelig.",
-    "view": "Vis"
+    "available": "Triptych {version} er tilgjengelig.",
+    "view": "Vis",
+    "install": "Oppdater nå",
+    "downloading": "Laster ned … {percent} %",
+    "installing": "Starter installasjonsprogrammet …",
+    "failed": "Oppdateringen mislyktes: {error}"
   },
   "stats": {
     "title": "Statistikken din",
@@ -217,7 +299,12 @@
     "topAlbums": "Mest spilte album",
     "plays": "{count} avspilling",
     "playsPlural": "{count} avspillinger",
-    "empty": "Hør på musikk for å begynne å bygge opp statistikken din."
+    "empty": "Hør på musikk for å begynne å bygge opp statistikken din.",
+    "since": "siden {date}",
+    "estimated": "anslått ut fra avspillinger",
+    "calendar": "Lyttekalender",
+    "calendarNote": "{days} dager med musikk i år · lengste rekke {streak} dager",
+    "calendarEmpty": "Kalenderen din fylles ut mens du lytter."
   },
   "queue": {
     "addToQueue": "Legg til i kø",
@@ -248,5 +335,107 @@
   "downloads": {
     "title": "Nedlastinger",
     "empty": "Ingen nedlastede sanger ennå."
+  },
+  "grab": {
+    "title": "Importer",
+    "subtitle": "Hent et spor, en spilleliste eller et album fra YouTube, YouTube Music eller SoundCloud som MP3 til en lokal mappe.",
+    "desktopOnly": "Import er bare tilgjengelig i skrivebordsappen.",
+    "urlLabel": "URL til video, spilleliste eller spor",
+    "urlPlaceholder": "https://...",
+    "folderLabel": "Lagre i",
+    "folderPlaceholder": "Velg en mappe …",
+    "browse": "Bla gjennom …",
+    "start": "Start",
+    "cancel": "Avbryt",
+    "starting": "Starter …",
+    "missingFields": "Skriv inn en URL og velg en målmappe først.",
+    "progressStatus": "{done} av {total} ferdige",
+    "doneStatus": "Ferdig: {done} av {total} vellykket",
+    "cancelled": "Avbrutt."
+  },
+  "whatsNew": {
+    "title": "Nytt i {version}",
+    "subtitle": "Dette er nytt.",
+    "continue": "Fortsett",
+    "appleStyleTitle": "Apple Music-stil",
+    "appleStyleDesc": "Under Innstillinger → Utseende → Grensesnittstil kan du nå bytte mellom Spotify-utseendet og et nytt Apple Music-utseende.",
+    "instantSkipTitle": "Umiddelbart hopp",
+    "instantSkipDesc": "Neste sang bufres i bakgrunnen, så Neste (og Forrige) starter med en gang.",
+    "sheetsTitle": "Kø og sangtekst som paneler",
+    "sheetsDesc": "På telefoner glir køen og den store sangteksten opp fra bunnen av spilleren.",
+    "gesturesTitle": "Sveipebevegelser",
+    "gesturesDesc": "Sveip på omslaget for å bytte sang, sveip ned for å lukke spilleren, og dra en side ned for å oppdatere den.",
+    "phoneVolumeTitle": "Telefonvolum",
+    "phoneVolumeDesc": "På Android styrer volumkontrollen telefonens volum og følger volumknappene.",
+    "updatesTitle": "Oppdateringer med ett klikk",
+    "updatesDesc": "På PC lastes nye versjoner nå ned og installeres rett fra appen.",
+    "shortcutsTitle": "Hurtigtaster",
+    "shortcutsDesc": "Mellomrom spiller av og pauser, Ctrl + ← og Ctrl + → hopper til forrige eller neste sang.",
+    "polishTitle": "Jevnere og mer pålitelig",
+    "polishDesc": "Nye animasjoner, en lasteskjerm i stedet for innloggingsblinket, mer pålitelige sangtekster, raskere lasting og mange rettelser.",
+    "resumeTitle": "Fortsett der du slapp",
+    "resumeDesc": "Triptych husker køen, sangen og posisjonen din og har dem klare neste gang du åpner den.",
+    "smartHomeTitle": "En smartere startside",
+    "smartHomeDesc": "Nye rader: Fortsett å lytte, Fordi du lyttet til … og Nylig lagt til.",
+    "wrappedTitle": "Wrapped",
+    "wrappedDesc": "Den 31. desember kommer musikkåret ditt som en story: minutter, toppartist (trommevirvel, takk), toppsanger og mer.",
+    "listenTimeTitle": "Ekte lyttetid",
+    "listenTimeDesc": "Statistikken teller nå tiden du faktisk lytter, på alle enhetene dine, i stedet for å anslå den ut fra avspillinger.",
+    "storageTitle": "Innstillinger for lagring og haptikk",
+    "storageDesc": "Se hvor mye plass nedlastinger tar, fjern dem, og slå vibrasjon av eller på.",
+    "queueOrderTitle": "En kø som holder på rekkefølgen din",
+    "queueOrderDesc": "Sanger du legger til, spilles i den rekkefølgen du la dem til, før resten av albumet. Køen viser dem separat under «Neste i køen».",
+    "adaptiveQualityTitle": "Automatisk kvalitet som tilpasser seg",
+    "adaptiveQualityDesc": "Automatisk strømmekvalitet måler nå tilkoblingen din og senker bithastigheten på trege eller mobile tilkoblinger.",
+    "fasterLoadingTitle": "Raskere på trege tilkoblinger",
+    "fasterLoadingDesc": "Omslag hentes i en størrelse som passer skjermen din, og neste sang forhåndslastes først når den nåværende er lastet ned.",
+    "nothingStyleTitle": "Nytt utseende: Nothing",
+    "nothingStyleDesc": "En tredje grensesnittstil ved siden av Spotify og Apple Music, inspirert av Nothing OS: svart og hvitt, overskrifter og sangtekster i punktmatrise, tynne strekikoner og en rød aksent du kan endre. Velg den under Innstillinger → Utseende.",
+    "smallScreensTitle": "Passer små telefoner",
+    "smallScreensDesc": "På lave skjermer beholder fullskjermspilleren det store omslaget og strammer inn resten, så kontroller, volum og sangtekst forblir synlige. Innstillinger passer også smale skjermer.",
+    "iosPlaybackTitle": "Bedre avspilling på iPhone",
+    "iosPlaybackDesc": "Musikken spiller videre i bakgrunnen, kontrollene på låseskjermen og i Kontrollsenter fungerer alltid, og volumkontrollen følger volumknappene.",
+    "nothingSlidersTitle": "Prikkede eller vanlige glidebrytere",
+    "nothingSlidersDesc": "I Nothing-stilen kan du nå bytte de prikkede fremdrifts- og volumlinjene til vanlige linjer: Innstillinger → Utseende → Prikkede glidebrytere.",
+    "lyricsSearchTitle": "Søk etter sangtekst",
+    "lyricsSearchDesc": "Husker du en linje, men ikke tittelen? Slå på «Søk etter sangtekst» under Innstillinger → Personvern, og skriv linjen i Søk.",
+    "listeningCalendarTitle": "Lyttekalender",
+    "listeningCalendarDesc": "Statistikken viser nå en prikk for hver dag du lyttet, lysere jo mer du spilte, pluss den lengste rekken din.",
+    "listTotalsTitle": "Hvor lang er den?",
+    "listTotalsDesc": "Album, spillelister, Likte sanger og Nedlastinger viser total lengde, for eksempel «19 sanger · 1 t 14 min».",
+    "realPlaysTitle": "Bare ekte avspillinger teller",
+    "realPlaysDesc": "En sang teller som spilt når du har hørt minst halvparten av den. Sanger du hopper over, teller ikke lenger, og lyttetiden din nullstilles ikke lenger etter en oppdatering.",
+    "renameTitle": "JellyWave heter nå Triptych",
+    "renameDesc": "Samme app, nytt navn og ny logo. Innloggingen, innstillingene, nedlastingene og lyttestatistikken din blir med.",
+    "languagesTitle": "Alle språk, fullt oversatt",
+    "languagesDesc": "Alle 15 språk dekker nå hver skjerm, innstilling og melding, også Wrapped, Importer og menyen med juridiske sider.",
+    "calendarMonthsTitle": "En kalender per måned",
+    "calendarMonthsDesc": "Lyttekalenderen viser hver måned som en egen blokk og passer på alle telefoner uten å rulle sidelengs."
+  },
+  "wrapped": {
+    "bannerTitle": "Din Wrapped {year}",
+    "bannerSub": "Toppsangene, -artistene og minuttene dine som en story",
+    "introTitle": "Ditt {year} i musikk",
+    "introAllTime": "Musikken din, gjennom tidene",
+    "tapToContinue": "Trykk for å fortsette",
+    "minutesTitle": "Du lyttet i",
+    "minutesUnit": "minutter",
+    "hoursNote": "Det er omtrent {hours} timer med musikk.",
+    "estimatedNote": "Anslått ut fra avspillingene dine. Nøyaktig lyttetid telles fra nå av, så neste gang blir det mer presist.",
+    "topArtistTitle": "Toppartisten din",
+    "minutesTogether": "{minutes} minutter sammen",
+    "minutesShort": "{minutes} min",
+    "topSongsTitle": "Toppsangene dine",
+    "topMonthTitle": "Din største måned",
+    "topMonthNote": "{minutes} minutter med musikk",
+    "outroTitle": "Det var det",
+    "outroSub": "Takk for at du lyttet med Triptych.",
+    "playTop": "Spill toppsangene dine",
+    "drumrollKicker": "Og toppartisten din er …",
+    "drumroll": "Trommevirvel, takk …"
+  },
+  "duration": {
+    "hoursMinutes": "{h} t {m} min",
+    "minutes": "{m} min"
   }
 }

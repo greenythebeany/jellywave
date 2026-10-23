@@ -1,5 +1,5 @@
 // Search by lyrics. Jellyfin doesn't index lyrics and no public lyrics
-// service searches by lyric text for apps, so JellyWave keeps its own index
+// service searches by lyric text for apps, so Triptych keeps its own index
 // on this device: the lyrics of the library's songs, fetched slowly in the
 // background through the same sources as the lyrics view (see lyrics.js),
 // stored in IndexedDB. Searching then matches a typed line locally.

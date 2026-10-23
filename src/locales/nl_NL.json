@@ -1,6 +1,11 @@
 {
   "app": {
-    "name": "JellyWave"
+    "name": "Triptych"
+  },
+  "common": {
+    "close": "Sluiten",
+    "unknown": "Onbekend",
+    "unknownArtist": "Onbekende artiest"
   },
   "titlebar": {
     "minimize": "Minimaliseren",
@@ -39,7 +44,9 @@
     "back": "Terug",
     "forward": "Vooruit",
     "stats": "Statistieken",
-    "downloads": "Downloads"
+    "downloads": "Downloads",
+    "grab": "Importeren",
+    "pinnedAlbums": "Vastgezette albums"
   },
   "header": {
     "searchPlaceholder": "Wat wil je afspelen?"
@@ -51,18 +58,22 @@
   "home": {
     "greeting": "Fijn je te zien",
     "recentlyPlayed": "Onlangs afgespeeld",
-    "yourPlaylists": "Jouw afspeellijsten",
-    "recentAlbums": "Onlangs toegevoegde albums",
     "madeForYou": "Voor jou gemaakt",
     "mostPlayed": "Meest afgespeeld",
     "onRepeat": "Continu herhaald",
     "genreMix": "Genremix",
-    "songsCount": "{count} nummers"
+    "songsCount": "{count} nummers",
+    "yourPlaylists": "Jouw afspeellijsten",
+    "recentAlbums": "Onlangs toegevoegde albums",
+    "jumpBackIn": "Verder luisteren",
+    "becauseYouListened": "Omdat je naar {artist} luisterde"
   },
   "search": {
     "title": "Doorzoek je bibliotheek",
     "noResults": "Geen resultaten gevonden.",
-    "failed": "Zoeken mislukt: {error}"
+    "failed": "Zoeken mislukt: {error}",
+    "lyricsMatches": "Gevonden in songteksten",
+    "lyricsOff": "Zoek je een nummer op de tekst? Zet 'Zoeken op songtekst' aan in Instellingen → Privacy."
   },
   "songs": {
     "title": "Alle nummers",
@@ -97,7 +108,9 @@
     "songCountPlural": "{count} nummers"
   },
   "album": {
-    "empty": "Dit album bevat geen nummers."
+    "empty": "Dit album bevat geen nummers.",
+    "pin": "Vastzetten in zijbalk",
+    "unpin": "Losmaken van zijbalk"
   },
   "kind": {
     "playlist": "Afspeellijst",
@@ -128,10 +141,15 @@
     "upNext": "Hierna",
     "lookingUpLyrics": "Songtekst zoeken…",
     "noLyrics": "Geen songtekst gevonden voor dit nummer.",
+    "lyricsFailed": "De songtekst kon nu niet worden geladen.",
+    "retry": "Opnieuw proberen",
     "queueEmpty": "De wachtrij is leeg.",
-    "title": "Nu aan het afspelen"
+    "title": "Nu aan het afspelen",
+    "nextInQueue": "Hierna in de wachtrij",
+    "clearQueue": "Wissen"
   },
   "player": {
+    "coverArtAlt": "Albumhoes van {name} door {artist}",
     "shuffle": "Shuffle",
     "previous": "Vorige",
     "play": "Afspelen",
@@ -140,13 +158,21 @@
     "repeat": "Herhalen",
     "sleepTimer": "Slaaptimer",
     "sleepEndOfTrack": "Einde van nummer",
-    "sleepOff": "Uitschakelen"
+    "sleepOff": "Uitschakelen",
+    "volume": "Volume"
   },
   "settings": {
     "title": "Instellingen",
     "appearance": "Weergave",
     "theme": "Thema",
     "themeDesc": "Licht, donker, of volgens je systeem",
+    "uiStyle": "Interfacestijl",
+    "uiStyleDesc": "Uiterlijk van Spotify, Apple Music of Nothing",
+    "uiSpotify": "Spotify",
+    "uiApple": "Apple Music",
+    "uiNothing": "Nothing",
+    "nothingDots": "Gestippelde schuifbalken",
+    "nothingDotsDesc": "Voortgangs- en volumebalk als puntmatrix; uit toont gewone lijnen",
     "dark": "Donker",
     "light": "Licht",
     "system": "Systeem",
@@ -163,11 +189,14 @@
     "qualityDesc": "Lagere kwaliteit gebruikt minder data",
     "crossfade": "Crossfade",
     "crossfadeDesc": "Vervaagt het einde van één nummer naar het begin van het volgende",
+    "crossfadeOff": "Uit",
     "replayGain": "Volumenormalisatie",
     "replayGainDesc": "Vereffent volumeverschillen tussen nummers (vereist ReplayGain-gegevens op de server)",
     "equalizer": "Equalizer",
     "equalizerDesc": "Pas het geluid aan met een 5-bands grafische equalizer (alleen desktop)",
     "equalizerReset": "Resetten",
+    "loudnessBoost": "Volumeversterker",
+    "loudnessBoostDesc": "Systeemeigen volumeversterking, bovenop de normale volumeschuif (alleen Android)",
     "discordPresence": "Discord Rich Presence",
     "discordPresenceDesc": "Toont wat je luistert op je Discord-profiel (alleen desktop)",
     "discordConnect": "Verbinden",
@@ -179,7 +208,46 @@
     "customCssDesc": "Schrijf je eigen CSS om het uiterlijk van de app verder aan te passen. Wordt direct toegepast.",
     "about": "Over",
     "offlineMode": "Offlinemodus",
-    "offlineModeDesc": "Toont en speelt alleen gedownloade nummers — de rest is grijs"
+    "offlineModeDesc": "Toont en speelt alleen gedownloade nummers — de rest is grijs",
+    "privacy": "Privacy",
+    "albumArtLookup": "Online albumhoezen zoeken",
+    "albumArtLookupDesc": "Stuurt de artiest-/albumnaam naar de openbare zoek-API van Deezer als je Jellyfin-server geen albumhoes heeft. Zet uit zodat die gegevens je apparaat nooit verlaten.",
+    "autoUpdateCheck": "Automatisch controleren op updates",
+    "autoUpdateCheckDesc": "Controleert op de achtergrond op GitHub of er een nieuwere Triptych-versie is. Er worden geen persoonlijke gegevens verstuurd, alleen een versiecontrole. Zet uit om zelf te kijken op de Releases-pagina.",
+    "catJamCredit": "'Cat Jam'-animatie gebaseerd op spicetify-cat-jam-synced van BlafKing",
+    "legalHeading": "Juridisch",
+    "privacyPolicy": "Privacybeleid",
+    "termsOfService": "Servicevoorwaarden",
+    "thirdPartyNotices": "Kennisgevingen en licenties van derden",
+    "dataDeletion": "Je gegevens verwijderen",
+    "storage": "Opslag",
+    "downloadsLabel": "Gedownloade nummers",
+    "downloadsUsage": "{count} nummers · {size} op dit apparaat",
+    "clearDownloads": "Alles verwijderen",
+    "clearDownloadsConfirm": "Alle {count} gedownloade nummers van dit apparaat verwijderen? Ze blijven in je bibliotheek en kunnen opnieuw worden gedownload.",
+    "haptics": "Haptische feedback",
+    "hapticsDesc": "Korte trillingen bij vegen, menu's via lang indrukken en omlaag trekken om te vernieuwen",
+    "qualityNow": "Nu: {level} · je verbinding ≈ {speed} Mbit/s",
+    "qualityKbps": "{kbps} kbps",
+    "qualityOriginal": "originele kwaliteit",
+    "lyricsSearch": "Zoeken op songtekst",
+    "lyricsSearchDesc": "Vind nummers aan de hand van een regel uit de tekst. Haalt de songteksten van je bibliotheek op de achtergrond op (titels en artiesten gaan naar lrclib.net en lyrics.ovh) en bewaart ze op dit apparaat.",
+    "lyricsSearchStatus": "{done} van {total} nummers verwerkt ({found} met tekst)."
+  },
+  "privacyNotice": {
+    "text": "Triptych bewaart alles op je eigen apparaat en je eigen Jellyfin-server. Een paar achtergrondverzoeken (albumhoezen, updatecontrole) praten met externe diensten — in het privacybeleid staat precies wat er wordt verstuurd, en je kunt ze altijd uitzetten in Instellingen.",
+    "viewPolicy": "Privacybeleid",
+    "dismiss": "Begrepen"
+  },
+  "legal": {
+    "overlayTitle": "Juridisch en privacy",
+    "navPrivacy": "Privacybeleid",
+    "navTerms": "Servicevoorwaarden",
+    "navRefunds": "Terugbetalingsbeleid",
+    "navCookies": "Cookie- en lokale-opslagbeleid",
+    "navDeletion": "Gegevens verwijderen",
+    "navThirdParty": "Kennisgevingen en licenties van derden",
+    "navAccessibility": "Toegankelijkheidsverklaring"
   },
   "audioQuality": {
     "auto": "Automatisch (best beschikbare kwaliteit)",
@@ -188,10 +256,20 @@
     "low": "Laag — 96 kbps"
   },
   "palette": {
-    "jellyfin": "Jellyfin",
-    "spotify": "Spotify",
+    "default": "Standaard",
+    "blue": "Blauw",
+    "green": "Groen",
+    "red": "Rood",
+    "magenta": "Magenta",
     "purple": "Paars",
-    "mono": "Monochroom"
+    "pink": "Roze",
+    "orange": "Oranje",
+    "yellow": "Geel",
+    "teal": "Blauwgroen",
+    "brown": "Bruin",
+    "mono": "Monochroom",
+    "jellyfin": "Jellyfin",
+    "spotify": "Spotify"
   },
   "errors": {
     "generic": "Er is iets misgegaan: {error}",
@@ -203,8 +281,12 @@
     "couldNotDownload": "Kon nummer niet downloaden."
   },
   "update": {
-    "available": "JellyWave {version} is beschikbaar.",
-    "view": "Bekijken"
+    "available": "Triptych {version} is beschikbaar.",
+    "view": "Bekijken",
+    "install": "Nu bijwerken",
+    "downloading": "Downloaden… {percent}%",
+    "installing": "Installatieprogramma starten…",
+    "failed": "Bijwerken mislukt: {error}"
   },
   "stats": {
     "title": "Jouw statistieken",
@@ -217,7 +299,12 @@
     "topAlbums": "Meest gespeelde albums",
     "plays": "{count} keer afgespeeld",
     "playsPlural": "{count} keer afgespeeld",
-    "empty": "Luister naar muziek om je statistieken op te bouwen."
+    "empty": "Luister naar muziek om je statistieken op te bouwen.",
+    "since": "sinds {date}",
+    "estimated": "geschat op basis van afspeelbeurten",
+    "calendar": "Luisterkalender",
+    "calendarNote": "{days} dagen met muziek dit jaar · langste reeks {streak} dagen",
+    "calendarEmpty": "Je kalender vult zich terwijl je luistert."
   },
   "queue": {
     "addToQueue": "Toevoegen aan wachtrij",
@@ -248,5 +335,107 @@
   "downloads": {
     "title": "Downloads",
     "empty": "Nog geen gedownloade nummers."
+  },
+  "grab": {
+    "title": "Importeren",
+    "subtitle": "Haal een nummer, playlist of album van YouTube, YouTube Music of SoundCloud als mp3 naar een lokale map.",
+    "desktopOnly": "Importeren is alleen beschikbaar in de desktop-app.",
+    "urlLabel": "URL van video, playlist of nummer",
+    "urlPlaceholder": "https://...",
+    "folderLabel": "Opslaan in",
+    "folderPlaceholder": "Kies een map…",
+    "browse": "Bladeren…",
+    "start": "Starten",
+    "cancel": "Annuleren",
+    "starting": "Starten…",
+    "missingFields": "Voer eerst een URL in en kies een doelmap.",
+    "progressStatus": "{done} van {total} klaar",
+    "doneStatus": "Klaar: {done} van {total} gelukt",
+    "cancelled": "Geannuleerd."
+  },
+  "whatsNew": {
+    "title": "Nieuw in {version}",
+    "subtitle": "Dit is er nieuw.",
+    "continue": "Doorgaan",
+    "appleStyleTitle": "Apple Music-stijl",
+    "appleStyleDesc": "Via Instellingen → Weergave → Interfacestijl kun je nu wisselen tussen het Spotify-uiterlijk en een nieuw Apple Music-uiterlijk.",
+    "instantSkipTitle": "Direct overslaan",
+    "instantSkipDesc": "Het volgende nummer wordt op de achtergrond gebufferd, dus Volgende (en Vorige) start meteen.",
+    "sheetsTitle": "Wachtrij en songtekst als paneel",
+    "sheetsDesc": "Op telefoons schuiven de wachtrij en de grote songtekst omhoog vanaf de onderkant van de speler.",
+    "gesturesTitle": "Veeggebaren",
+    "gesturesDesc": "Veeg over de albumhoes om van nummer te wisselen, veeg omlaag om de speler te sluiten en trek een pagina omlaag om te vernieuwen.",
+    "phoneVolumeTitle": "Telefoonvolume",
+    "phoneVolumeDesc": "Op Android regelt de volumeschuif het volume van je telefoon en volgt hij de volumeknoppen.",
+    "updatesTitle": "Updates met één klik",
+    "updatesDesc": "Op de pc worden nieuwe versies nu direct vanuit de app gedownload en geïnstalleerd.",
+    "shortcutsTitle": "Sneltoetsen",
+    "shortcutsDesc": "Spatie speelt af en pauzeert, Ctrl + ← en Ctrl + → gaan naar het vorige of volgende nummer.",
+    "polishTitle": "Soepeler en betrouwbaarder",
+    "polishDesc": "Nieuwe animaties, een laadscherm in plaats van de inlogflits, betrouwbaardere songteksten, sneller laden en veel verbeteringen.",
+    "resumeTitle": "Ga verder waar je gebleven was",
+    "resumeDesc": "Triptych onthoudt je wachtrij, nummer en positie en heeft ze klaar wanneer je de app weer opent.",
+    "smartHomeTitle": "Een slimmere startpagina",
+    "smartHomeDesc": "Nieuwe rijen: Verder luisteren, Omdat je luisterde naar… en Nieuw toegevoegd.",
+    "wrappedTitle": "Wrapped",
+    "wrappedDesc": "Op 31 december komt je muziekjaar als verhaal: minuten, topartiest (tromgeroffel, graag), topnummers en meer.",
+    "listenTimeTitle": "Echte luistertijd",
+    "listenTimeDesc": "Statistieken tellen nu de tijd dat je echt luistert, op al je apparaten, in plaats van die te schatten op basis van afspeelbeurten.",
+    "storageTitle": "Instellingen voor opslag en haptiek",
+    "storageDesc": "Zie hoeveel ruimte downloads innemen, verwijder ze en zet trillingen aan of uit.",
+    "queueOrderTitle": "Een wachtrij die je volgorde aanhoudt",
+    "queueOrderDesc": "Nummers die je toevoegt, spelen in de volgorde waarin je ze toevoegde, vóór de rest van het album. De wachtrij toont ze apart onder 'Hierna in de wachtrij'.",
+    "adaptiveQualityTitle": "Automatische kwaliteit die zich aanpast",
+    "adaptiveQualityDesc": "Automatische streamingkwaliteit meet nu je verbinding en verlaagt de bitrate bij trage of mobiele verbindingen.",
+    "fasterLoadingTitle": "Sneller bij trage verbindingen",
+    "fasterLoadingDesc": "Albumhoezen worden passend voor je scherm geladen, en het volgende nummer wordt pas vooraf geladen als het huidige is gedownload.",
+    "nothingStyleTitle": "Nieuwe look: Nothing",
+    "nothingStyleDesc": "Een derde interfacestijl naast Spotify en Apple Music, geïnspireerd door Nothing OS: zwart-wit, puntmatrixkoppen en -songteksten, dunne lijniconen en een rood accent dat je kunt wijzigen. Kies hem in Instellingen → Weergave.",
+    "smallScreensTitle": "Past op kleine telefoons",
+    "smallScreensDesc": "Op lage schermen houdt de volledige speler de grote albumhoes en wordt de rest compacter, zodat bediening, volume en songtekst zichtbaar blijven. Ook Instellingen past op smalle schermen.",
+    "iosPlaybackTitle": "Betere weergave op iPhone",
+    "iosPlaybackDesc": "Muziek blijft op de achtergrond spelen, de bediening op het toegangsscherm en in het bedieningspaneel werkt altijd, en de volumeschuif volgt de volumeknoppen.",
+    "nothingSlidersTitle": "Gestippelde of gewone schuifbalken",
+    "nothingSlidersDesc": "In de Nothing-stijl kun je de gestippelde voortgangs- en volumebalk nu omzetten naar gewone lijnen: Instellingen → Weergave → Gestippelde schuifbalken.",
+    "lyricsSearchTitle": "Zoeken op songtekst",
+    "lyricsSearchDesc": "Ken je een regel maar niet de titel? Zet 'Zoeken op songtekst' aan in Instellingen → Privacy en typ de regel in Zoeken.",
+    "listeningCalendarTitle": "Luisterkalender",
+    "listeningCalendarDesc": "Statistieken tonen nu een stip voor elke dag dat je luisterde, feller naarmate je meer luisterde, plus je langste reeks.",
+    "listTotalsTitle": "Hoe lang duurt het?",
+    "listTotalsDesc": "Albums, playlists, Gelikete nummers en Downloads tonen hun totale duur, zoals '19 nummers · 1 u 14 min'.",
+    "realPlaysTitle": "Alleen echte afspeelbeurten tellen",
+    "realPlaysDesc": "Een nummer telt als afgespeeld zodra je minstens de helft hebt gehoord. Overgeslagen nummers tellen niet meer mee, en je luistertijd wordt na een update niet meer gereset.",
+    "renameTitle": "JellyWave heet nu Triptych",
+    "renameDesc": "Dezelfde app, nieuwe naam en nieuw logo. Je login, instellingen, downloads en luisterstatistieken blijven bewaard.",
+    "languagesTitle": "Elke taal, volledig vertaald",
+    "languagesDesc": "Alle 15 talen dekken nu elk scherm, elke instelling en elk bericht, inclusief Wrapped, Importeren en het menu van de juridische pagina's.",
+    "calendarMonthsTitle": "Een kalender per maand",
+    "calendarMonthsDesc": "De luisterkalender toont elke maand als een eigen blok en past op elke telefoon zonder zijwaarts te scrollen."
+  },
+  "wrapped": {
+    "bannerTitle": "Jouw Wrapped {year}",
+    "bannerSub": "Je topnummers, artiesten en minuten, als verhaal",
+    "introTitle": "Jouw {year} in muziek",
+    "introAllTime": "Jouw muziek, aller tijden",
+    "tapToContinue": "Tik om door te gaan",
+    "minutesTitle": "Je luisterde",
+    "minutesUnit": "minuten",
+    "hoursNote": "Dat is ongeveer {hours} uur muziek.",
+    "estimatedNote": "Geschat op basis van je afspeelbeurten. Vanaf nu wordt de exacte luistertijd geteld, dus volgende keer is het nauwkeuriger.",
+    "topArtistTitle": "Je topartiest",
+    "minutesTogether": "{minutes} minuten samen",
+    "minutesShort": "{minutes} min",
+    "topSongsTitle": "Je topnummers",
+    "topMonthTitle": "Je grootste maand",
+    "topMonthNote": "{minutes} minuten muziek",
+    "outroTitle": "Dat was het",
+    "outroSub": "Bedankt voor het luisteren met Triptych.",
+    "playTop": "Je topnummers afspelen",
+    "drumrollKicker": "En je topartiest is…",
+    "drumroll": "Tromgeroffel, graag…"
+  },
+  "duration": {
+    "hoursMinutes": "{h} u {m} min",
+    "minutes": "{m} min"
   }
 }
