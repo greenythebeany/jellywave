@@ -76,6 +76,7 @@ h2 { margin: 0; font: 700 var(--step-head)/0.95 var(--font-display); font-synthe
 .foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 20vh; padding: 28px var(--margin) 36px; color: var(--ink-2); font-size: var(--step-small); }
 
 @media (max-width: 820px) {
+  .nav nav a:not(.pill) { display: none; }
   .hero { grid-template-columns: 1fr; padding-top: 4vh; }
   .matrix { max-height: 34svh; }
   .screens { grid-template-columns: 1fr; }

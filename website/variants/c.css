@@ -1,5 +1,6 @@
 /* C · Editorial (tokens: see themes.md) */
 @font-face { font-family: Fraunces; font-weight: 100 900; font-display: swap; src: url(/fonts/fraunces-latin-full-normal.woff2) format('woff2'); }
+@font-face { font-family: Fraunces; font-weight: 100 900; font-style: italic; font-display: swap; src: url(/fonts/fraunces-latin-full-italic.woff2) format('woff2'); }
 @font-face { font-family: Doto; font-weight: 700; font-display: swap; src: url(/fonts/doto-latin-700-normal.woff2) format('woff2'); }
 
 :root {

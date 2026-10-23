@@ -36,8 +36,13 @@ a { color: inherit; }
    difference blend so it reads on paper, grey and ink alike. */
 .run { position: relative; }
 .pin { position: sticky; top: 0; height: 100svh; margin-bottom: -100svh; z-index: 10; pointer-events: none; display: flex; justify-content: center; padding-top: 11svh; }
-.title { margin: 0; font: 800 var(--step-display)/0.86 var(--font-display); letter-spacing: -0.035em; text-transform: uppercase; color: #fff; mix-blend-mode: difference; white-space: nowrap; }
-.stop { display: inline-block; width: 0.16em; height: 0.16em; margin-left: 0.04em; background: var(--accent); border-radius: 50%; mix-blend-mode: normal; }
+.pin.blend { mix-blend-mode: difference; }
+.pin.dot { z-index: 11; }
+.title { display: block; margin: 0; font: 800 var(--step-display)/0.86 var(--font-display); letter-spacing: -0.035em; text-transform: uppercase; color: #fff; white-space: nowrap; }
+.pin.dot .title { color: transparent; }
+.stop { display: inline-block; width: 0.16em; height: 0.16em; margin-left: 0.04em; border-radius: 50%; }
+.pin.blend .stop { visibility: hidden; }
+.pin.dot .stop { background: var(--accent); }
 .panel { position: relative; height: 100svh; min-height: 640px; display: grid; place-items: end center; padding-bottom: 0; }
 .p1 { background: var(--ground); }
 .p2 { background: var(--ground-2); }

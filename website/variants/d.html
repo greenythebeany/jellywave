@@ -17,8 +17,13 @@
   <main id="main">
     <!-- The pinned run: the title holds while the three looks pass beneath it. -->
     <div class="run" id="top">
-      <div class="pin" aria-hidden="false">
+      <!-- Two layers in the same place: the letters blend (difference) so they
+           read on every panel; the red full stop sits unblended on top. -->
+      <div class="pin blend">
         <h1 class="title">Triptych<span class="stop" aria-hidden="true"></span></h1>
+      </div>
+      <div class="pin dot" aria-hidden="true">
+        <span class="title">Triptych<span class="stop"></span></span>
       </div>
 
       <section class="panel p1" aria-label="Spotify look">
