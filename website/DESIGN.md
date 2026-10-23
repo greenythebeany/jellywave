@@ -2,7 +2,7 @@
 **Project ID:** none (no Stitch project; this file holds the fixed brand rules only)
 
 Everything not written here (layout, type pairing, motion, section design) is open
-and decided per design direction in `variants/`.
+and decided in `src/styles.css` (direction D, "Pinned Poster", chosen from four prototypes).
 
 ## 1. Visual Theme & Atmosphere
 A triptych is one work in three panels. The site tells that story: one library,
@@ -40,4 +40,4 @@ self-hosted (no font CDNs). Body type is free to change from Poppins.
 ## 5. Layout Principles
 Open per direction. The one fixed principle is the three-panel idea: wherever the three
 interface styles are shown together, they appear as three equal panels side by side
-(stacked on narrow screens), with the Nothing panel last, like the red bar.
+(stacked on narrow screens). In the hero carousel the order is Nothing, Spotify, Apple Music; in the three-panel row the app panel comes last, in red, like the red bar.
