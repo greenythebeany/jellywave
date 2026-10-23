@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Triptych · A · Gallery</title>
+  <link rel="icon" type="image/png" href="/media/favicon.png" />
+  <link rel="stylesheet" href="./a.css" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="nav">
+    <a class="brand" href="#top"><span data-mark class="brand-mark"></span><span>Triptych</span></a>
+    <nav aria-label="Sections">
+      <a href="#looks">Looks</a>
+      <a href="#download">Download</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hung">
+        <span data-mark="Triptych logo" class="hero-mark"></span>
+      </div>
+      <div class="label">
+        <h1>Triptych</h1>
+        <p class="label-meta">2026 · free and open source</p>
+        <p class="label-text">A music player for your own Jellyfin server, in three panels: the Spotify, Apple&nbsp;Music and Nothing looks over one library.</p>
+        <p class="label-meta">Windows, Linux, Android and iPhone</p>
+        <a class="btn" href="#download"><span class="dot" aria-hidden="true"></span>Download Triptych</a>
+      </div>
+    </section>
+
+    <section class="looks" id="looks" aria-labelledby="looks-title">
+      <div class="looks-head">
+        <h2 id="looks-title">Three panels, one library</h2>
+        <p>Pick a look in Settings and the whole app changes, on desktop and on your phone. Your music, playlists and stats stay exactly where they were.</p>
+        <div class="view" role="group" aria-label="Show the panels on">
+          <button type="button" aria-pressed="true" data-view="desktop">Desktop</button>
+          <button type="button" aria-pressed="false" data-view="phone">Phone</button>
+        </div>
+      </div>
+      <div class="wall">
+        <figure class="panel">
+          <div class="frame">
+            <picture data-desktop>
+              <source srcset="/media/v23/d-spotify.webp" type="image/webp" />
+              <img src="/media/v23/d-spotify.jpg" width="1600" height="900" alt="Triptych on a desktop in the Spotify look, on Slipknot's artist page" loading="lazy" />
+            </picture>
+            <picture data-phone hidden>
+              <source srcset="/media/v23/p-spotify.webp" type="image/webp" />
+              <img src="/media/v23/p-spotify.jpg" width="585" height="1266" alt="The player on a phone in the Spotify look" loading="lazy" />
+            </picture>
+          </div>
+          <figcaption>
+            <strong>Spotify</strong><span>Left panel</span>
+            <p>Dark cards, a green accent and big bold type: the look you already know.</p>
+          </figcaption>
+        </figure>
+        <figure class="panel">
+          <div class="frame">
+            <picture data-desktop>
+              <source srcset="/media/v23/d-apple.webp" type="image/webp" />
+              <img src="/media/v23/d-apple.jpg" width="1600" height="900" alt="Triptych on a desktop in the Apple Music look" loading="lazy" />
+            </picture>
+            <picture data-phone hidden>
+              <source srcset="/media/v23/p-apple.webp" type="image/webp" />
+              <img src="/media/v23/p-apple.jpg" width="585" height="1266" alt="The player on a phone in the Apple Music look" loading="lazy" />
+            </picture>
+          </div>
+          <figcaption>
+            <strong>Apple Music</strong><span>Centre panel</span>
+            <p>Frosted glass, bare rounded artwork and slim pill sliders.</p>
+          </figcaption>
+        </figure>
+        <figure class="panel">
+          <div class="frame">
+            <picture data-desktop>
+              <source srcset="/media/v23/d-nothing.webp" type="image/webp" />
+              <img src="/media/v23/d-nothing.jpg" width="1600" height="900" alt="Triptych on a desktop in the Nothing look" loading="lazy" />
+            </picture>
+            <picture data-phone hidden>
+              <source srcset="/media/v23/p-nothing.webp" type="image/webp" />
+              <img src="/media/v23/p-nothing.jpg" width="585" height="1266" alt="The player on a phone in the Nothing look, with synced lyrics" loading="lazy" />
+            </picture>
+          </div>
+          <figcaption>
+            <strong>Nothing</strong><span>Right panel</span>
+            <p>Black and white with one red light, dot-matrix type and thin outline icons.</p>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="download" id="download" aria-labelledby="download-title">
+      <div class="download-head">
+        <h2 id="download-title">Take it home</h2>
+        <p>Latest release <span data-version>v2.3</span>. Install it on as many devices as you like, then sign in with your Jellyfin server address, username and password.</p>
+      </div>
+      <ul class="catalogue">
+        <li>
+          <a data-asset="windows" href=""><span class="cat-name">Windows</span><span class="cat-file">Installer, .exe</span></a>
+          <p>Updates itself from inside the app.</p>
+        </li>
+        <li>
+          <a data-asset="android" href=""><span class="cat-name">Android</span><span class="cat-file">APK</span></a>
+          <p>Allow installs from your browser the first time.</p>
+        </li>
+        <li>
+          <a data-asset="appimage" href=""><span class="cat-name">Linux</span><span class="cat-file">AppImage</span></a>
+          <p>Or get the <a class="inline" data-asset="snap" href="">snap package</a>.</p>
+        </li>
+        <li>
+          <a data-asset="ipa" href=""><span class="cat-name">iPhone</span><span class="cat-file">Unsigned .ipa</span></a>
+          <p>Sideload it with AltStore or Sideloadly.</p>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span data-mark class="foot-mark"></span>
+    <p>Triptych is free and open source. Not affiliated with Jellyfin, Spotify, Apple or Nothing.</p>
+    <a href="https://github.com/greenythebeany/triptych">Source on GitHub</a>
+  </footer>
+
+  <script type="module" src="./shared.js"></script>
+  <script type="module">
+    const buttons = document.querySelectorAll('.view button');
+    buttons.forEach((b) => b.addEventListener('click', () => {
+      const phone = b.dataset.view === 'phone';
+      buttons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      document.querySelector('.wall').classList.toggle('as-phone', phone);
+      document.querySelectorAll('[data-desktop]').forEach((p) => { p.hidden = phone; });
+      document.querySelectorAll('[data-phone]').forEach((p) => { p.hidden = !phone; });
+    }));
+  </script>
+</body>
+</html>

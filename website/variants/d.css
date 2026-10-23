@@ -1,0 +1,87 @@
+/* D · Pinned Poster (tokens: see themes.md) */
+@font-face { font-family: "Cabinet Grotesk"; font-weight: 400; font-display: swap; src: url(/fonts/cabinet-grotesk-400.woff2) format('woff2'); }
+@font-face { font-family: "Cabinet Grotesk"; font-weight: 500; font-display: swap; src: url(/fonts/cabinet-grotesk-500.woff2) format('woff2'); }
+@font-face { font-family: "Cabinet Grotesk"; font-weight: 800; font-display: swap; src: url(/fonts/cabinet-grotesk-800.woff2) format('woff2'); }
+@font-face { font-family: Doto; font-weight: 700; font-display: swap; src: url(/fonts/doto-latin-700-normal.woff2) format('woff2'); }
+
+:root {
+  --ground: #fff; --ground-2: #e6e6e6; --ground-3: #000; --ink: #000; --ink-2: #4d4d4d; --accent: #d71921;
+  --font-display: "Cabinet Grotesk", "Arial Black", sans-serif; --font-text: "Cabinet Grotesk", "Segoe UI", sans-serif; --font-mark: Doto, monospace;
+  --margin: 24px; --radius: 0;
+  --step-small: 0.9375rem; --step-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
+  --step-lead: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem); --step-head: clamp(2.5rem, 1.2rem + 5vw, 5.5rem);
+  --step-display: clamp(64px, 13vw, 210px);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --ground: #000; --ground-2: #1a1a1a; --ground-3: #fff; --ink: #fff; --ink-2: #b3b3b3; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --ground: #000; --ground-2: #1a1a1a; --ground-3: #fff; --ink: #fff; --ink-2: #b3b3b3; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); color: var(--ink); font: 400 var(--step-body)/1.5 var(--font-text); -webkit-font-smoothing: antialiased; }
+img { display: block; width: 100%; height: auto; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.skip { position: absolute; left: -999px; top: 8px; padding: 8px 14px; background: var(--ink); color: var(--ground); z-index: 50; }
+.skip:focus { left: 8px; }
+
+.nav { position: fixed; inset: 0 0 auto; z-index: 30; display: flex; justify-content: space-between; align-items: center; padding: 20px var(--margin); mix-blend-mode: difference; color: #fff; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 700 20px/1 var(--font-mark); }
+.brand-mark { width: 16px; height: 18px; }
+.brand-mark .bar-3 { fill: currentColor; }
+.nav-link { font-weight: 500; text-decoration: none; }
+
+/* The pinned run. The title layer is sticky for the whole run and drawn in
+   difference blend so it reads on paper, grey and ink alike. */
+.run { position: relative; }
+.pin { position: sticky; top: 0; height: 100svh; margin-bottom: -100svh; z-index: 10; pointer-events: none; display: flex; justify-content: center; padding-top: 11svh; }
+.title { margin: 0; font: 800 var(--step-display)/0.86 var(--font-display); letter-spacing: -0.035em; text-transform: uppercase; color: #fff; mix-blend-mode: difference; white-space: nowrap; }
+.stop { display: inline-block; width: 0.16em; height: 0.16em; margin-left: 0.04em; background: var(--accent); border-radius: 50%; mix-blend-mode: normal; }
+.panel { position: relative; height: 100svh; min-height: 640px; display: grid; place-items: end center; padding-bottom: 0; }
+.p1 { background: var(--ground); }
+.p2 { background: var(--ground-2); }
+.p3 { background: var(--ground-3); color: var(--ground); }
+.shot { width: min(30vw, 46svh); align-self: end; }
+.shot img { border-radius: 26px 26px 0 0; }
+.intro { position: absolute; left: var(--margin); bottom: 32px; max-width: 26ch; }
+.lede { margin: 0; font-weight: 500; }
+.btn { display: inline-block; margin-top: 18px; padding: 15px 22px; background: var(--ink); color: var(--ground); font-weight: 800; text-decoration: none; transition: transform 0.15s ease; }
+.btn:hover { transform: translateY(-2px); }
+.caption { position: absolute; right: var(--margin); bottom: 32px; margin: 0; max-width: 22ch; text-align: right; }
+.p1 .caption, .p2 .caption { color: var(--ink); }
+
+.after { padding: 22vh var(--margin) 0; display: grid; grid-template-columns: 1fr 1fr; gap: var(--margin); }
+.after h2 { margin: 0; font: 800 var(--step-head)/0.9 var(--font-display); letter-spacing: -0.035em; }
+.after p { margin: 0; align-self: end; max-width: 34rem; font-size: var(--step-lead); line-height: 1.35; }
+
+/* Download: the whole band is the link; the word is the button. */
+.download { padding-top: 20vh; }
+.band { position: relative; display: block; height: 60svh; min-height: 360px; background: var(--ink); color: var(--ground); text-decoration: none; overflow: hidden; }
+.band:hover, .band:focus-visible { background: var(--ground); color: var(--ink); outline: 3px solid var(--ink); outline-offset: -3px; }
+.band-note { position: absolute; top: 20px; left: var(--margin); max-width: 30ch; font-weight: 500; }
+.band-arrow { position: absolute; top: 20px; right: var(--margin); width: 48px; height: 48px; color: var(--accent); }
+.band-word { position: absolute; left: calc(var(--margin) - 0.04em); bottom: 24px; margin: 0; font: 800 clamp(64px, 19.5vw, 400px)/0.8 var(--font-display); letter-spacing: -0.05em; }
+.others { list-style: none; margin: 0; padding: 26px var(--margin) 0; display: flex; flex-wrap: wrap; gap: 12px 36px; font-size: var(--step-lead); font-weight: 500; }
+.others a { text-decoration-color: var(--accent); text-underline-offset: 6px; }
+.fine { margin: 18px var(--margin) 0; color: var(--ink-2); }
+
+.foot { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; margin-top: 30svh; padding: 0 var(--margin) 30px; color: var(--ink-2); font-size: var(--step-small); }
+.foot-links { display: flex; gap: 24px; }
+.foot-links a { color: var(--ink); }
+.foot span:last-child { text-align: right; }
+
+@media (max-width: 820px) {
+  .title { font-size: 17vw; }
+  .pin { padding-top: 76px; }
+  .shot { width: calc(100% - 2 * var(--margin)); max-width: 380px; margin-bottom: 0; }
+  .panel { place-items: start center; padding-top: 30svh; height: auto; min-height: 100svh; }
+  .intro { position: static; margin: 22px var(--margin) 0; justify-self: start; }
+  .p1 { display: flex; flex-direction: column; align-items: center; }
+  .caption { position: static; text-align: left; justify-self: start; margin: 18px var(--margin) 32px; }
+  .after { grid-template-columns: 1fr; }
+  .band { height: 46svh; }
+  .foot { grid-template-columns: 1fr; }
+  .foot span:last-child { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) { .btn { transition: none; } }

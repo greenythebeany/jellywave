@@ -1,0 +1,99 @@
+/* A · Gallery Wall (tokens: see themes.md) */
+@font-face { font-family: "Instrument Sans"; font-weight: 400 700; font-display: swap; src: url(/fonts/instrument-sans-latin-wght-normal.woff2) format('woff2'); }
+@font-face { font-family: Doto; font-weight: 700; font-display: swap; src: url(/fonts/doto-latin-700-normal.woff2) format('woff2'); }
+
+:root {
+  --ground: #fff; --ground-2: #f2f2f2; --ink: #111; --ink-2: #5f5f5f; --accent: #d71921;
+  --font-display: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --font-text: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mark: Doto, "Instrument Sans", sans-serif;
+  --margin: clamp(20px, 6vw, 96px); --radius: 0;
+  --step-small: 0.875rem; --step-body: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+  --step-lead: clamp(1.25rem, 1.1rem + 0.6vw, 1.625rem); --step-head: clamp(2rem, 1.2rem + 3vw, 3.75rem);
+  --step-display: clamp(2.5rem, 1.6rem + 3.6vw, 4.5rem);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --ground: #0a0a0a; --ground-2: #161616; --ink: #f5f5f5; --ink-2: #a3a3a3; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --ground: #0a0a0a; --ground-2: #161616; --ink: #f5f5f5; --ink-2: #a3a3a3; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html { scroll-padding-top: 72px; }
+body { margin: 0; background: var(--ground); color: var(--ink); font: 400 var(--step-body)/1.55 var(--font-text); -webkit-font-smoothing: antialiased; }
+img { display: block; width: 100%; height: auto; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.skip { position: absolute; left: -999px; top: 8px; padding: 8px 14px; background: var(--ink); color: var(--ground); z-index: 50; }
+.skip:focus { left: 8px; }
+
+.nav { position: sticky; top: 0; z-index: 20; display: flex; justify-content: space-between; align-items: center; padding: 18px var(--margin); background: var(--ground); }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 700 22px/1 var(--font-mark); }
+.brand-mark { width: 18px; height: 20px; }
+.nav nav { display: flex; gap: 28px; }
+.nav nav a { text-decoration: none; color: var(--ink-2); }
+.nav nav a:hover { color: var(--ink); }
+
+/* Hero: the logo hung on the wall as the artwork, the wall label beside it. */
+.hero { min-height: calc(100svh - 64px); display: grid; grid-template-columns: 1.3fr 1fr; align-items: center; gap: var(--margin); padding: 4vh var(--margin) 10vh; }
+.hung { display: grid; place-items: center; background: var(--ground-2); aspect-ratio: 4 / 5; max-height: 74svh; justify-self: stretch; }
+.hero-mark { width: 46%; height: auto; }
+.hero-mark .bar { transform-box: fill-box; transform-origin: 50% 100%; animation: hang 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.hero-mark .bar-2 { animation-delay: 0.14s; }
+.hero-mark .bar-3 { animation-delay: 0.32s; }
+@keyframes hang { from { transform: scaleY(0); opacity: 0; } }
+.label { max-width: 30rem; }
+.label h1 { margin: 0; font: 600 var(--step-display)/1 var(--font-display); letter-spacing: -0.03em; }
+.label-meta { margin: 10px 0 0; color: var(--ink-2); }
+.label-text { margin: 28px 0 0; font-size: var(--step-lead); line-height: 1.4; }
+.btn { display: inline-flex; align-items: center; gap: 12px; margin-top: 36px; padding: 16px 26px; background: var(--ink); color: var(--ground); text-decoration: none; font-weight: 600; transition: transform 0.15s ease; }
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: none; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+
+/* Looks: three panels hung in a row, each with its wall label. */
+.looks { padding: 18vh var(--margin) 0; }
+.looks-head { display: grid; grid-template-columns: 1fr 1fr; gap: var(--margin); align-items: end; }
+.looks-head h2, .download-head h2 { margin: 0; font: 600 var(--step-head)/1.02 var(--font-display); letter-spacing: -0.03em; }
+.looks-head p { margin: 0; max-width: 34rem; }
+.view { grid-column: 2; display: inline-flex; gap: 0; justify-self: start; background: var(--ground-2); padding: 4px; }
+.view button { font: inherit; border: 0; padding: 10px 18px; background: none; color: var(--ink-2); cursor: pointer; }
+.view button[aria-pressed="true"] { background: var(--ink); color: var(--ground); }
+.wall { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(20px, 3vw, 48px); margin-top: 8vh; align-items: end; }
+.frame { background: var(--ground-2); padding: clamp(12px, 1.6vw, 24px); }
+.wall.as-phone .frame { padding: clamp(20px, 3vw, 48px) clamp(40px, 6vw, 96px); }
+figcaption { margin-top: 18px; display: grid; grid-template-columns: 1fr auto; row-gap: 4px; }
+figcaption strong { font-weight: 600; }
+figcaption span { color: var(--ink-2); }
+figcaption p { grid-column: 1 / -1; margin: 0; color: var(--ink-2); max-width: 26rem; }
+
+/* Download: the catalogue list. */
+.download { padding: 22vh var(--margin) 0; display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--margin); }
+.download-head p { margin: 20px 0 0; max-width: 26rem; }
+.catalogue { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.catalogue li { background: var(--ground-2); padding: 22px 26px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; align-items: baseline; }
+.catalogue li > a { display: flex; flex-direction: column; text-decoration: none; }
+.cat-name { font: 600 var(--step-lead)/1.2 var(--font-display); }
+.catalogue li > a:hover .cat-name { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 6px; }
+.cat-file { color: var(--ink-2); }
+.catalogue p { margin: 0; color: var(--ink-2); }
+.inline { color: var(--ink); text-decoration-color: var(--accent); }
+
+.foot { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; margin-top: 22vh; padding: 32px var(--margin) 40px; color: var(--ink-2); }
+.foot-mark { width: 16px; height: 18px; color: var(--ink); }
+.foot p { margin: 0; }
+
+@media (max-width: 820px) {
+  .hero { grid-template-columns: 1fr; padding-top: 2vh; }
+  .hung { aspect-ratio: 1; max-height: 52svh; }
+  .looks-head, .download { grid-template-columns: 1fr; }
+  .view { grid-column: 1; }
+  .wall { grid-template-columns: 1fr; gap: 48px; }
+  .wall.as-phone { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .wall.as-phone .frame { padding: 8px; }
+  .wall.as-phone figcaption p { display: none; }
+  .catalogue li { grid-template-columns: 1fr; }
+  .foot { grid-template-columns: auto 1fr; }
+  .foot a { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) { .hero-mark .bar { animation: none; } .btn { transition: none; } }

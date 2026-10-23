@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Triptych · D · Pinned poster</title>
+  <link rel="icon" type="image/png" href="/media/favicon.png" />
+  <link rel="stylesheet" href="./d.css" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="nav">
+    <a class="brand" href="#top"><span data-mark class="brand-mark"></span><span class="brand-word">Triptych</span></a>
+    <a class="nav-link" href="#download">Download</a>
+  </header>
+
+  <main id="main">
+    <!-- The pinned run: the title holds while the three looks pass beneath it. -->
+    <div class="run" id="top">
+      <div class="pin" aria-hidden="false">
+        <h1 class="title">Triptych<span class="stop" aria-hidden="true"></span></h1>
+      </div>
+
+      <section class="panel p1" aria-label="Spotify look">
+        <picture class="shot">
+          <source srcset="/media/v23/p-spotify.webp" type="image/webp" />
+          <img src="/media/v23/p-spotify.jpg" width="585" height="1266" alt="The player on a phone in the Spotify look" fetchpriority="high" />
+        </picture>
+        <div class="intro">
+          <p class="lede">A music player for your own Jellyfin server. One library, three looks. Free on Windows, Linux, Android and iPhone.</p>
+          <a class="btn" href="#download">Download Triptych</a>
+        </div>
+        <p class="caption"><strong>Spotify.</strong> Dark cards, a green accent, big bold type.</p>
+      </section>
+
+      <section class="panel p2" id="looks" aria-label="Apple Music look">
+        <picture class="shot">
+          <source srcset="/media/v23/p-apple.webp" type="image/webp" />
+          <img src="/media/v23/p-apple.jpg" width="585" height="1266" alt="The player on a phone in the Apple Music look" loading="lazy" />
+        </picture>
+        <p class="caption"><strong>Apple Music.</strong> Frosted glass, bare rounded artwork, slim pill sliders.</p>
+      </section>
+
+      <section class="panel p3" aria-label="Nothing look">
+        <picture class="shot">
+          <source srcset="/media/v23/p-nothing.webp" type="image/webp" />
+          <img src="/media/v23/p-nothing.jpg" width="585" height="1266" alt="The player on a phone in the Nothing look, with synced lyrics" loading="lazy" />
+        </picture>
+        <p class="caption"><strong>Nothing.</strong> Black and white, one red light, dot-matrix lyrics.</p>
+      </section>
+    </div>
+
+    <section class="after" aria-labelledby="same-title">
+      <h2 id="same-title">Same songs. Pick the look in Settings.</h2>
+      <p>Every look restyles the whole app on desktop and phone. Playlists, liked songs, downloads and your listening stats stay exactly where they were.</p>
+    </section>
+
+    <section class="download" id="download" aria-labelledby="download-title">
+      <a class="band" data-asset="windows" href="">
+        <span class="band-note">Starts the download for Windows. Other systems are below.</span>
+        <svg class="band-arrow" viewBox="0 0 48 48" aria-hidden="true"><path d="M14 34 34 14M18 14h16v16" fill="none" stroke="currentColor" stroke-width="4"/></svg>
+        <h2 id="download-title" class="band-word">Download</h2>
+      </a>
+      <ul class="others">
+        <li><a data-asset="android" href="">Android, APK</a></li>
+        <li><a data-asset="appimage" href="">Linux, AppImage</a></li>
+        <li><a data-asset="snap" href="">Linux, snap</a></li>
+        <li><a data-asset="ipa" href="">iPhone, unsigned .ipa</a></li>
+      </ul>
+      <p class="fine">Latest <span data-version>v2.3</span>. Windows updates itself from inside the app; on iPhone, sideload with AltStore or Sideloadly.</p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>Music player for Jellyfin</span>
+    <span class="foot-links"><a href="https://github.com/greenythebeany/triptych">GitHub</a><a href="https://github.com/greenythebeany/triptych/blob/main/docs/legal/PRIVACY.md">Privacy</a></span>
+    <span>2026 · not affiliated with Jellyfin, Spotify, Apple or Nothing</span>
+  </footer>
+  <script type="module" src="./shared.js"></script>
+</body>
+</html>

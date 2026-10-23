@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Triptych · B · Dot matrix</title>
+  <link rel="icon" type="image/png" href="/media/favicon.png" />
+  <link rel="stylesheet" href="./b.css" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="nav">
+    <a class="brand" href="#top"><span data-mark class="brand-mark"></span>Triptych</a>
+    <nav aria-label="Sections">
+      <a href="#looks">Looks</a>
+      <a class="pill" href="#download">Download</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <svg class="matrix" viewBox="0 0 41 45" role="img" aria-label="Triptych logo drawn in lit dots"></svg>
+      <div class="hero-text">
+        <h1>Triptych</h1>
+        <p class="sub">A music player for your own Jellyfin server. One library, three looks: Spotify, Apple Music and Nothing. Free, on Windows, Linux, Android and iPhone.</p>
+        <div class="cta">
+          <a class="pill solid" href="#download">Download</a>
+          <a class="pill" href="#looks">See the looks</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="looks" id="looks" aria-labelledby="looks-title">
+      <h2 id="looks-title">Three looks</h2>
+      <p class="intro">Switch in Settings. The whole app restyles, desktop and phone, and your library stays put.</p>
+      <div class="widget stage">
+        <div class="seg" role="tablist" aria-label="Interface look">
+          <button role="tab" id="tab-0" aria-selected="true" aria-controls="look-panel" data-i="0">Spotify</button>
+          <button role="tab" id="tab-1" aria-selected="false" aria-controls="look-panel" data-i="1" tabindex="-1">Apple Music</button>
+          <button role="tab" id="tab-2" aria-selected="false" aria-controls="look-panel" data-i="2" tabindex="-1">Nothing</button>
+        </div>
+        <div class="screens" id="look-panel" role="tabpanel" aria-labelledby="tab-0">
+          <picture class="desk">
+            <source srcset="/media/v23/d-spotify.webp" type="image/webp" />
+            <img src="/media/v23/d-spotify.jpg" width="1600" height="900" alt="Triptych on a desktop in the Spotify look" />
+          </picture>
+          <picture class="phone">
+            <source srcset="/media/v23/p-spotify.webp" type="image/webp" />
+            <img src="/media/v23/p-spotify.jpg" width="585" height="1266" alt="The player on a phone in the Spotify look" />
+          </picture>
+        </div>
+        <p class="desc" aria-live="polite">Dark cards, a green accent and big bold type.</p>
+      </div>
+    </section>
+
+    <section class="download" id="download" aria-labelledby="download-title">
+      <h2 id="download-title">Download</h2>
+      <p class="intro">Latest <span data-version>v2.3</span>. Sign in with your Jellyfin address, username and password.</p>
+      <ul class="widget list">
+        <li><a data-asset="windows" href=""><span class="row-name">Windows</span><span class="row-file">Installer .exe · updates itself</span><span class="chev" aria-hidden="true"></span></a></li>
+        <li><a data-asset="android" href=""><span class="row-name">Android</span><span class="row-file">APK · allow browser installs once</span><span class="chev" aria-hidden="true"></span></a></li>
+        <li><a data-asset="appimage" href=""><span class="row-name">Linux</span><span class="row-file">AppImage</span><span class="chev" aria-hidden="true"></span></a></li>
+        <li><a data-asset="snap" href=""><span class="row-name">Linux</span><span class="row-file">snap package</span><span class="chev" aria-hidden="true"></span></a></li>
+        <li><a data-asset="ipa" href=""><span class="row-name">iPhone</span><span class="row-file">Unsigned .ipa · sideload with AltStore</span><span class="chev" aria-hidden="true"></span></a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>Triptych · free and open source</span>
+    <a href="https://github.com/greenythebeany/triptych">GitHub</a>
+    <span>Not affiliated with Jellyfin, Spotify, Apple or Nothing</span>
+  </footer>
+
+  <script type="module" src="./shared.js"></script>
+  <script type="module">
+    // The logo as a glyph matrix: each bar is a column of dots, lit bottom-up, red last.
+    const svg = document.querySelector('.matrix');
+    const bars = [[0, 10, 11, 35], [15, 0, 11, 45], [30, 10, 11, 35]];
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let html = '';
+    for (let x = 0; x < 41; x += 2) for (let y = 0; y < 45; y += 2) html += `<circle class="off" cx="${x + 1}" cy="${y + 1}" r="0.42"/>`;
+    bars.forEach(([bx, by, w, h], b) => {
+      for (let x = bx; x < bx + w; x += 2) for (let y = by; y < by + h; y += 2) {
+        const delay = reduce ? 0 : b * 260 + (by + h - y) * 14;
+        html += `<circle class="on${b === 2 ? ' red' : ''}" style="animation-delay:${delay}ms" cx="${x + 1}" cy="${y + 1}" r="0.8"/>`;
+      }
+    });
+    svg.innerHTML = html;
+
+    // Looks: a real tablist (arrow keys move between tabs).
+    const looks = [
+      ['spotify', 'Dark cards, a green accent and big bold type.'],
+      ['apple', 'Frosted glass, bare rounded artwork and slim pill sliders.'],
+      ['nothing', 'Black and white with one red light, dot-matrix type and thin outline icons.']
+    ];
+    const tabs = [...document.querySelectorAll('.seg [role=tab]')];
+    const panel = document.getElementById('look-panel');
+    const select = (i, focus) => {
+      tabs.forEach((t, k) => { t.setAttribute('aria-selected', String(k === i)); t.tabIndex = k === i ? 0 : -1; });
+      if (focus) tabs[i].focus();
+      const [key, desc] = looks[i];
+      const [desk, phone] = panel.querySelectorAll('picture');
+      // swap only the file name, so the paths keep working under any base path
+      const swap = (url, kind, ext) => url.replace(new RegExp(`${kind}-[a-z]+\.${ext}`), `${kind}-${key}.${ext}`);
+      const ds = desk.querySelector('source'), di = desk.querySelector('img');
+      ds.srcset = swap(ds.srcset, 'd', 'webp'); di.src = swap(di.src, 'd', 'jpg');
+      di.alt = `Triptych on a desktop in the ${tabs[i].textContent} look`;
+      const ps = phone.querySelector('source'), pi = phone.querySelector('img');
+      ps.srcset = swap(ps.srcset, 'p', 'webp'); pi.src = swap(pi.src, 'p', 'jpg');
+      pi.alt = `The player on a phone in the ${tabs[i].textContent} look`;
+      panel.setAttribute('aria-labelledby', tabs[i].id);
+      document.querySelector('.desc').textContent = desc;
+      document.querySelector('.seg').style.setProperty('--i', i);
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => select(i));
+      t.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') select((i + 1) % 3, true);
+        if (e.key === 'ArrowLeft') select((i + 2) % 3, true);
+      });
+    });
+  </script>
+</body>
+</html>
