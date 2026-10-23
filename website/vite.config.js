@@ -13,18 +13,13 @@ export default defineConfig({
   define: { __BUILD__: JSON.stringify(Date.now().toString(36)) },
   build: {
     rollupOptions: {
-<<<<<<< HEAD
-      // Design exploration: the chosen direction (D) until the rebuild replaces it.
-      input: {
-        main: resolve(__dirname, 'index.html'),
-        d: resolve(__dirname, 'variants/d.html')
-=======
-      // /terms/ and /privacy/ are built from docs/legal (see legal.js).
+      // /terms/ and /privacy/ are built from docs/legal (see legal.js);
+      // variants/d.html is the chosen design direction until the rebuild replaces it.
       input: {
         main: resolve(__dirname, 'index.html'),
         terms: resolve(__dirname, 'terms/index.html'),
-        privacy: resolve(__dirname, 'privacy/index.html')
->>>>>>> main
+        privacy: resolve(__dirname, 'privacy/index.html'),
+        d: resolve(__dirname, 'variants/d.html')
       }
     }
   }
