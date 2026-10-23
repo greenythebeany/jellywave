@@ -3,23 +3,23 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { legalPages } from './legal.js';
 
-// Relative base: the site is served from a GitHub Pages project path
-// (https://<user>.github.io/triptych/), so assets must not assume "/".
+// The site lives at https://greenybeany.dev/triptych/. An absolute base (not
+// './') keeps fonts, media and scripts working on 404.html, which GitHub Pages
+// serves at any depth under that path.
 export default defineConfig({
   plugins: [react(), legalPages()],
-  base: './',
-  // Changes on every build; appended to media URLs so browsers fetch the
-  // new screenshots/video after a deploy instead of their cached copies.
-  define: { __BUILD__: JSON.stringify(Date.now().toString(36)) },
+  base: '/triptych/',
+  // Appended to media URLs so browsers fetch new screenshots after a deploy.
+  // build.js sets BUILD_ID once, so the client and the prerender agree on it.
+  define: { __BUILD__: JSON.stringify(process.env.BUILD_ID || Date.now().toString(36)) },
   build: {
     rollupOptions: {
-      // /terms/ and /privacy/ are built from docs/legal (see legal.js);
-      // variants/d.html is the chosen design direction until the rebuild replaces it.
+      // /terms/ and /privacy/ are built from docs/legal (see legal.js).
       input: {
         main: resolve(__dirname, 'index.html'),
         terms: resolve(__dirname, 'terms/index.html'),
         privacy: resolve(__dirname, 'privacy/index.html'),
-        d: resolve(__dirname, 'variants/d.html')
+        notFound: resolve(__dirname, '404.html')
       }
     }
   }
