@@ -12,6 +12,9 @@ body { margin: 0; background: var(--ground); color: var(--ink); font: 400 clamp(
 a { color: inherit; text-decoration-color: var(--accent); text-underline-offset: 4px; }
 a:hover { color: var(--accent); }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+/* no ring on mouse clicks or taps; the red ring above stays for the keyboard */
+:focus:not(:focus-visible) { outline: none; }
+* { -webkit-tap-highlight-color: transparent; }
 .skip { position: absolute; left: -999px; top: 8px; padding: 8px 14px; background: var(--ink); color: var(--ground); }
 .skip:focus { left: 8px; }
 
@@ -34,3 +37,20 @@ a:hover { color: var(--accent); }
 .doc code { font: 0.9em ui-monospace, Consolas, monospace; background: var(--ground-2); padding: 0.1em 0.35em; }
 
 .foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; width: min(720px, calc(100% - 2 * var(--margin))); margin: 14vh auto 0; padding: 0 0 32px; color: var(--ink-2); font-size: 0.9375rem; }
+
+/* Breadcrumb above the legal documents */
+.crumbs ol { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0 0 28px; padding: 0; color: var(--ink-2); font-size: 0.9375rem; }
+.crumbs li + li::before { content: '/'; margin-right: 8px; }
+.crumbs a { text-decoration: none; }
+.crumbs a[aria-current] { color: var(--ink); }
+
+/* 404: the level meter, run down to silence */
+.lost { margin-top: 12vh; }
+.silence { display: block; width: auto; height: 120px; margin-bottom: 40px; overflow: visible; }
+.silence .bar { fill: var(--ink); transform-box: fill-box; transform-origin: 50% 100%; animation: fade-out 1.4s cubic-bezier(0.34, 1.5, 0.5, 1) both, idle 2.6s ease-in-out 1.4s infinite alternate; }
+.silence .bar:nth-child(2) { animation-delay: 0.1s, 1.5s; }
+.silence .bar-3 { fill: var(--accent); animation-delay: 0.2s, 1.6s; }
+@keyframes fade-out { from { transform: scaleY(1); } to { transform: scaleY(0.08); } }
+@keyframes idle { from { transform: scaleY(0.08); } to { transform: scaleY(0.16); } }
+.doc .ways { list-style: none; padding: 0; margin: 32px 0 0; display: grid; gap: 12px; font-size: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem); font-weight: 500; }
+@media (prefers-reduced-motion: reduce) { .silence .bar { animation: none; transform: scaleY(0.08); } }
