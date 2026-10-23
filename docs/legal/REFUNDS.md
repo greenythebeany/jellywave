@@ -2,4 +2,4 @@
 
 _Last updated: 2026-09-18_
 
-Not applicable. Triptych is free, open-source, and distributed only through [GitHub Releases](https://github.com/greenythebeany/jellywave/releases). There is no purchase, subscription, or in-app payment of any kind, so there is nothing to refund. If that ever changes, this document will be updated first.
+Not applicable. Triptych is free, open-source, and distributed only through [GitHub Releases](https://github.com/greenythebeany/triptych/releases). There is no purchase, subscription, or in-app payment of any kind, so there is nothing to refund. If that ever changes, this document will be updated first.

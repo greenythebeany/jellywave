@@ -9,7 +9,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawn } = require('child_process');
 
-const REPO = 'greenythebeany/jellywave';
+const REPO = 'greenythebeany/triptych';
 const API_URL = `https://api.github.com/repos/${REPO}/releases/latest`;
 const HEADERS = { Accept: 'application/vnd.github+json', 'User-Agent': 'Triptych-updater' };
 

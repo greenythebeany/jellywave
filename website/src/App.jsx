@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-const REPO = 'greenythebeany/jellywave';
+const REPO = 'greenythebeany/triptych';
 const GITHUB = `https://github.com/${REPO}`;
 const RELEASES = `${GITHUB}/releases/latest`;
 const PRIVACY = `${GITHUB}/blob/main/docs/legal/PRIVACY.md`;
