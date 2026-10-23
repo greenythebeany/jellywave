@@ -209,7 +209,7 @@ html.booting .lens { display: none; }
 
 /* ---------- Download: the whole band is the link ---------- */
 .download { padding-top: var(--section); }
-.band { position: relative; display: block; height: 60svh; min-height: 360px; background: var(--ink); color: var(--ground); text-decoration: none; overflow: hidden; }
+.band { position: relative; display: block; height: 60svh; min-height: 360px; background: var(--ink); color: var(--ground); text-decoration: none; overflow: hidden; transition: background-color 0.45s ease, color 0.45s ease, outline-color 0.45s ease; }
 .band:hover, .band:focus-visible { background: var(--ground); color: var(--ink); outline: 3px solid var(--ink); outline-offset: -3px; }
 .band-note { position: absolute; top: 20px; left: var(--margin); max-width: 30ch; font-weight: 500; }
 .band-arrow { position: absolute; top: 20px; right: var(--margin); width: 48px; height: 48px; color: var(--accent); }
@@ -262,4 +262,4 @@ html.booting .lens { display: none; }
    deliberately not used: the site always animates unless switched off here. */
 html.still { scroll-behavior: auto; }
 html.still .viz .bar { animation: none; }
-html.still .motion-switch::after, html.still .nav, html.still .track, html.still .lens-track, html.still .btn, html.still .tabs button, html.still .sheet, html.still .dim, html.still .faq summary::after { transition: none; }
+html.still .motion-switch::after, html.still .nav, html.still .track, html.still .lens-track, html.still .btn, html.still .tabs button, html.still .band, html.still .sheet, html.still .dim, html.still .faq summary::after { transition: none; }
