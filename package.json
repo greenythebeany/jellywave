@@ -1,6 +1,6 @@
 {
-  "name": "jellywave",
-  "version": "2.2.0",
+  "name": "triptych",
+  "version": "2.3.0",
   "description": "A sleek, Spotify-style desktop client for your own Jellyfin music server",
   "main": "main.js",
   "author": "",
@@ -32,7 +32,7 @@
     "@xhayper/discord-rpc": "^1.3.4"
   },
   "build": {
-    "appId": "com.jellywave.app",
+    "appId": "com.triptych.app",
     "productName": "Triptych",
     "directories": {
       "output": "dist"

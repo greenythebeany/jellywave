@@ -6,17 +6,17 @@ import { isMobile } from './platform.js';
 // API) tells devices apart by DeviceId, and a shared constant here would
 // make every Triptych install look like the same device reconnecting,
 // breaking both the "other devices" list and self-exclusion from it.
-const DEVICE_ID_KEY = 'jellywave:deviceId';
+const DEVICE_ID_KEY = 'triptych:deviceId';
 function loadOrCreateDeviceId() {
   try {
     let id = localStorage.getItem(DEVICE_ID_KEY);
     if (!id) {
-      id = `jellywave-${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+      id = `triptych-${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
       localStorage.setItem(DEVICE_ID_KEY, id);
     }
     return id;
   } catch (err) {
-    return `jellywave-${Math.random().toString(36).slice(2)}`;
+    return `triptych-${Math.random().toString(36).slice(2)}`;
   }
 }
 const DEVICE_ID = loadOrCreateDeviceId();
@@ -36,7 +36,12 @@ function dedupeCollabArtists(artists) {
   });
 }
 const CLIENT_NAME = 'Triptych';
-const LEGACY_CLIENT_NAME = 'JellyWave'; // before 2.2; still used as the key for synced settings/stats
+// Up to 2.2 the synced settings/listening records were stored under the
+// JellyWave name. They are still read (and merged) so nothing is lost, while
+// devices on 2.3+ only write the Triptych ones.
+const LEGACY_CLIENT_NAME = 'JellyWave';
+const PREFS = { listening: 'TriptychListening', settings: 'TriptychSettings' };
+const LEGACY_PREFS = { listening: 'JellyWaveListening', settings: 'JellyWaveSettings' };
 // Was previously a hardcoded string that had to be bumped by hand on every
 // release and repeatedly drifted out of sync with the app's real version
 // (stuck reporting 1.0.0, then stuck reporting 1.0.5, both while newer
@@ -47,7 +52,7 @@ const LEGACY_CLIENT_NAME = 'JellyWave'; // before 2.2; still used as the key for
 // literal below is only the fallback for the brief window before that
 // resolves (or if neither bridge is available, e.g. running in a plain
 // browser during development).
-let CLIENT_VERSION = '2.2.0';
+let CLIENT_VERSION = '2.3.0';
 
 export function getClientVersion() {
   return CLIENT_VERSION;
@@ -610,33 +615,39 @@ export class JellyfinClient {
   // (including the official web client) might store under its own name.
   // Listening logs (see listening.js): one entry per device in a separate
   // DisplayPreferences record, so devices never overwrite each other.
-  async getListeningLogs() {
+  async _getPrefs(id, client) {
     try {
-      const data = await this._get(`/DisplayPreferences/JellyWaveListening`, { userId: this.userId, client: LEGACY_CLIENT_NAME });
-      const logs = {};
-      for (const [key, raw] of Object.entries(data?.CustomPrefs || {})) {
-        if (!key.startsWith('log_')) continue;
-        try { logs[key.slice(4)] = JSON.parse(raw); } catch (err) { /* skip a corrupt entry */ }
-      }
-      return logs;
+      const data = await this._get(`/DisplayPreferences/${id}`, { userId: this.userId, client });
+      return data?.CustomPrefs || {};
     } catch (err) {
       return {};
     }
   }
 
+  async getListeningLogs() {
+    // Older devices may still write the legacy record; a device's entry in
+    // the new record wins over its legacy one.
+    const [legacy, current] = await Promise.all([
+      this._getPrefs(LEGACY_PREFS.listening, LEGACY_CLIENT_NAME),
+      this._getPrefs(PREFS.listening, CLIENT_NAME)
+    ]);
+    const logs = {};
+    for (const [key, raw] of Object.entries({ ...legacy, ...current })) {
+      if (!key.startsWith('log_')) continue;
+      try { logs[key.slice(4)] = JSON.parse(raw); } catch (err) { /* skip a corrupt entry */ }
+    }
+    return logs;
+  }
+
   async saveListeningLog(log) {
-    const params = new URLSearchParams({ userId: this.userId, client: LEGACY_CLIENT_NAME });
+    const params = new URLSearchParams({ userId: this.userId, client: CLIENT_NAME });
     // Read-modify-write so the other devices' entries are kept.
-    let prefs = {};
-    try {
-      const data = await this._get(`/DisplayPreferences/JellyWaveListening`, { userId: this.userId, client: LEGACY_CLIENT_NAME });
-      prefs = { ...(data?.CustomPrefs || {}) };
-    } catch (err) { /* none yet */ }
+    const prefs = { ...(await this._getPrefs(PREFS.listening, CLIENT_NAME)) };
     prefs[`log_${DEVICE_ID}`] = JSON.stringify(log);
-    const res = await fetch(`${this.serverUrl}/DisplayPreferences/JellyWaveListening?${params.toString()}`, {
+    const res = await fetch(`${this.serverUrl}/DisplayPreferences/${PREFS.listening}?${params.toString()}`, {
       method: 'POST',
       headers: this._headers(),
-      body: JSON.stringify({ Id: 'JellyWaveListening', Client: LEGACY_CLIENT_NAME, CustomPrefs: prefs }),
+      body: JSON.stringify({ Id: PREFS.listening, Client: CLIENT_NAME, CustomPrefs: prefs }),
       keepalive: true
     });
     if (!res.ok) throw new Error(`Could not sync listening time (${res.status}).`);
@@ -657,12 +668,9 @@ export class JellyfinClient {
   }
 
   async getSyncedSettings() {
+    let raw = (await this._getPrefs(PREFS.settings, CLIENT_NAME)).settings;
+    if (!raw) raw = (await this._getPrefs(LEGACY_PREFS.settings, LEGACY_CLIENT_NAME)).settings;
     try {
-      const data = await this._get(`/DisplayPreferences/JellyWaveSettings`, {
-        userId: this.userId,
-        client: LEGACY_CLIENT_NAME
-      });
-      const raw = data?.CustomPrefs?.settings;
       return raw ? JSON.parse(raw) : null;
     } catch (err) {
       return null;
@@ -670,13 +678,13 @@ export class JellyfinClient {
   }
 
   async saveSyncedSettings(settings) {
-    const params = new URLSearchParams({ userId: this.userId, client: LEGACY_CLIENT_NAME });
-    const res = await fetch(`${this.serverUrl}/DisplayPreferences/JellyWaveSettings?${params.toString()}`, {
+    const params = new URLSearchParams({ userId: this.userId, client: CLIENT_NAME });
+    const res = await fetch(`${this.serverUrl}/DisplayPreferences/${PREFS.settings}?${params.toString()}`, {
       method: 'POST',
       headers: this._headers(),
       body: JSON.stringify({
-        Id: 'JellyWaveSettings',
-        Client: LEGACY_CLIENT_NAME,
+        Id: PREFS.settings,
+        Client: CLIENT_NAME,
         CustomPrefs: { settings: JSON.stringify(settings) }
       })
     });

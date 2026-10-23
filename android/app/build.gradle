@@ -7,14 +7,14 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.jellywave.app"
+    namespace = "com.triptych.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.jellywave.app"
+        applicationId "com.triptych.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 22
-        versionName "2.2.0"
+        versionCode 23
+        versionName "2.3.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

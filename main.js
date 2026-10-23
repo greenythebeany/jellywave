@@ -5,10 +5,21 @@ const { spawn } = require('child_process');
 const { Client: DiscordRpcClient } = require('@xhayper/discord-rpc');
 const { checkForUpdates, downloadUpdate, installAndQuit } = require('./update-checker');
 
-// The app was called JellyWave before 2.2. Its data folder (login, settings,
-// downloads, listening stats) keeps that name so the rename loses nothing;
+// Up to 2.2 the data folder (login, settings, downloads, listening stats) was
+// named JellyWave. Move it to the Triptych one on the first start of 2.3;
 // this must run before anything reads userData or takes the instance lock.
-app.setPath('userData', path.join(app.getPath('appData'), 'JellyWave'));
+(function moveLegacyUserData() {
+  const legacy = path.join(app.getPath('appData'), 'JellyWave');
+  const current = app.getPath('userData');
+  if (path.resolve(legacy).toLowerCase() === path.resolve(current).toLowerCase()) return;
+  if (fs.existsSync(current) || !fs.existsSync(legacy)) return;
+  try {
+    fs.renameSync(legacy, current);
+  } catch (err) {
+    // e.g. another volume or a locked file: copy instead, keep the original
+    try { fs.cpSync(legacy, current, { recursive: true }); } catch (e) { console.log('[migrate] data folder:', e.message); }
+  }
+})();
 
 const CONFIG_PATH = path.join(app.getPath('userData'), 'session.dat');
 const DISCORD_CLIENT_ID = '1534197353056174180';

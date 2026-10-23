@@ -408,7 +408,11 @@
     "languagesTitle": "Every language, fully translated",
     "languagesDesc": "All 15 languages now cover every screen, setting and message, including Wrapped, Import and the legal pages' menu.",
     "calendarMonthsTitle": "A calendar by month",
-    "calendarMonthsDesc": "The listening calendar shows each month as its own block and fits on any phone without scrolling sideways."
+    "calendarMonthsDesc": "The listening calendar shows each month as its own block and fits on any phone without scrolling sideways.",
+    "ownIdentityTitle": "Triptych all the way through",
+    "ownIdentityDesc": "Triptych now has its own app id, so nothing is called JellyWave anymore. Your settings and listening stats come from your server; on phones, downloaded songs need to be downloaded again.",
+    "installerTitle": "A new Windows installer",
+    "installerDesc": "Triptych artwork, a welcome page in your language, and the license agreement to accept."
   },
   "wrapped": {
     "bannerTitle": "Your {year} Wrapped",

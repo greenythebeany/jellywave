@@ -1,4 +1,4 @@
-package com.jellywave.app;
+package com.triptych.app;
 
 import android.content.Context;
 import android.media.AudioManager;

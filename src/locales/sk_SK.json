@@ -408,7 +408,11 @@
     "languagesTitle": "Každý jazyk, úplne preložený",
     "languagesDesc": "Všetkých 15 jazykov teraz pokrýva každú obrazovku, nastavenie aj správu vrátane Wrapped, Importu a ponuky právnych stránok.",
     "calendarMonthsTitle": "Kalendár po mesiacoch",
-    "calendarMonthsDesc": "Kalendár počúvania ukazuje každý mesiac ako samostatný blok a zmestí sa na každý telefón bez posúvania do strany."
+    "calendarMonthsDesc": "Kalendár počúvania ukazuje každý mesiac ako samostatný blok a zmestí sa na každý telefón bez posúvania do strany.",
+    "ownIdentityTitle": "Triptych naskrz",
+    "ownIdentityDesc": "Triptych má teraz vlastné ID aplikácie, takže už nič nesie názov JellyWave. Nastavenia a štatistiky počúvania prídu z tvojho servera; v telefóne treba stiahnuté skladby stiahnuť znova.",
+    "installerTitle": "Nový inštalátor pre Windows",
+    "installerDesc": "Grafika Triptych, uvítacia stránka v tvojom jazyku a licenčná zmluva na odsúhlasenie."
   },
   "wrapped": {
     "bannerTitle": "Tvoj rok {year} v hudbe",

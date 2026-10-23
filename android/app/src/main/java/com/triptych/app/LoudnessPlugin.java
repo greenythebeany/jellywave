@@ -1,4 +1,4 @@
-package com.jellywave.app;
+package com.triptych.app;
 
 import android.content.Context;
 import android.media.AudioManager;
@@ -25,7 +25,7 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 // boost below started working fine on session 0, so the equalizer gets the
 // same treatment now instead of the discovery-based approach that was
 // briefly tried and reverted.
-@CapacitorPlugin(name = "JellyWaveLoudness")
+@CapacitorPlugin(name = "TriptychLoudness")
 public class LoudnessPlugin extends Plugin {
     private LoudnessEnhancer loudnessEnhancer;
     private AudioManager audioManager;

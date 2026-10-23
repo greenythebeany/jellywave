@@ -7,7 +7,7 @@
 import { isDesktop } from './platform.js';
 import { t } from './i18n.js';
 
-const OUTPUT_DIR_KEY = 'jellywave:grabOutputDir';
+const OUTPUT_DIR_KEY = 'triptych:grabOutputDir';
 
 // Survives navigating away from and back to this view mid-download --
 // the IPC listener below is attached once for the app's lifetime and keeps

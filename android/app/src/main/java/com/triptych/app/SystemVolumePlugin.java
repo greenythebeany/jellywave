@@ -1,4 +1,4 @@
-package com.jellywave.app;
+package com.triptych.app;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -24,7 +24,7 @@ import androidx.core.content.ContextCompat;
 // level, and reports hardware-key/system changes back so the slider
 // follows them. Levels cross the bridge as 0..1 fractions of the stream's
 // max, since that max differs per device (commonly 15 or 25 steps).
-@CapacitorPlugin(name = "JellyWaveSystemVolume")
+@CapacitorPlugin(name = "TriptychSystemVolume")
 public class SystemVolumePlugin extends Plugin {
     private AudioManager audioManager;
     private ContentObserver observer;

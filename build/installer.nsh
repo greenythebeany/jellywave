@@ -79,6 +79,33 @@ Var pid
   ${endIf}
 !macroend
 
+; Up to 2.2 the app was installed as com.jellywave.app (this GUID). 2.3
+; uses com.triptych.app, so Windows sees a different program: uninstall the
+; old entry first, silently and keeping the user's data (main.js moves the
+; data folder on the first start), so it doesn't stay behind with its own
+; Start menu shortcut.
+!define LEGACY_APP_GUID "6d2b7fa0-7d48-5e2c-8e0a-9b906aac6cfe"
+!macro removeLegacyInstall ROOT
+  ReadRegStr $R5 ${ROOT} "Software\${LEGACY_APP_GUID}" "InstallLocation"
+  ${if} $R5 != ""
+    ${if} ${FileExists} "$R5\Uninstall Triptych.exe"
+      ExecWait '"$R5\Uninstall Triptych.exe" /S /KEEP_APP_DATA _?=$R5'
+      Delete "$R5\Uninstall Triptych.exe"
+    ${elseif} ${FileExists} "$R5\Uninstall JellyWave.exe"
+      ExecWait '"$R5\Uninstall JellyWave.exe" /S /KEEP_APP_DATA _?=$R5'
+      Delete "$R5\Uninstall JellyWave.exe"
+    ${endif}
+    RMDir "$R5"
+    DeleteRegKey ${ROOT} "Software\Microsoft\Windows\CurrentVersion\Uninstall\${LEGACY_APP_GUID}"
+    DeleteRegKey ${ROOT} "Software\${LEGACY_APP_GUID}"
+  ${endif}
+!macroend
+
+!macro customInit
+  !insertmacro removeLegacyInstall HKCU
+  !insertmacro removeLegacyInstall HKLM
+!macroend
+
 ; Welcome page with the Triptych sidebar art (the assisted installer only
 ; shows one when this macro exists). Its text is picked at runtime from the
 ; installer language, in the same 15 languages as the app; English otherwise.

@@ -410,7 +410,11 @@
     "languagesTitle": "Todos los idiomas, traducidos por completo",
     "languagesDesc": "Los 15 idiomas cubren ahora cada pantalla, ajuste y mensaje, incluidos Wrapped, Importar y el menú de las páginas legales.",
     "calendarMonthsTitle": "Un calendario por meses",
-    "calendarMonthsDesc": "El calendario de escucha muestra cada mes como un bloque propio y cabe en cualquier móvil sin desplazarse hacia los lados."
+    "calendarMonthsDesc": "El calendario de escucha muestra cada mes como un bloque propio y cabe en cualquier móvil sin desplazarse hacia los lados.",
+    "ownIdentityTitle": "Triptych de principio a fin",
+    "ownIdentityDesc": "Triptych ahora tiene su propio ID de aplicación, así que ya nada se llama JellyWave. Tus ajustes y estadísticas de escucha vuelven desde tu servidor; en el móvil, las canciones descargadas hay que descargarlas de nuevo.",
+    "installerTitle": "Un nuevo instalador para Windows",
+    "installerDesc": "Gráficos de Triptych, una página de bienvenida en tu idioma y el acuerdo de licencia para aceptar."
   },
   "wrapped": {
     "bannerTitle": "Tu Wrapped {year}",

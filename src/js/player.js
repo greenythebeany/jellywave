@@ -78,7 +78,7 @@ export class Player {
     // error surfacing here still: a device whose HAL genuinely doesn't
     // support this at all should just quietly get no boost, not a confusing
     // error the user can't act on.
-    this._nativeLoudness = isAndroid ? window.Capacitor?.Plugins?.JellyWaveLoudness : null;
+    this._nativeLoudness = isAndroid ? window.Capacitor?.Plugins?.TriptychLoudness : null;
     this._nativeAudioAttempted = false;
     this.loudnessBoostDb = 10; // matches the old hardcoded default, until setLoudnessBoostDb changes it
 

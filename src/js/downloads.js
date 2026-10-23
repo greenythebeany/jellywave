@@ -6,7 +6,7 @@
 
 import { isDesktop, isMobile } from './platform.js';
 
-const INDEX_KEY = 'jellywave:downloads';
+const INDEX_KEY = 'triptych:downloads';
 
 function loadIndex() {
   try {

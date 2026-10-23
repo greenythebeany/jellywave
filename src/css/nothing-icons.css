@@ -44,6 +44,7 @@
 :root[data-ui="nothing"] .fi-br-screencast:before { font-family: uicons-regular-rounded !important; content: "\fba5"; }
 :root[data-ui="nothing"] .fi-br-search:before { font-family: uicons-regular-rounded !important; content: "\fbba"; }
 :root[data-ui="nothing"] .fi-br-settings-sliders:before { font-family: uicons-regular-rounded !important; content: "\fbd1"; }
+:root[data-ui="nothing"] .fi-br-shield-check:before { font-family: uicons-regular-rounded !important; content: "\fbdb"; }
 :root[data-ui="nothing"] .fi-br-shuffle:before { font-family: uicons-regular-rounded !important; content: "\fc03"; }
 :root[data-ui="nothing"] .fi-br-sidebar-flip:before { font-family: uicons-regular-rounded !important; content: "\fc07"; }
 :root[data-ui="nothing"] .fi-br-sign-out-alt:before { font-family: uicons-regular-rounded !important; content: "\fc0c"; }
