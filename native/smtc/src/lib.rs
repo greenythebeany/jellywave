@@ -77,7 +77,7 @@ impl Smtc {
     #[napi(constructor)]
     pub fn new(hwnd: i64) -> Result<Self> {
         let config = PlatformConfig {
-            dbus_name: "jellywave",
+            dbus_name: "triptych",
             display_name: "Triptych",
             hwnd: Some(hwnd as *mut c_void),
         };

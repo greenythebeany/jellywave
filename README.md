@@ -112,6 +112,13 @@ npm run dist        # build a Windows installer
 
 The Android project lives in `android/` and is a standard Capacitor project — open it in Android Studio, or build from the command line with `./gradlew assembleRelease` after setting up your own signing keystore in `android/keystore/keystore.properties`.
 
+## What's new in 2.3.0
+
+- Triptych now has its own app id (`com.triptych.app`) everywhere, so nothing is called JellyWave anymore
+  - **Windows / Linux**: update as usual. Your data folder moves from `JellyWave` to `Triptych` on the first start, and the installer removes the old JellyWave entry; login, settings, downloads and stats stay
+  - **Android / iPhone**: Triptych installs as a new app next to JellyWave. Sign in once, then uninstall JellyWave. Settings and listening stats come back from your server; downloaded songs have to be downloaded again
+- A new Windows installer: Triptych artwork, a welcome page in your language, and the license agreement to accept
+
 ## What's new in 2.2.0
 
 - JellyWave is now **Triptych**: new name, new logo (three bars; in the app the right one takes your accent colour). Your login, settings, downloads and listening stats carry over, and 2.1.0 updates to it like any other version

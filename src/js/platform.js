@@ -3,7 +3,7 @@
 // native build (window.Capacitor.Plugins.*, injected automatically by the
 // native runtime — no bundler/import needed), and a plain browser fallback.
 
-const SESSION_KEY = 'jellywave_session';
+const SESSION_KEY = 'triptych_session';
 
 const isElectron = typeof window !== 'undefined' && !!window.api;
 const isCapacitorNative =

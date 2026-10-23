@@ -9,7 +9,7 @@
 // so the combined total across devices is a plain sum -- devices never
 // overwrite or double-count each other.
 
-const LOCAL_KEY = 'jellywave:listening';
+const LOCAL_KEY = 'triptych:listening';
 
 function emptyLog() {
   return { v: 1, since: Date.now(), years: {} };

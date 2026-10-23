@@ -2,7 +2,7 @@
 // server-side concept of this in Jellyfin itself, so it's a purely local
 // preference -- same localStorage pattern as settings.js/downloads.js.
 
-const STORAGE_KEY = 'jellywave:pinnedAlbums';
+const STORAGE_KEY = 'triptych:pinnedAlbums';
 
 function load() {
   try {

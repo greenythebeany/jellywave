@@ -6,7 +6,7 @@ import MediaPlayer
 // The app's own bridge view controller (set as the root in Main.storyboard),
 // only so the app-local native plugins below get registered -- Capacitor
 // auto-registers plugins from npm packages, not ones that live in the app.
-class JellyWaveViewController: CAPBridgeViewController {
+class TriptychViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         // A music player, not app sound: the "playback" category keeps audio
         // going in the background and with the silent switch on, and is what
@@ -27,7 +27,7 @@ class JellyWaveViewController: CAPBridgeViewController {
 @objc(SystemVolumePlugin)
 public class SystemVolumePlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "SystemVolumePlugin"
-    public let jsName = "JellyWaveSystemVolume"
+    public let jsName = "TriptychSystemVolume"
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "getVolume", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setVolume", returnType: CAPPluginReturnPromise),

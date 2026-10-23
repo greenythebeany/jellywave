@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'jellywave:settings';
+const STORAGE_KEY = 'triptych:settings';
 
 export const PALETTES = {
   // Each interface style's own accent (Spotify green / Apple red / Nothing

@@ -1,3 +1,4 @@
+import './migrate.js'; // must stay first: renames storage keys before other modules read them
 import { JellyfinClient, initClientVersion, getClientVersion } from './jellyfin.js';
 import { Player, RepeatMode, EQ_PRESETS } from './player.js';
 import { fetchLyrics, getCachedLyrics } from './lyrics.js';
@@ -162,6 +163,10 @@ const whatsNewClose = document.getElementById('whats-new-close');
 // Highlights per release, as icon + i18n key pairs (whatsNew.<key>Title /
 // whatsNew.<key>Desc). Only versions listed here get a popup.
 const WHATS_NEW = {
+  '2.3.0': [
+    { icon: 'fi-br-shield-check', key: 'ownIdentity' },
+    { icon: 'fi-br-download', key: 'installer' }
+  ],
   '2.2.0': [
     { icon: 'fi-br-magic-wand', key: 'rename' },
     { icon: 'fi-br-language', key: 'languages' },
@@ -204,12 +209,12 @@ const WHATS_NEW = {
     { icon: 'fi-br-sparkles', key: 'polish' }
   ]
 };
-const LAST_SEEN_VERSION_KEY = 'jellywave:lastSeenVersion';
+const LAST_SEEN_VERSION_KEY = 'triptych:lastSeenVersion';
 // Captured at load, before this session writes anything: a fresh install
 // has none of these yet, so it shouldn't be told what's "new".
 const IS_RETURNING_USER = (() => {
   try {
-    return ['jellywave:settings', 'jellywave:privacyNoticeSeen', LAST_SEEN_VERSION_KEY].some((k) => localStorage.getItem(k) !== null);
+    return ['triptych:settings', 'triptych:privacyNoticeSeen', LAST_SEEN_VERSION_KEY].some((k) => localStorage.getItem(k) !== null);
   } catch (err) {
     return false;
   }
@@ -1688,7 +1693,7 @@ function listeningTotals() {
 // change and put back (paused) on the next start. Only a window around the
 // current song is kept, so a huge "All Songs" queue doesn't overflow
 // localStorage, and only the fields the player and UI actually use.
-const RESUME_KEY = 'jellywave:resume';
+const RESUME_KEY = 'triptych:resume';
 const RESUME_TRACK_FIELDS = ['Id', 'Name', 'Album', 'AlbumId', 'AlbumArtist', 'Artists', 'ArtistItems', 'ImageTags',
   'AlbumPrimaryImageTag', 'RunTimeTicks', 'NormalizationGain', 'UserData', 'Genres', 'Type', '__queued'];
 let resumeSaveTimer = null;
@@ -1757,11 +1762,11 @@ function uiSeekPercent(pct) {
 }
 
 // Phones: the volume slider drives the phone's real media volume (Android:
-// SystemVolumePlugin.java, iOS: JellyWaveViewController.swift) and follows
+// SystemVolumePlugin.java, iOS: TriptychViewController.swift) and follows
 // the hardware buttons, like the Spotify/Apple Music apps -- in-app volume
 // stays at full so the phone's level is the one that counts. Desktop keeps
 // the in-app volume.
-const systemVolume = isMobile ? window.Capacitor?.Plugins?.JellyWaveSystemVolume : null;
+const systemVolume = isMobile ? window.Capacitor?.Plugins?.TriptychSystemVolume : null;
 let systemVolumeDragging = false;
 
 function showVolumeLevel(pct) {
@@ -2000,7 +2005,7 @@ function wireLegalOverlay() {
 // background lookups do talk to outside services (see Privacy Policy) --
 // disclosed once, up front, rather than left for someone to stumble on in
 // a settings menu they may never open.
-const PRIVACY_NOTICE_SEEN_KEY = 'jellywave:privacyNoticeSeen';
+const PRIVACY_NOTICE_SEEN_KEY = 'triptych:privacyNoticeSeen';
 function wirePrivacyNotice() {
   if (!localStorage.getItem(PRIVACY_NOTICE_SEEN_KEY)) setHidden(privacyNotice, false);
   const dismiss = () => {
@@ -4150,7 +4155,7 @@ function closeAddToPlaylistMenu() {
 }
 
 // ---------- Drag-and-drop a track onto a playlist (desktop) ----------
-const TRACK_DND_TYPE = 'application/x-jellywave-track-id';
+const TRACK_DND_TYPE = 'application/x-triptych-track-id';
 
 function wireTrackDragSource(row, track) {
   if (!isDesktop) return;
@@ -4857,7 +4862,7 @@ function wrappedYearAvailable(now = new Date()) {
   return null;
 }
 
-const WRAPPED_SEEN_KEY = 'jellywave:wrappedSeen';
+const WRAPPED_SEEN_KEY = 'triptych:wrappedSeen';
 
 // "Your {year} Wrapped" banner (Home + Stats), or null outside the window.
 function buildWrappedBanner() {

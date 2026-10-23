@@ -104,7 +104,7 @@ export function createConnect(jellyfin, player) {
     heardSeconds = 0;
     heardTickAt = null;
     trackHeard();
-    playSessionId = `jellywave-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    playSessionId = `triptych-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
     const payload = buildReportPayload();
     if (payload) jellyfin.reportPlaybackStart(payload).catch(() => {});
   }

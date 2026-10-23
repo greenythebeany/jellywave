@@ -7,7 +7,7 @@
 // Only runs when Settings > Privacy > "Search by lyrics" is on, since it
 // sends every song's title/artist to the lyrics services (see PRIVACY.md).
 
-const DB_NAME = 'jellywave-lyrics';
+const DB_NAME = 'triptych-lyrics';
 const STORE = 'lyrics';
 const NONE_RETRY_MS = 30 * 24 * 3600 * 1000; // re-check "no lyrics" monthly
 const GAP_MS = 1100; // one lookup a second or so -- gentle on the services

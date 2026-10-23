@@ -410,7 +410,11 @@
     "languagesTitle": "Jokainen kieli täysin käännettynä",
     "languagesDesc": "Kaikki 15 kieltä kattavat nyt jokaisen näkymän, asetuksen ja viestin, myös Wrappedin, Tuonnin ja oikeudellisten sivujen valikon.",
     "calendarMonthsTitle": "Kalenteri kuukausittain",
-    "calendarMonthsDesc": "Kuuntelukalenteri näyttää jokaisen kuukauden omana lohkonaan ja mahtuu mihin tahansa puhelimeen ilman sivuttaisvieritystä."
+    "calendarMonthsDesc": "Kuuntelukalenteri näyttää jokaisen kuukauden omana lohkonaan ja mahtuu mihin tahansa puhelimeen ilman sivuttaisvieritystä.",
+    "ownIdentityTitle": "Triptych kauttaaltaan",
+    "ownIdentityDesc": "Triptychillä on nyt oma sovellustunnus, joten mikään ei enää ole nimeltään JellyWave. Asetuksesi ja kuuntelutilastosi palaavat palvelimeltasi; puhelimessa ladatut kappaleet täytyy ladata uudelleen.",
+    "installerTitle": "Uusi Windows-asennusohjelma",
+    "installerDesc": "Triptych-grafiikka, tervetulosivu omalla kielelläsi ja hyväksyttävä käyttöoikeussopimus."
   },
   "wrapped": {
     "bannerTitle": "Sinun Wrapped {year}",

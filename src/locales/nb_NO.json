@@ -410,7 +410,11 @@
     "languagesTitle": "Alle språk, fullt oversatt",
     "languagesDesc": "Alle 15 språk dekker nå hver skjerm, innstilling og melding, også Wrapped, Importer og menyen med juridiske sider.",
     "calendarMonthsTitle": "En kalender per måned",
-    "calendarMonthsDesc": "Lyttekalenderen viser hver måned som en egen blokk og passer på alle telefoner uten å rulle sidelengs."
+    "calendarMonthsDesc": "Lyttekalenderen viser hver måned som en egen blokk og passer på alle telefoner uten å rulle sidelengs.",
+    "ownIdentityTitle": "Triptych hele veien",
+    "ownIdentityDesc": "Triptych har nå sin egen app-ID, så ingenting heter JellyWave lenger. Innstillingene og lyttestatistikken din kommer tilbake fra serveren; på telefonen må nedlastede sanger lastes ned på nytt.",
+    "installerTitle": "Et nytt installasjonsprogram for Windows",
+    "installerDesc": "Triptych-grafikk, en velkomstside på ditt språk og lisensavtalen du skal godta."
   },
   "wrapped": {
     "bannerTitle": "Din Wrapped {year}",

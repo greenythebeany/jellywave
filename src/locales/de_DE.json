@@ -410,7 +410,11 @@
     "languagesTitle": "Jede Sprache, komplett übersetzt",
     "languagesDesc": "Alle 15 Sprachen decken jetzt jeden Bildschirm, jede Einstellung und jede Meldung ab, auch Wrapped, Importieren und das Menü der Rechtsseiten.",
     "calendarMonthsTitle": "Ein Kalender nach Monaten",
-    "calendarMonthsDesc": "Der Hörkalender zeigt jeden Monat als eigenen Block und passt ohne seitliches Scrollen auf jedes Handy."
+    "calendarMonthsDesc": "Der Hörkalender zeigt jeden Monat als eigenen Block und passt ohne seitliches Scrollen auf jedes Handy.",
+    "ownIdentityTitle": "Durch und durch Triptych",
+    "ownIdentityDesc": "Triptych hat jetzt eine eigene App-ID, nichts heißt mehr JellyWave. Einstellungen und Hörstatistik kommen von deinem Server; auf dem Handy müssen heruntergeladene Songs neu geladen werden.",
+    "installerTitle": "Ein neues Windows-Installationsprogramm",
+    "installerDesc": "Triptych-Grafik, eine Willkommensseite in deiner Sprache und die Lizenzvereinbarung zum Bestätigen."
   },
   "wrapped": {
     "bannerTitle": "Dein Wrapped {year}",

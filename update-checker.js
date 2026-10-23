@@ -26,8 +26,8 @@ function isNewer(a, b) {
   return false;
 }
 
-// JELLYWAVE_PRETEND_VERSION lets you test the updater from a dev build.
-const currentVersion = () => process.env.JELLYWAVE_PRETEND_VERSION || app.getVersion();
+// TRIPTYCH_PRETEND_VERSION lets you test the updater from a dev build.
+const currentVersion = () => process.env.TRIPTYCH_PRETEND_VERSION || app.getVersion();
 
 let lastRelease = null;
 
