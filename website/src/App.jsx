@@ -9,7 +9,9 @@ import Faq from './components/Faq.jsx';
 import Contact from './components/Contact.jsx';
 import Download from './components/Download.jsx';
 import Footer from './components/Footer.jsx';
+import { useEffect } from 'react';
 import { FAQ } from './content.js';
+import { smoothAnchors } from './site.js';
 
 // FAQPage structured data, from the same questions the page shows.
 const faqSchema = {
@@ -19,6 +21,7 @@ const faqSchema = {
 };
 
 export default function App() {
+  useEffect(smoothAnchors, []);
   return (
     <>
       <a className="skip" href="#main">Skip to content</a>

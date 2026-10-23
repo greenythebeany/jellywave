@@ -41,3 +41,32 @@ export function setMotion(on) {
   try { localStorage.setItem(MOTION_KEY, on ? 'on' : 'off'); } catch { /* storage blocked: this visit only */ }
   dispatchEvent(new CustomEvent('triptych:motion', { detail: on }));
 }
+
+// Smooth scroll for the page's own #links, eased by hand: CSS smooth
+// scrolling is skipped by browsers when the OS asks for less motion, and the
+// site decides that with its own switch instead.
+export function smoothAnchors() {
+  const onClick = (e) => {
+    const a = e.target.closest?.('a[href^="#"]');
+    if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    const target = a.hash === '#top' ? document.body : document.querySelector(a.hash);
+    if (!target) return;
+    e.preventDefault();
+    history.pushState(null, '', a.hash);
+    const offset = target === document.body ? 0 : parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+    const to = Math.max(0, target.getBoundingClientRect().top + scrollY - offset);
+    if (motionOff()) { scrollTo(0, to); return; }
+    const from = scrollY;
+    const ms = Math.min(1100, 450 + Math.abs(to - from) * 0.12);
+    const start = performance.now();
+    const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+    const step = (now) => {
+      const t = Math.min(1, (now - start) / ms);
+      scrollTo(0, from + (to - from) * ease(t));
+      if (t < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+  addEventListener('click', onClick);
+  return () => removeEventListener('click', onClick);
+}

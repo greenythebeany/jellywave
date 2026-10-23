@@ -21,7 +21,6 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--ground); color: var(--ink); font: 400 var(--step-body)/1.5 var(--font-text); -webkit-font-smoothing: antialiased; }
 html.booting body { overflow: hidden; }
 img, video { display: block; max-width: 100%; height: auto; }
@@ -260,6 +259,5 @@ html.booting .lens { display: none; }
 /* Animations off (the navbar switch; html.still, set before the first paint
    by the inline script in index.html). The OS reduced-motion setting is
    deliberately not used: the site always animates unless switched off here. */
-html.still { scroll-behavior: auto; }
 html.still .viz .bar { animation: none; }
 html.still .motion-switch::after, html.still .nav, html.still .track, html.still .lens-track, html.still .btn, html.still .tabs button, html.still .band, html.still .sheet, html.still .dim, html.still .faq summary::after { transition: none; }
