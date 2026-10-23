@@ -22,7 +22,10 @@ export default function Nav() {
       <nav className="nav-links" aria-label="Sections">
         <a href="#how">How it works</a>
         <a href="#faq">FAQ</a>
-        <a href="#download">Download</a>
+        <a href="#download" aria-label="Download">
+          <span className="nav-word">Download</span>
+          <svg className="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-5-5m5 5 5-5M5 20h14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </a>
       </nav>
       <button className="motion" type="button" aria-pressed={motion} onClick={toggleMotion}>
         <span className="motion-switch" aria-hidden="true" /><span className="motion-label">Animations</span>

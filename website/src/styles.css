@@ -83,6 +83,7 @@ html.booting .track { filter: blur(30px) brightness(0.45) saturate(0.9); }
 .nav-links a { text-decoration: none; }
 .nav-links a:hover { text-decoration: underline; text-decoration-color: currentColor; }
 .nav-links { margin-left: auto; }
+.nav-icon { display: none; width: 22px; height: 22px; }
 .motion { display: flex; align-items: center; gap: 8px; margin-left: 28px; padding: 0; border: 0; background: none; color: inherit; font: 500 var(--step-body)/1 var(--font-text); cursor: pointer; }
 .motion-switch { position: relative; width: 30px; height: 18px; border: 2px solid currentColor; border-radius: 9px; }
 .motion-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%; background: currentColor; transition: transform 0.3s var(--bounce); }
@@ -225,6 +226,8 @@ html.booting .lens { display: none; }
   .nav-links { gap: 18px; }
   .nav-links a:not(:last-child) { display: none; }
   .motion { margin-left: 18px; }
+  .nav-word { display: none; }
+  .nav-icon { display: block; }
   .motion-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .hero { min-height: 640px; }
   .boot { padding-bottom: 250px; }
