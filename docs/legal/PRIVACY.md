@@ -1,10 +1,10 @@
 # Privacy Policy
 
-_Last updated: 2026-09-18_
+_Last updated: 2026-10-23_
 
 Triptych is a client app for a Jellyfin media server **you host yourself**. The developer does not run any backend for Triptych, does not receive analytics or telemetry from your copy of the app, and cannot see your library, your account, or what you play.
 
-Triptych is a free, open-source (MIT-licensed) personal project maintained by one developer (GitHub: [greenythebeany](https://github.com/greenythebeany)). There is no company behind it. The only contact channel is [GitHub Issues on the jellywave repo](https://github.com/greenythebeany/triptych/issues) — that's also where to report a privacy, accessibility, or licensing concern.
+Triptych is a free, open-source (MIT-licensed) personal project maintained by one developer (GitHub: [greenythebeany](https://github.com/greenythebeany)). There is no company behind it. The only contact channel is [GitHub Issues on the triptych repo](https://github.com/greenythebeany/triptych/issues) — that's also where to report a privacy, accessibility, or licensing concern.
 
 This document is also available inside the app itself, under **Settings → About → Legal**.
 
@@ -23,6 +23,10 @@ This document is also available inside the app itself, under **Settings → Abou
 - **Lyrics: lrclib.net, then lyrics.ovh** — when you view lyrics, the current track's title, artist, album and length are sent to lrclib.net's public lyrics API to find them. If lrclib and your own Jellyfin server don't have them, the title and first artist are also sent to lyrics.ovh. No account or personal identifier is sent; lyrics are only kept in memory while the app is open. If you turn on **Search by lyrics** (Settings → Privacy, off by default), the same lookups also run in the background for the songs in your library, about one per second, and the lyrics found are stored on your device so you can search them; turning it off stops this.
 - **Discord** — only if you explicitly connect it in Settings → Audio → Discord Rich Presence. While connected, the currently playing track/artist and its cover art URL are sent to your local Discord client so it can show on your Discord profile. Off by default; disconnect any time.
 - **YouTube / YouTube Music / SoundCloud** — only if you use the "Import" feature to paste a link, which fetches that specific media directly to your device. See the [Terms of Service](TERMS.md) for the responsibility that comes with this feature.
+
+## This website
+
+The Triptych website (greenybeany.dev/triptych) is a static page hosted on GitHub Pages. It sets no cookies and has no analytics, ads or trackers. GitHub, as the host, receives the usual request data any web server sees (such as your IP address and browser) and handles it under [GitHub's privacy statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement). To show the latest version and link straight to the download files, your browser asks GitHub's public API (api.github.com) for the latest release; nothing about you is added to that request. Fonts and images are served from the site itself.
 
 ## Children's data
 
