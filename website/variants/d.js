@@ -2,7 +2,7 @@
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // Boot, the same way as on greenybeany.dev/me: added here by the script (a page
-// without scripts is never covered), once per tab, never with reduced motion,
+// without scripts is never covered, and the showcase is only blurred while it runs), once per tab, never with reduced motion,
 // skippable with any click or key, and the page stays locked and out of the tab
 // order until it lifts. ?boot forces it again (for checking it).
 const BOOT_KEY = 'triptych-booted';
@@ -23,10 +23,10 @@ if (shouldBoot()) {
       <rect class="bar bar-1" y="103" width="113" height="350" rx="24"/>
       <rect class="bar bar-2" x="149" width="113" height="453" rx="24"/>
       <rect class="bar bar-3" x="298" y="103" width="113" height="350" rx="24"/>
-    </svg><p class="boot-skip">Click or press any key to skip</p>`;
-  document.body.prepend(boot);
+    </svg>`;
+  document.querySelector('.hero').append(boot);
   document.body.classList.add('booting');
-  const page = [...document.body.children].filter((el) => el !== boot && el.tagName !== 'SCRIPT');
+  const page = [...document.body.children].filter((el) => el.tagName !== 'SCRIPT');
   page.forEach((el) => el.setAttribute('inert', ''));
 
   let finished = false;
