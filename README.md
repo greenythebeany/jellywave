@@ -22,24 +22,11 @@
 
 Triptych is a personal music client for a self-hosted Jellyfin server. It logs into your own server with your own library and gives you a modern, Spotify-like listening experience across desktop and Android, without any of the server-side bloat of a general-purpose media app.
 
-## Screenshots
+## Showcase
 
-<p align="center">
-  <img src="docs/screenshots/desktop-home.png" width="800" alt="Triptych desktop, Home view (Spotify style)" />
-</p>
-<p align="center">
-  <img src="docs/screenshots/desktop-apple.png" width="800" alt="Triptych desktop, Home view with the player panel (Apple Music style)" />
-</p>
-<p align="center">
-  <img src="docs/screenshots/desktop-settings.png" width="380" alt="Triptych desktop, Settings" />
-</p>
+https://github.com/user-attachments/assets/4d5fa0a4-d05b-4bf4-8921-1810018c48fb
 
-<p align="center">
-  <img src="docs/screenshots/mobile-home.png" width="200" alt="Triptych Android, Home view" />
-  <img src="docs/screenshots/mobile-library.png" width="200" alt="Triptych Android, Library view" />
-  <img src="docs/screenshots/mobile-nowplaying.png" width="200" alt="Triptych Android, Now Playing view (Spotify style)" />
-  <img src="docs/screenshots/mobile-nowplaying-apple.png" width="200" alt="Triptych Android, Now Playing view (Apple Music style)" />
-</p>
+
 
 ## Features
 
