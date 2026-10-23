@@ -57,7 +57,7 @@ p { margin: 0; }
 .viz .bar-2 { --h: 100%; animation: meter 1.2s var(--bounce) 0.12s both, viz-2 1.14s ease-in-out 1.32s infinite alternate; }
 .viz .bar-3 { background: var(--accent); animation: meter 1.25s var(--bounce) 0.3s both, viz-3 0.78s ease-in-out 1.55s infinite alternate; }
 .hero[data-paused="true"] .viz .bar { animation-play-state: paused; }
-.track { filter: blur(14px) brightness(0.5) saturate(0.9); }
+.track { filter: blur(6px) brightness(0.55); }
 html.booting .track { filter: blur(30px) brightness(0.45) saturate(0.9); }
 /* each bar its own uneven rhythm, always back at full height between beats */
 @keyframes viz-1 { 0% { height: calc(var(--h) * 1); } 30% { height: calc(var(--h) * 0.55); } 55% { height: calc(var(--h) * 0.82); } 80% { height: calc(var(--h) * 0.4); } 100% { height: calc(var(--h) * 0.9); } }
@@ -76,6 +76,8 @@ html.booting .track { filter: blur(30px) brightness(0.45) saturate(0.9); }
 
 /* ---------- Nav ---------- */
 .nav { position: fixed; inset: 0 0 auto; z-index: 30; display: flex; justify-content: space-between; align-items: center; padding: 20px var(--margin); mix-blend-mode: difference; color: #fff; }
+.nav { transition: opacity 0.35s ease, transform 0.5s var(--bounce); }
+.nav[data-shown="false"]:not(:focus-within) { opacity: 0; transform: translateY(-100%); pointer-events: none; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 700 20px/1 var(--font-mark); }
 .brand-mark { width: 16px; height: 18px; }
 .brand-mark .bar-3 { fill: currentColor; }
@@ -90,7 +92,7 @@ html.booting .track { filter: blur(30px) brightness(0.45) saturate(0.9); }
 .slide { position: relative; flex: 0 0 calc(100% / 3); height: 100%; user-select: none; }
 .shot { position: absolute; inset: 0; }
 .shot img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; -webkit-user-drag: none; }
-.caption { position: absolute; right: var(--margin); bottom: 96px; z-index: 2; max-width: 24ch; text-align: right; color: #fff; }
+.caption { position: absolute; right: var(--margin); bottom: 28px; max-width: 24ch; text-align: right; color: #fff; }
 /* scrims so the title and the controls read on any screenshot */
 .hero::before, .hero::after { content: ''; position: absolute; left: 0; right: 0; z-index: 1; pointer-events: none; }
 .hero::before { top: 0; height: 45%; background: linear-gradient(rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0)); }
@@ -236,5 +238,5 @@ html.booting .track { filter: blur(30px) brightness(0.45) saturate(0.9); }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .viz .bar { animation: none; }
-  .track, .btn, .tabs button, .sheet, .faq summary::after { transition: none; }
+  .nav, .track, .btn, .tabs button, .sheet, .faq summary::after { transition: none; }
 }

@@ -122,7 +122,6 @@ export default function Hero() {
             inert={i !== index}
           >
             <Shot className="shot" name={`d-${look.key}`} phone={`p-${look.key}`} width="1600" height="900" alt={look.alt} eager={i === 0} />
-            <p className="caption"><strong>{look.label}.</strong> {look.caption}</p>
           </div>
         ))}
       </div>
@@ -138,6 +137,7 @@ export default function Hero() {
           <p className="lede">A music player for your own Jellyfin server. One library, three looks. Free on Windows, Linux, Android and iPhone.</p>
           <a className="btn" href="#download">Download Triptych</a>
         </div>
+        <p className="caption"><strong>{LOOKS[index].label}.</strong> {LOOKS[index].caption}</p>
         <div className="controls">
           <div className="tabs" role="tablist" aria-label="Choose a look">
             {LOOKS.map((look, i) => (
